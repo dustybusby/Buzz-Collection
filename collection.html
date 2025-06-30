@@ -223,12 +223,18 @@
             background: rgba(20, 20, 20, 0.9);
             padding: 1rem;
             display: grid;
-            grid-template-columns: 80px 2fr 2fr 1.5fr 80px 1fr 80px 2fr;
+            grid-template-columns: 80px 2fr 2fr 1.5fr 80px 1fr 80px 2fr 60px;
             gap: 1rem;
             font-weight: 600;
             color: #f0f0f0;
             border-bottom: 1px solid #333;
             font-size: 0.9rem;
+        }
+
+        .column-header {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
         }
 
         .sortable-header {
@@ -248,10 +254,31 @@
             color: #888;
         }
 
+        .filter-input {
+            background: rgba(40, 40, 40, 0.8);
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 0.4rem;
+            color: #e0e0e0;
+            font-family: inherit;
+            font-size: 0.8rem;
+            width: 100%;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: #666;
+        }
+
+        .filter-input::placeholder {
+            color: #888;
+            font-size: 0.7rem;
+        }
+
         .list-item {
             padding: 1rem;
             display: grid;
-            grid-template-columns: 80px 2fr 2fr 1.5fr 80px 1fr 80px 2fr;
+            grid-template-columns: 80px 2fr 2fr 1.5fr 80px 1fr 80px 2fr 60px;
             gap: 1rem;
             align-items: center;
             border-bottom: 1px solid #333;
@@ -265,6 +292,21 @@
 
         .list-item:hover {
             background: rgba(40, 40, 40, 0.6);
+        }
+
+        .edit-btn {
+            background: #4a7bc8;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.6rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: background 0.3s ease;
+        }
+
+        .edit-btn:hover {
+            background: #5a8bd8;
         }
 
         .list-item-player {
@@ -439,18 +481,18 @@
             }
 
             .cards-list-header {
-                grid-template-columns: 80px 2fr 1.5fr 80px 2fr;
+                grid-template-columns: 80px 2fr 1.5fr 80px 2fr 60px;
                 gap: 0.5rem;
             }
 
-            .cards-list-header span:nth-child(5),
-            .cards-list-header span:nth-child(6),
-            .cards-list-header span:nth-child(7) {
+            .cards-list-header .column-header:nth-child(5),
+            .cards-list-header .column-header:nth-child(6),
+            .cards-list-header .column-header:nth-child(7) {
                 display: none;
             }
 
             .list-item {
-                grid-template-columns: 80px 2fr 1.5fr 80px 2fr;
+                grid-template-columns: 80px 2fr 1.5fr 80px 2fr 60px;
                 gap: 0.5rem;
             }
 
@@ -485,19 +527,14 @@
         <div id="mainContent" style="display: none;">
             <div class="collection-controls">
                 <div class="controls-row">
-                    <label for="filterCategory">Filter by Category:</label>
-                    <select id="filterCategory" onchange="filterCollection()">
-                        <option value="">All Categories</option>
-                        <option value="Baseball">Baseball</option>
-                        <option value="Football">Football</option>
-                    </select>
-                    
                     <div class="view-toggle">
                         <button id="listViewBtn" class="active" onclick="switchView('list')">📋 List</button>
                         <button id="gridViewBtn" onclick="switchView('grid')">🃏 Cards</button>
                     </div>
                     
                     <button class="btn btn-primary" onclick="exportToCSV()">Export to CSV</button>
+                    
+                    <button class="btn" onclick="clearAllFilters()">Clear Filters</button>
                 </div>
                 
                 <div class="controls-row">
@@ -509,30 +546,61 @@
 
             <div id="listView" class="cards-list">
                 <div class="cards-list-header">
-                    <span class="sortable-header" onclick="sortBy('year')">
-                        Year <span class="sort-indicator" id="sort-year"></span>
-                    </span>
-                    <span class="sortable-header" onclick="sortBy('product')">
-                        Product <span class="sort-indicator" id="sort-product"></span>
-                    </span>
-                    <span class="sortable-header" onclick="sortBy('player')">
-                        Player <span class="sort-indicator" id="sort-player"></span>
-                    </span>
-                    <span class="sortable-header" onclick="sortBy('team')">
-                        Team <span class="sort-indicator" id="sort-team"></span>
-                    </span>
-                    <span class="sortable-header" onclick="sortBy('rookieCard')">
-                        RC <span class="sort-indicator" id="sort-rookieCard"></span>
-                    </span>
-                    <span class="sortable-header" onclick="sortBy('parallel')">
-                        Parallel <span class="sort-indicator" id="sort-parallel"></span>
-                    </span>
-                    <span class="sortable-header" onclick="sortBy('numbered')">
-                        Numbered <span class="sort-indicator" id="sort-numbered"></span>
-                    </span>
-                    <span class="sortable-header" onclick="sortBy('description')">
-                        Description <span class="sort-indicator" id="sort-description"></span>
-                    </span>
+                    <div class="column-header">
+                        <div class="sortable-header" onclick="sortBy('year')">
+                            Year <span class="sort-indicator" id="sort-year"></span>
+                        </div>
+                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-year" onkeyup="filterCollection()">
+                    </div>
+                    <div class="column-header">
+                        <div class="sortable-header" onclick="sortBy('product')">
+                            Product <span class="sort-indicator" id="sort-product"></span>
+                        </div>
+                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-product" onkeyup="filterCollection()">
+                    </div>
+                    <div class="column-header">
+                        <div class="sortable-header" onclick="sortBy('player')">
+                            Player <span class="sort-indicator" id="sort-player"></span>
+                        </div>
+                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-player" onkeyup="filterCollection()">
+                    </div>
+                    <div class="column-header">
+                        <div class="sortable-header" onclick="sortBy('team')">
+                            Team <span class="sort-indicator" id="sort-team"></span>
+                        </div>
+                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-team" onkeyup="filterCollection()">
+                    </div>
+                    <div class="column-header">
+                        <div class="sortable-header" onclick="sortBy('rookieCard')">
+                            RC <span class="sort-indicator" id="sort-rookieCard"></span>
+                        </div>
+                        <select class="filter-input" id="filter-rookieCard" onchange="filterCollection()">
+                            <option value="">All</option>
+                            <option value="Y">Yes</option>
+                            <option value="N">No</option>
+                        </select>
+                    </div>
+                    <div class="column-header">
+                        <div class="sortable-header" onclick="sortBy('parallel')">
+                            Parallel <span class="sort-indicator" id="sort-parallel"></span>
+                        </div>
+                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-parallel" onkeyup="filterCollection()">
+                    </div>
+                    <div class="column-header">
+                        <div class="sortable-header" onclick="sortBy('numbered')">
+                            Numbered <span class="sort-indicator" id="sort-numbered"></span>
+                        </div>
+                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-numbered" onkeyup="filterCollection()">
+                    </div>
+                    <div class="column-header">
+                        <div class="sortable-header" onclick="sortBy('description')">
+                            Description <span class="sort-indicator" id="sort-description"></span>
+                        </div>
+                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-description" onkeyup="filterCollection()">
+                    </div>
+                    <div class="column-header">
+                        <div style="text-align: center; font-size: 0.8rem;">Edit</div>
+                    </div>
                 </div>
                 <div id="listContainer">
                     <!-- List items will be populated here -->
@@ -665,10 +733,38 @@
             
             let filteredCards = [...cardCollection];
             
-            const categoryFilter = document.getElementById('filterCategory').value;
-            if (categoryFilter) {
-                filteredCards = filteredCards.filter(card => card.category === categoryFilter);
-            }
+            // Apply filters from all columns
+            const filters = {
+                year: document.getElementById('filter-year')?.value?.toLowerCase() || '',
+                product: document.getElementById('filter-product')?.value?.toLowerCase() || '',
+                player: document.getElementById('filter-player')?.value?.toLowerCase() || '',
+                team: document.getElementById('filter-team')?.value?.toLowerCase() || '',
+                rookieCard: document.getElementById('filter-rookieCard')?.value || '',
+                parallel: document.getElementById('filter-parallel')?.value?.toLowerCase() || '',
+                numbered: document.getElementById('filter-numbered')?.value?.toLowerCase() || '',
+                description: document.getElementById('filter-description')?.value?.toLowerCase() || ''
+            };
+            
+            filteredCards = filteredCards.filter(card => {
+                return Object.keys(filters).every(key => {
+                    if (!filters[key]) return true;
+                    
+                    let cardValue = card[key]?.toString().toLowerCase() || '';
+                    
+                    // Special handling for rookie card
+                    if (key === 'rookieCard') {
+                        return card[key] === filters[key];
+                    }
+                    
+                    // Special handling for parallel and numbered
+                    if (key === 'parallel' || key === 'numbered') {
+                        if (card[key] === 'N') cardValue = '';
+                        else cardValue = card[key]?.toString().toLowerCase() || '';
+                    }
+                    
+                    return cardValue.includes(filters[key]);
+                });
+            });
             
             // Apply sorting
             if (currentSort.field) {
@@ -723,9 +819,80 @@
                         <div>${card.parallel !== 'N' ? card.parallel : ''}</div>
                         <div>${card.numbered !== 'N' ? card.numbered : ''}</div>
                         <div class="list-item-details">${card.description || ''}</div>
+                        <div>
+                            <button class="edit-btn" onclick="editCard('${card.id}')">Edit</button>
+                        </div>
                     </div>
                 `;
             }).join('');
+        }
+
+        function clearAllFilters() {
+            document.getElementById('filter-year').value = '';
+            document.getElementById('filter-product').value = '';
+            document.getElementById('filter-player').value = '';
+            document.getElementById('filter-team').value = '';
+            document.getElementById('filter-rookieCard').value = '';
+            document.getElementById('filter-parallel').value = '';
+            document.getElementById('filter-numbered').value = '';
+            document.getElementById('filter-description').value = '';
+            filterCollection();
+        }
+
+        function editCard(cardId) {
+            const card = cardCollection.find(c => c.id === cardId);
+            if (!card) return;
+            
+            // Create a simple prompt-based edit for now
+            // In a real app, you'd want a proper modal form
+            const newPlayer = prompt('Edit Player Name:', card.player);
+            if (newPlayer === null) return; // User cancelled
+            
+            const newYear = prompt('Edit Year:', card.year);
+            if (newYear === null) return;
+            
+            const newProduct = prompt('Edit Product:', card.product);
+            if (newProduct === null) return;
+            
+            const newTeam = prompt('Edit Team:', card.team);
+            if (newTeam === null) return;
+            
+            const newDescription = prompt('Edit Description:', card.description || '');
+            if (newDescription === null) return;
+            
+            // Update the card
+            const updatedCard = {
+                ...card,
+                player: newPlayer,
+                year: parseInt(newYear) || card.year,
+                product: newProduct,
+                team: newTeam,
+                description: newDescription
+            };
+            
+            // Update in Firebase
+            updateCardInFirebase(cardId, updatedCard);
+        }
+
+        async function updateCardInFirebase(cardId, updatedCard) {
+            try {
+                // Import updateDoc function
+                const { updateDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
+                
+                await updateDoc(doc(db, 'cards', cardId), updatedCard);
+                
+                // Update local collection
+                const cardIndex = cardCollection.findIndex(c => c.id === cardId);
+                if (cardIndex !== -1) {
+                    cardCollection[cardIndex] = { ...cardCollection[cardIndex], ...updatedCard };
+                }
+                
+                displayCollection();
+                alert('Card updated successfully!');
+            } catch (error) {
+                console.error('Error updating card:', error);
+                alert('Error updating card: ' + error.message);
+            }
         }
 
         function displayGridView(cards) {
@@ -815,6 +982,8 @@
         window.exportToCSV = exportToCSV;
         window.toggleMobileMenu = toggleMobileMenu;
         window.sortBy = sortBy;
+        window.clearAllFilters = clearAllFilters;
+        window.editCard = editCard;
     </script>
 </body>
 </html>
