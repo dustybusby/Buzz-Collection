@@ -527,6 +527,11 @@
         <div id="mainContent" style="display: none;">
             <div class="collection-controls">
                 <div class="controls-row">
+                    <div class="card-count">
+                        <span id="totalCards">0 total cards</span> | 
+                        <span id="filteredCount">0 filtered</span>
+                    </div>
+                    
                     <div class="view-toggle">
                         <button id="listViewBtn" class="active" onclick="switchView('list')">📋 List</button>
                         <button id="gridViewBtn" onclick="switchView('grid')">🃏 Cards</button>
@@ -535,12 +540,6 @@
                     <button class="btn btn-primary" onclick="exportToCSV()">Export to CSV</button>
                     
                     <button class="btn" onclick="clearAllFilters()">Clear Filters</button>
-                </div>
-                
-                <div class="controls-row">
-                    <div class="card-count">
-                        <span id="cardCount">0 cards total</span>
-                    </div>
                 </div>
             </div>
 
@@ -600,6 +599,7 @@
                     </div>
                     <div class="column-header">
                         <div style="text-align: center; font-size: 0.8rem;">Edit</div>
+                        <div style="height: 32px;"></div>
                     </div>
                 </div>
                 <div id="listContainer">
@@ -728,7 +728,8 @@
         }
 
         function displayCollection() {
-            const countElement = document.getElementById('cardCount');
+            const totalElement = document.getElementById('totalCards');
+            const filteredElement = document.getElementById('filteredCount');
             const emptyState = document.getElementById('emptyState');
             
             let filteredCards = [...cardCollection];
@@ -787,7 +788,9 @@
                 });
             }
             
-            countElement.textContent = `${filteredCards.length} cards total`;
+            // Update totals
+            totalElement.textContent = `${cardCollection.length} total cards`;
+            filteredElement.textContent = `${filteredCards.length} filtered`;
             
             if (filteredCards.length === 0) {
                 document.getElementById('listView').style.display = 'none';
@@ -843,56 +846,10 @@
             const card = cardCollection.find(c => c.id === cardId);
             if (!card) return;
             
-            // Create a simple prompt-based edit for now
-            // In a real app, you'd want a proper modal form
-            const newPlayer = prompt('Edit Player Name:', card.player);
-            if (newPlayer === null) return; // User cancelled
-            
-            const newYear = prompt('Edit Year:', card.year);
-            if (newYear === null) return;
-            
-            const newProduct = prompt('Edit Product:', card.product);
-            if (newProduct === null) return;
-            
-            const newTeam = prompt('Edit Team:', card.team);
-            if (newTeam === null) return;
-            
-            const newDescription = prompt('Edit Description:', card.description || '');
-            if (newDescription === null) return;
-            
-            // Update the card
-            const updatedCard = {
-                ...card,
-                player: newPlayer,
-                year: parseInt(newYear) || card.year,
-                product: newProduct,
-                team: newTeam,
-                description: newDescription
-            };
-            
-            // Update in Firebase
-            updateCardInFirebase(cardId, updatedCard);
-        }
-
-        async function updateCardInFirebase(cardId, updatedCard) {
-            try {
-                // Import updateDoc function
-                const { updateDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
-                
-                await updateDoc(doc(db, 'cards', cardId), updatedCard);
-                
-                // Update local collection
-                const cardIndex = cardCollection.findIndex(c => c.id === cardId);
-                if (cardIndex !== -1) {
-                    cardCollection[cardIndex] = { ...cardCollection[cardIndex], ...updatedCard };
-                }
-                
-                displayCollection();
-                alert('Card updated successfully!');
-            } catch (error) {
-                console.error('Error updating card:', error);
-                alert('Error updating card: ' + error.message);
-            }
+            // Store the card ID for editing and redirect to add card page
+            localStorage.setItem('editCardId', cardId);
+            localStorage.setItem('editCardData', JSON.stringify(card));
+            window.location.href = 'index.html?edit=true';
         }
 
         function displayGridView(cards) {
