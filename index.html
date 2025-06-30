@@ -500,9 +500,27 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        // Import Firebase functions
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAiJHKByn_IOF-kSBgtNzpmyDLNYG60rgk",
+            authDomain: "dustbin-db.firebaseapp.com",
+            projectId: "dustbin-db",
+            storageBucket: "dustbin-db.firebasestorage.app",
+            messagingSenderId: "432828524153",
+            appId: "1:432828524153:web:4cc8b6a12dc49c84a956a8"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         // Global data storage
-        let cardCollection = JSON.parse(localStorage.getItem('buzzCollection')) || [];
+        let cardCollection = [];
 
         // Initialize year dropdown
         function initializeYearDropdown() {
@@ -522,13 +540,13 @@
         }
 
         // Show page
-        function showPage(pageId) {
+        async function showPage(pageId) {
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
             toggleMenu();
             
             if (pageId === 'collection') {
-                loadCollectionFromFirebase();
+                await loadCollectionFromFirebase();
             }
         }
 
