@@ -223,7 +223,7 @@
             background: rgba(20, 20, 20, 0.9);
             padding: 1rem;
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 100px;
+            grid-template-columns: 80px 2fr 2fr 1.5fr 80px 1fr 80px 2fr;
             gap: 1rem;
             font-weight: 600;
             color: #f0f0f0;
@@ -231,15 +231,31 @@
             font-size: 0.9rem;
         }
 
+        .sortable-header {
+            cursor: pointer;
+            transition: color 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sortable-header:hover {
+            color: #4a7bc8;
+        }
+
+        .sort-indicator {
+            font-size: 0.7rem;
+            color: #888;
+        }
+
         .list-item {
             padding: 1rem;
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 100px;
+            grid-template-columns: 80px 2fr 2fr 1.5fr 80px 1fr 80px 2fr;
             gap: 1rem;
             align-items: center;
             border-bottom: 1px solid #333;
             transition: background 0.3s ease;
-            cursor: pointer;
             font-size: 0.9rem;
         }
 
@@ -423,26 +439,24 @@
             }
 
             .cards-list-header {
-                grid-template-columns: 2fr 1fr 80px;
+                grid-template-columns: 80px 2fr 1.5fr 80px 2fr;
                 gap: 0.5rem;
             }
 
-            .cards-list-header span:nth-child(3),
-            .cards-list-header span:nth-child(4),
             .cards-list-header span:nth-child(5),
-            .cards-list-header span:nth-child(6) {
+            .cards-list-header span:nth-child(6),
+            .cards-list-header span:nth-child(7) {
                 display: none;
             }
 
             .list-item {
-                grid-template-columns: 2fr 1fr 80px;
+                grid-template-columns: 80px 2fr 1.5fr 80px 2fr;
                 gap: 0.5rem;
             }
 
-            .list-item > *:nth-child(3),
-            .list-item > *:nth-child(4),
             .list-item > *:nth-child(5),
-            .list-item > *:nth-child(6) {
+            .list-item > *:nth-child(6),
+            .list-item > *:nth-child(7) {
                 display: none;
             }
         }
@@ -478,15 +492,6 @@
                         <option value="Football">Football</option>
                     </select>
                     
-                    <label for="sortBy">Sort by:</label>
-                    <select id="sortBy" onchange="sortCollection()">
-                        <option value="newest">Newest First</option>
-                        <option value="oldest">Oldest First</option>
-                        <option value="player">Player A-Z</option>
-                        <option value="year">Year</option>
-                        <option value="cost">Cost (High to Low)</option>
-                    </select>
-                    
                     <div class="view-toggle">
                         <button id="listViewBtn" class="active" onclick="switchView('list')">📋 List</button>
                         <button id="gridViewBtn" onclick="switchView('grid')">🃏 Cards</button>
@@ -504,13 +509,30 @@
 
             <div id="listView" class="cards-list">
                 <div class="cards-list-header">
-                    <span>Player & Details</span>
-                    <span>Year</span>
-                    <span>Team</span>
-                    <span>Category</span>
-                    <span>Cost</span>
-                    <span>Date Added</span>
-                    <span>Badges</span>
+                    <span class="sortable-header" onclick="sortBy('year')">
+                        Year <span class="sort-indicator" id="sort-year"></span>
+                    </span>
+                    <span class="sortable-header" onclick="sortBy('product')">
+                        Product <span class="sort-indicator" id="sort-product"></span>
+                    </span>
+                    <span class="sortable-header" onclick="sortBy('player')">
+                        Player <span class="sort-indicator" id="sort-player"></span>
+                    </span>
+                    <span class="sortable-header" onclick="sortBy('team')">
+                        Team <span class="sort-indicator" id="sort-team"></span>
+                    </span>
+                    <span class="sortable-header" onclick="sortBy('rookieCard')">
+                        RC <span class="sort-indicator" id="sort-rookieCard"></span>
+                    </span>
+                    <span class="sortable-header" onclick="sortBy('parallel')">
+                        Parallel <span class="sort-indicator" id="sort-parallel"></span>
+                    </span>
+                    <span class="sortable-header" onclick="sortBy('numbered')">
+                        Numbered <span class="sort-indicator" id="sort-numbered"></span>
+                    </span>
+                    <span class="sortable-header" onclick="sortBy('description')">
+                        Description <span class="sort-indicator" id="sort-description"></span>
+                    </span>
                 </div>
                 <div id="listContainer">
                     <!-- List items will be populated here -->
@@ -547,6 +569,7 @@
 
         let cardCollection = [];
         let currentView = 'list';
+        let currentSort = { field: null, direction: 'asc' };
 
         async function loadCollectionFromFirebase() {
             try {
@@ -608,6 +631,34 @@
             displayCollection();
         }
 
+        function sortBy(field) {
+            // Toggle direction if clicking the same field
+            if (currentSort.field === field) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.field = field;
+                currentSort.direction = 'asc';
+            }
+            
+            updateSortIndicators();
+            displayCollection();
+        }
+
+        function updateSortIndicators() {
+            // Clear all indicators
+            document.querySelectorAll('.sort-indicator').forEach(indicator => {
+                indicator.textContent = '';
+            });
+            
+            // Set current sort indicator
+            if (currentSort.field) {
+                const indicator = document.getElementById(`sort-${currentSort.field}`);
+                if (indicator) {
+                    indicator.textContent = currentSort.direction === 'asc' ? '▲' : '▼';
+                }
+            }
+        }
+
         function displayCollection() {
             const countElement = document.getElementById('cardCount');
             const emptyState = document.getElementById('emptyState');
@@ -619,21 +670,26 @@
                 filteredCards = filteredCards.filter(card => card.category === categoryFilter);
             }
             
-            const sortBy = document.getElementById('sortBy').value;
-            filteredCards.sort((a, b) => {
-                switch (sortBy) {
-                    case 'oldest':
-                        return new Date(a.dateAdded) - new Date(b.dateAdded);
-                    case 'player':
-                        return a.player.localeCompare(b.player);
-                    case 'year':
-                        return b.year - a.year;
-                    case 'cost':
-                        return (b.purchaseCost || 0) - (a.purchaseCost || 0);
-                    default:
-                        return new Date(b.dateAdded) - new Date(a.dateAdded);
-                }
-            });
+            // Apply sorting
+            if (currentSort.field) {
+                filteredCards.sort((a, b) => {
+                    let aVal = a[currentSort.field];
+                    let bVal = b[currentSort.field];
+                    
+                    // Handle special cases
+                    if (currentSort.field === 'year') {
+                        aVal = parseInt(aVal) || 0;
+                        bVal = parseInt(bVal) || 0;
+                    } else if (typeof aVal === 'string' && typeof bVal === 'string') {
+                        aVal = aVal.toLowerCase();
+                        bVal = bVal.toLowerCase();
+                    }
+                    
+                    if (aVal < bVal) return currentSort.direction === 'asc' ? -1 : 1;
+                    if (aVal > bVal) return currentSort.direction === 'asc' ? 1 : -1;
+                    return 0;
+                });
+            }
             
             countElement.textContent = `${filteredCards.length} cards total`;
             
@@ -657,25 +713,16 @@
             const container = document.getElementById('listContainer');
             
             container.innerHTML = cards.map(card => {
-                const badges = [];
-                if (card.rookieCard === 'Y') badges.push('<span class="badge rookie">RC</span>');
-                if (card.parallel !== 'N') badges.push('<span class="badge parallel">PAR</span>');
-                if (card.numbered !== 'N') badges.push('<span class="badge numbered">NUM</span>');
-                
                 return `
-                    <div class="list-item" onclick="showCardDetails('${card.id}')">
-                        <div>
-                            <div class="list-item-player">${card.player}</div>
-                            <div class="list-item-details">${card.product} #${card.cardNumber}</div>
-                        </div>
+                    <div class="list-item">
                         <div>${card.year}</div>
+                        <div>${card.product}</div>
+                        <div class="list-item-player">${card.player}</div>
                         <div>${card.team}</div>
-                        <div>
-                            <div class="list-item-category">${card.category}</div>
-                        </div>
-                        <div>${card.purchaseCost ? '$' + parseFloat(card.purchaseCost).toFixed(2) : 'N/A'}</div>
-                        <div>${new Date(card.dateAdded).toLocaleDateString()}</div>
-                        <div class="list-item-badges">${badges.join('')}</div>
+                        <div>${card.rookieCard === 'Y' ? '✓' : ''}</div>
+                        <div>${card.parallel !== 'N' ? card.parallel : ''}</div>
+                        <div>${card.numbered !== 'N' ? card.numbered : ''}</div>
+                        <div class="list-item-details">${card.description || ''}</div>
                     </div>
                 `;
             }).join('');
@@ -707,11 +754,7 @@
         }
 
         function showCardDetails(cardId) {
-            const card = cardCollection.find(c => c.id === cardId);
-            if (card) {
-                switchView('grid');
-                alert(`Card Details:\n${card.player}\n${card.year} ${card.product} #${card.cardNumber}\n${card.team}`);
-            }
+            // Removed popup functionality
         }
 
         function filterCollection() {
@@ -771,6 +814,7 @@
         window.sortCollection = sortCollection;
         window.exportToCSV = exportToCSV;
         window.toggleMobileMenu = toggleMobileMenu;
+        window.sortBy = sortBy;
     </script>
 </body>
 </html>
