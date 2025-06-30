@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buzz Collection - View Collection</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        /* Base styles - same as other pages */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #1a1a1a;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(255,255,255,0.02) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(255,255,255,0.02) 0%, transparent 50%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(45deg, rgba(255,255,255,0.01) 25%, transparent 25%),
+                linear-gradient(-45deg, rgba(255,255,255,0.01) 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.01) 75%),
+                linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.01) 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #333;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #f0f0f0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #e0e0e0;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #4a7bc8;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .nav-links a.active {
+            background: #4a7bc8;
+            color: white;
+        }
+
+        /* Mobile menu toggle */
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: #e0e0e0;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+            display: none;
+        }
+
+        .menu-toggle:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #f0f0f0;
+        }
+
+        /* Collection Controls */
+        .collection-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            align-items: center;
+            background: rgba(30, 30, 30, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .collection-controls select {
+            background: rgba(40, 40, 40, 0.8);
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 0.75rem;
+            color: #e0e0e0;
+            font-family: inherit;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .collection-controls select:focus {
+            outline: none;
+            border-color: #666;
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #333, #555);
+            color: #fff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #444, #666);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2d5aa0, #4a7bc8);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #3a6bb0, #5a8bd8);
+        }
+
+        .card-count {
+            margin-left: auto;
+            color: #b0b0b0;
+            font-weight: 500;
+        }
+
+        /* Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card-item {
+            background: rgba(30, 30, 30, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #f0f0f0;
+        }
+
+        .card-category {
+            background: rgba(45, 90, 160, 0.8);
+            color: #fff;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .card-details {
+            color: #b0b0b0;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .card-details strong {
+            color: #e0e0e0;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #b0b0b0;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #333;
+            border-top: 3px solid #4a7bc8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: rgba(30, 30, 30, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid #333;
+            border-radius: 12px;
+            margin: 2rem 0;
+        }
+
+        .empty-state h3 {
+            color: #f0f0f0;
+            margin-bottom: 1rem;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .empty-state p {
+            color: #b0b0b0;
+            margin-bottom: 2rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .collection-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .collection-controls > * {
+                margin-bottom: 0.5rem;
+            }
+
+            .card-count {
+                margin-left: 0;
+                text-align: center;
+            }
+
+            .nav-links {
+                gap: 1rem;
+                order: 2;
+            }
+
+            .menu-toggle {
+                display: block;
+                order: -1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">Buzz Collection</div>
+        <nav class="nav-links">
+            <a href="index.html">Add Card</a>
+            <a href="collection.html" class="active">View Collection</a>
+            <a href="inventory.html">Inventory</a>
+            <a href="#" onclick="exportToCSV()">Export CSV</a>
+        </nav>
+        <button class="menu-toggle" onclick="toggleMobileMenu()">☰</button>
+    </header>
+
+    <div class="container">
+        <h1>Card Collection</h1>
+        
+        <!-- Loading State -->
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+            Loading your collection...
+        </div>
+
+        <!-- Main Content (hidden until loaded) -->
+        <div id="mainContent" style="display: none;">
+            <!-- Collection Controls -->
+            <div class="collection-controls">
+                <label for="filterCategory">Filter by Category:</label>
+                <select id="filterCategory" onchange="filterCollection()">
+                    <option value="">All Categories</option>
+                    <option value="Baseball">Baseball</option>
+                    <option value="Football">Football</option>
+                </select>
+                
+                <label for="sortBy">Sort by:</label>
+                <select id="sortBy" onchange="sortCollection()">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="player">Player A-Z</option>
+                    <option value="year">Year</option>
+                    <option value="cost">Cost (High to Low)</option>
+                </select>
+                
+                <button class="btn btn-primary" onclick="exportToCSV()">Export to CSV</button>
+                
+                <div class="card-count">
+                    <span id="cardCount">0 cards total</span>
+                </div>
+            </div>
+
+            <!-- Cards Grid -->
+            <div id="cardsContainer" class="cards-grid">
+                <!-- Cards will be populated here -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <h3>No Cards Found</h3>
+                <p>Your collection is empty or no cards match your current filters.</p>
+                <a href="index.html" class="btn btn-primary">Add Your First Card</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase and App Logic -->
+    <script type="module">
+        // Import Firebase functions
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+        import { getFirestore, collection, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "{{FIREBASE_API_KEY}}",
+            authDomain: "{{FIREBASE_AUTH_DOMAIN}}",
+            projectId: "{{FIREBASE_PROJECT_ID}}",
+            storageBucket: "{{FIREBASE_STORAGE_BUCKET}}",
+            messagingSenderId: "{{FIREBASE_MESSAGING_SENDER_ID}}",
+            appId: "{{FIREBASE_APP_ID}}"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        console.log('🔥 Firebase initialized successfully');
+
+        let cardCollection = [];
+
+        // Load collection from Firebase
+        async function loadCollectionFromFirebase() {
+            try {
+                console.log('📖 Loading collection from Firebase...');
+                const querySnapshot = await getDocs(
+                    query(
+                        collection(db, 'cards'),
+                        orderBy('dateAdded', 'desc')
+                    )
+                );
+                
+                cardCollection = [];
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    cardCollection.push({
+                        id: doc.id,
+                        ...data,
+                        dateAdded: data.dateAdded?.toDate?.() || new Date(data.dateAdded)
+                    });
+                });
+                
+                console.log('📊 Loaded cards:', cardCollection.length);
+                
+                // Hide loading, show content
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+                
+                // Display collection
+                displayCollection();
+            } catch (error) {
+                console.error('Error loading collection:', error);
+                document.getElementById('loading').innerHTML = `
+                    <div style="color: #ff6b6b;">
+                        <h3>Error loading collection</h3>
+                        <p>${error.message}</p>
+                        <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #4a7bc8; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Display collection
+        function displayCollection() {
+            const container = document.getElementById('cardsContainer');
+            const countElement = document.getElementById('cardCount');
+            const emptyState = document.getElementById('emptyState');
+            
+            let filteredCards = [...cardCollection];
+            
+            // Apply filters
+            const categoryFilter = document.getElementById('filterCategory').value;
+            if (categoryFilter) {
+                filteredCards = filteredCards.filter(card => card.category === categoryFilter);
+            }
+            
+            // Apply sorting
+            const sortBy = document.getElementById('sortBy').value;
+            filteredCards.sort((a, b) => {
+                switch (sortBy) {
+                    case 'oldest':
+                        return new Date(a.dateAdded) - new Date(b.dateAdded);
+                    case 'player':
+                        return a.player.localeCompare(b.player);
+                    case 'year':
+                        return b.year - a.year;
+                    case 'cost':
+                        return (b.purchaseCost || 0) - (a.purchaseCost || 0);
+                    default: // newest
+                        return new Date(b.dateAdded) - new Date(a.dateAdded);
+                }
+            });
+            
+            countElement.textContent = `${filteredCards.length} cards total`;
+            
+            // Show empty state if no cards
+            if (filteredCards.length === 0) {
+                container.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            container.style.display = 'grid';
+            emptyState.style.display = 'none';
+            
+            container.innerHTML = filteredCards.map(card => `
+                <div class="card-item">
+                    <div class="card-header">
+                        <div class="card-title">${card.player}</div>
+                        <div class="card-category">${card.category}</div>
+                    </div>
+                    <div class="card-details">
+                        <strong>${card.year} ${card.product}</strong><br>
+                        Card #${card.cardNumber} | ${card.team}<br>
+                        ${card.rookieCard === 'Y' ? '<strong>Rookie Card</strong><br>' : ''}
+                        ${card.parallel !== 'N' ? `Parallel: ${card.parallel}<br>` : ''}
+                        ${card.numbered !== 'N' ? `Numbered: ${card.numbered}<br>` : ''}
+                        ${card.description ? `${card.description}<br>` : ''}
+                        <small>
+                            Purchased: ${card.purchaseDate === 'Unknown' ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString()}<br>
+                            ${card.purchaseCost ? `Cost: $${parseFloat(card.purchaseCost).toFixed(2)}` : 'Cost: Not specified'}
+                        </small>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Filter collection
+        function filterCollection() {
+            displayCollection();
+        }
+
+        // Sort collection
+        function sortCollection() {
+            displayCollection();
+        }
+
+        // Export to CSV
+        function exportToCSV() {
+            if (cardCollection.length === 0) {
+                alert('No cards to export!');
+                return;
+            }
+            
+            const headers = ['Category', 'Year', 'Product', 'Card #', 'Player', 'Team', 'Rookie Card', 'Parallel', 'Numbered', 'Add\'l Description', 'Purchase Date', 'Purchase Cost'];
+            const csvContent = [
+                headers.join(','),
+                ...cardCollection.map(card => [
+                    card.category,
+                    card.year,
+                    card.product,
+                    card.cardNumber,
+                    card.player,
+                    card.team,
+                    card.rookieCard,
+                    card.parallel,
+                    card.numbered,
+                    `"${card.description}"`,
+                    card.purchaseDate,
+                    card.purchaseCost
+                ].join(','))
+            ].join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `buzz_collection_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Mobile menu toggle function
+        function toggleMobileMenu() {
+            const navLinks = document.querySelector('.nav-links');
+            navLinks.style.display = navLinks.style.display === 'none' ? 'flex' : 'none';
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Initializing Collection View...');
+            loadCollectionFromFirebase();
+        });
+
+        // Make functions available globally
+        window.filterCollection = filterCollection;
+        window.sortCollection = sortCollection;
+        window.exportToCSV = exportToCSV;
+        window.toggleMobileMenu = toggleMobileMenu;
+    </script>
+</body>
+</html>
