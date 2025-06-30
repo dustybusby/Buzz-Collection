@@ -66,6 +66,32 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
 
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #e0e0e0;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #4a7bc8;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .nav-links a.active {
+            background: #4a7bc8;
+            color: white;
+        }
+
         /* Flyout Menu */
         .menu-toggle {
             background: none;
@@ -325,6 +351,8 @@
         @media (max-width: 768px) {
             .header {
                 padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
             }
             
             .container {
@@ -339,6 +367,14 @@
                 flex-direction: column;
                 align-items: stretch;
             }
+
+            .nav-links {
+                gap: 1rem;
+            }
+
+            .menu-toggle {
+                order: -1;
+            }
         }
     </style>
 </head>
@@ -346,6 +382,12 @@
     <!-- Header -->
     <header class="header">
         <div class="logo">Buzz Collection</div>
+        <nav class="nav-links">
+            <a href="index.html" class="active">Add Card</a>
+            <a href="#" onclick="buzzApp.showPage('collection')">View Collection</a>
+            <a href="inventory.html">Inventory</a>
+            <a href="#" onclick="buzzApp.exportToCSV()">Export CSV</a>
+        </nav>
         <button class="menu-toggle" onclick="buzzApp.toggleMenu()">☰</button>
     </header>
 
@@ -356,6 +398,7 @@
             <ul>
                 <li><a onclick="buzzApp.showPage('add-card')">Add Card</a></li>
                 <li><a onclick="buzzApp.showPage('collection')">View Collection</a></li>
+                <li><a href="inventory.html">Inventory Overview</a></li>
                 <li><a onclick="buzzApp.exportToCSV()">Export CSV</a></li>
             </ul>
         </nav>
@@ -797,7 +840,7 @@
                 ].join('\n');
                 
                 const blob = new Blob([csvContent], { type: 'text/csv' });
-                const url = window.URL.createObjectURL(blob);
+                const url = window.URL.createObjectURL(url);
                 const a = document.createElement('a');
                 a.href = url;
                 a.download = `buzz_collection_${new Date().toISOString().split('T')[0]}.csv`;
