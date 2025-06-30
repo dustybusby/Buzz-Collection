@@ -555,6 +555,9 @@
         async function loadCollectionFromFirebase() {
             try {
                 console.log('📖 Loading collection from Firebase...');
+                console.log('🔥 Firebase config check:', firebaseConfig);
+                console.log('🔥 Database object:', db);
+                
                 const querySnapshot = await getDocs(
                     query(
                         collection(db, 'cards'),
@@ -565,6 +568,7 @@
                 cardCollection = [];
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
+                    console.log('📄 Document data:', data);
                     cardCollection.push({
                         id: doc.id,
                         ...data,
@@ -572,7 +576,8 @@
                     });
                 });
                 
-                console.log('📊 Loaded cards:', cardCollection.length);
+                console.log('📊 Total cards loaded:', cardCollection.length);
+                console.log('📋 Card collection:', cardCollection);
                 
                 // Hide loading, show content
                 document.getElementById('loading').style.display = 'none';
@@ -581,11 +586,18 @@
                 // Display all analytics
                 displayInventory();
             } catch (error) {
-                console.error('Error loading collection:', error);
+                console.error('❌ Error loading collection:', error);
+                console.error('Error details:', {
+                    code: error.code,
+                    message: error.message,
+                    stack: error.stack
+                });
+                
                 document.getElementById('loading').innerHTML = `
                     <div style="color: #ff6b6b;">
                         <h3>Error loading collection</h3>
                         <p>${error.message}</p>
+                        <p style="font-size: 0.9rem; margin-top: 1rem;">Check console for details</p>
                         <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #4a7bc8; color: white; border: none; border-radius: 4px; cursor: pointer;">
                             Retry
                         </button>
@@ -596,6 +608,20 @@
 
         // Display all inventory analytics
         function displayInventory() {
+            console.log('🎯 Starting to display inventory with', cardCollection.length, 'cards');
+            
+            if (cardCollection.length === 0) {
+                console.log('⚠️ No cards found - showing empty state');
+                document.getElementById('mainContent').innerHTML = `
+                    <div style="text-align: center; padding: 4rem 2rem;">
+                        <h2>No Cards Found</h2>
+                        <p style="color: #b0b0b0; margin: 1rem 0;">Your collection appears to be empty.</p>
+                        <a href="index.html" class="btn btn-primary" style="display: inline-block; margin-top: 1rem; text-decoration: none;">Add Your First Card</a>
+                    </div>
+                `;
+                return;
+            }
+            
             updateSummaryStats();
             displayCategoryBreakdown();
             displayYearDistribution();
@@ -607,13 +633,16 @@
 
         // Update summary statistics
         function updateSummaryStats() {
+            console.log('📈 Updating summary stats...');
             const totalCards = cardCollection.length;
             const totalValue = cardCollection.reduce((sum, card) => sum + (card.purchaseCost || 0), 0);
             const rookieCards = cardCollection.filter(card => card.rookieCard === 'Y').length;
             const numberedCards = cardCollection.filter(card => card.numbered !== 'N').length;
 
+            console.log('Stats:', { totalCards, totalValue, rookieCards, numberedCards });
+
             document.getElementById('totalCards').textContent = totalCards.toLocaleString();
-            document.getElementById('totalValue').textContent = `$${totalValue.toFixed(2)}`;
+            document.getElementById('totalValue').textContent = `${totalValue.toFixed(2)}`;
             document.getElementById('rookieCards').textContent = rookieCards.toLocaleString();
             document.getElementById('numberedCards').textContent = numberedCards.toLocaleString();
         }
@@ -766,7 +795,13 @@
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Initializing Inventory Overview...');
-            loadCollectionFromFirebase();
+            console.log('🔧 Firebase app:', app);
+            console.log('🗄️ Firestore db:', db);
+            
+            // Add a small delay to ensure Firebase is fully initialized
+            setTimeout(() => {
+                loadCollectionFromFirebase();
+            }, 1000);
         });
 
         // Mobile menu toggle function
