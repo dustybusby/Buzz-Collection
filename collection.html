@@ -861,7 +861,8 @@
                     }
 
                     if (key === 'category') {
-                        return card[key] === filters[key];
+                        // Handle category filter - case insensitive comparison
+                        return card[key]?.toString().toLowerCase() === filters[key].toLowerCase();
                     }
                     
                     if (key === 'parallel' || key === 'numbered') {
