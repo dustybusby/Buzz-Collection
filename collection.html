@@ -100,7 +100,7 @@
                         <input type="text" class="filter-input" placeholder="Filter..." id="filter-description" onkeyup="filterCollection()">
                     </div>
                     <div class="column-header">
-                        <div style="height: 32px;"></div>
+                        <div style="height: 32px;">Actions</div>
                         <div style="height: 32px;"></div>
                     </div>
                 </div>
@@ -327,8 +327,9 @@
                         <div>${card.parallel !== 'N' ? card.parallel : ''}</div>
                         <div>${card.numbered !== 'N' ? card.numbered : ''}</div>
                         <div class="list-item-details">${card.description || ''}</div>
-                        <div>
+                        <div class="action-buttons">
                             <button class="edit-btn" onclick="editCard('${card.id}')">Edit</button>
+                            <button class="delete-btn" onclick="deleteCard('${card.id}')">Delete</button>
                         </div>
                     </div>
                 `;
@@ -356,6 +357,40 @@
             localStorage.setItem('editCardId', cardId);
             localStorage.setItem('editCardData', JSON.stringify(card));
             window.location.href = 'index.html?edit=true';
+        }
+
+        async function deleteCard(cardId) {
+            const card = cardCollection.find(c => c.id === cardId);
+            if (!card) return;
+            
+            // First confirmation
+            const confirmDelete = confirm(`Are you sure you want to delete this card?\n\n${card.year} ${card.product}\n${card.player} - ${card.team}\nCard #${card.cardNumber}`);
+            
+            if (!confirmDelete) return;
+            
+            // Second confirmation
+            const finalConfirm = confirm(`This action cannot be undone!\n\nClick OK to permanently delete this card from your collection.`);
+            
+            if (!finalConfirm) return;
+            
+            try {
+                // Import deleteDoc function
+                const { deleteDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
+                
+                // Delete from Firebase
+                await deleteDoc(doc(db, 'cards', cardId));
+                
+                // Remove from local collection
+                cardCollection = cardCollection.filter(c => c.id !== cardId);
+                
+                // Refresh the display
+                displayCollection();
+                
+                alert('Card deleted successfully!');
+            } catch (error) {
+                console.error('Error deleting card:', error);
+                alert('Error deleting card: ' + error.message);
+            }
         }
 
         function displayGridView(cards) {
@@ -449,6 +484,7 @@
         window.sortBy = sortBy;
         window.clearAllFilters = clearAllFilters;
         window.editCard = editCard;
+        window.deleteCard = deleteCard;
     </script>
 </body>
 </html><!DOCTYPE html>
@@ -677,7 +713,7 @@
             background: rgba(20, 20, 20, 0.9);
             padding: 1rem;
             display: grid;
-            grid-template-columns: 80px 2fr 2fr 1.5fr 80px 80px 1fr 80px 2fr 60px;
+            grid-template-columns: 80px 2fr 2fr 1.5fr 80px 80px 1fr 80px 2fr 100px;
             gap: 1rem;
             font-weight: 600;
             color: #f0f0f0;
@@ -732,7 +768,7 @@
         .list-item {
             padding: 1rem;
             display: grid;
-            grid-template-columns: 80px 2fr 2fr 1.5fr 80px 80px 1fr 80px 2fr 60px;
+            grid-template-columns: 80px 2fr 2fr 1.5fr 80px 80px 1fr 80px 2fr 100px;
             gap: 1rem;
             align-items: center;
             border-bottom: 1px solid #333;
@@ -757,10 +793,32 @@
             cursor: pointer;
             font-size: 0.7rem;
             transition: background 0.3s ease;
+            margin-right: 0.5rem;
         }
 
         .edit-btn:hover {
             background: #5a8bd8;
+        }
+
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.6rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: background 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background: #c0392b;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
         }
 
         .list-item-player {
@@ -934,7 +992,7 @@
             }
 
             .cards-list-header {
-                grid-template-columns: 80px 2fr 1.5fr 80px 2fr 60px;
+                grid-template-columns: 80px 2fr 1.5fr 80px 2fr 100px;
                 gap: 0.5rem;
             }
 
@@ -946,7 +1004,7 @@
             }
 
             .list-item {
-                grid-template-columns: 80px 2fr 1.5fr 80px 2fr 60px;
+                grid-template-columns: 80px 2fr 1.5fr 80px 2fr 100px;
                 gap: 0.5rem;
             }
 
