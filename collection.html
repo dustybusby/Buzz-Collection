@@ -207,9 +207,9 @@
         }
 
         .card-count {
-            margin-left: auto;
             color: #b0b0b0;
             font-weight: 500;
+            order: 1;
         }
 
         .cards-list {
@@ -467,8 +467,7 @@
             }
 
             .card-count {
-                margin-left: 0;
-                text-align: center;
+                text-align: left;
             }
 
             .nav-links {
@@ -871,7 +870,7 @@
                         ${card.description ? `${card.description}<br>` : ''}
                         <small>
                             Purchased: ${card.purchaseDate === 'Unknown' ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString()}<br>
-                            ${card.purchaseCost ? `Cost: $${parseFloat(card.purchaseCost).toFixed(2)}` : 'Cost: Not specified'}
+                            ${card.purchaseCost ? `Cost: ${parseFloat(card.purchaseCost).toFixed(2)}` : 'Cost: Not specified'}
                         </small>
                     </div>
                 </div>
