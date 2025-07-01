@@ -835,45 +835,86 @@
             const filteredElement = document.getElementById('filteredCount');
             const emptyState = document.getElementById('emptyState');
             
+            // Start fresh with all cards
             let filteredCards = [...cardCollection];
             
-            const filters = {
-                year: document.getElementById('filter-year')?.value?.toLowerCase() || '',
-                product: document.getElementById('filter-product')?.value?.toLowerCase() || '',
-                player: document.getElementById('filter-player')?.value?.toLowerCase() || '',
-                team: document.getElementById('filter-team')?.value?.toLowerCase() || '',
-                quantity: document.getElementById('filter-quantity')?.value?.toLowerCase() || '',
-                rookieCard: document.getElementById('filter-rookieCard')?.value || '',
-                parallel: document.getElementById('filter-parallel')?.value?.toLowerCase() || '',
-                numbered: document.getElementById('filter-numbered')?.value?.toLowerCase() || '',
-                description: document.getElementById('filter-description')?.value?.toLowerCase() || '',
-                category: document.getElementById('categoryFilter')?.value || ''
-            };
+            // Get all filter values
+            const categoryFilter = document.getElementById('categoryFilter')?.value || '';
+            const yearFilter = document.getElementById('filter-year')?.value?.toLowerCase() || '';
+            const productFilter = document.getElementById('filter-product')?.value?.toLowerCase() || '';
+            const playerFilter = document.getElementById('filter-player')?.value?.toLowerCase() || '';
+            const teamFilter = document.getElementById('filter-team')?.value?.toLowerCase() || '';
+            const quantityFilter = document.getElementById('filter-quantity')?.value?.toLowerCase() || '';
+            const rookieCardFilter = document.getElementById('filter-rookieCard')?.value || '';
+            const parallelFilter = document.getElementById('filter-parallel')?.value?.toLowerCase() || '';
+            const numberedFilter = document.getElementById('filter-numbered')?.value?.toLowerCase() || '';
+            const descriptionFilter = document.getElementById('filter-description')?.value?.toLowerCase() || '';
             
-            filteredCards = filteredCards.filter(card => {
-                return Object.keys(filters).every(key => {
-                    if (!filters[key]) return true;
-                    
-                    let cardValue = card[key]?.toString().toLowerCase() || '';
-                    
-                    if (key === 'rookieCard') {
-                        return card[key] === filters[key];
-                    }
-
-                    if (key === 'category') {
-                        // Handle category filter - case insensitive comparison
-                        return card[key]?.toString().toLowerCase() === filters[key].toLowerCase();
-                    }
-                    
-                    if (key === 'parallel' || key === 'numbered') {
-                        if (card[key] === 'N') cardValue = '';
-                        else cardValue = card[key]?.toString().toLowerCase() || '';
-                    }
-                    
-                    return cardValue.includes(filters[key]);
+            // Apply category filter first
+            if (categoryFilter) {
+                filteredCards = filteredCards.filter(card => {
+                    return card.category && card.category.toString() === categoryFilter;
                 });
-            });
+            }
             
+            // Apply column filters
+            if (yearFilter) {
+                filteredCards = filteredCards.filter(card => 
+                    card.year?.toString().toLowerCase().includes(yearFilter)
+                );
+            }
+            
+            if (productFilter) {
+                filteredCards = filteredCards.filter(card => 
+                    card.product?.toString().toLowerCase().includes(productFilter)
+                );
+            }
+            
+            if (playerFilter) {
+                filteredCards = filteredCards.filter(card => 
+                    card.player?.toString().toLowerCase().includes(playerFilter)
+                );
+            }
+            
+            if (teamFilter) {
+                filteredCards = filteredCards.filter(card => 
+                    card.team?.toString().toLowerCase().includes(teamFilter)
+                );
+            }
+            
+            if (quantityFilter) {
+                filteredCards = filteredCards.filter(card => 
+                    card.quantity?.toString().toLowerCase().includes(quantityFilter)
+                );
+            }
+            
+            if (rookieCardFilter) {
+                filteredCards = filteredCards.filter(card => 
+                    card.rookieCard === rookieCardFilter
+                );
+            }
+            
+            if (parallelFilter) {
+                filteredCards = filteredCards.filter(card => {
+                    const parallelValue = card.parallel === 'N' ? '' : (card.parallel?.toString().toLowerCase() || '');
+                    return parallelValue.includes(parallelFilter);
+                });
+            }
+            
+            if (numberedFilter) {
+                filteredCards = filteredCards.filter(card => {
+                    const numberedValue = card.numbered === 'N' ? '' : (card.numbered?.toString().toLowerCase() || '');
+                    return numberedValue.includes(numberedFilter);
+                });
+            }
+            
+            if (descriptionFilter) {
+                filteredCards = filteredCards.filter(card => 
+                    card.description?.toString().toLowerCase().includes(descriptionFilter)
+                );
+            }
+            
+            // Apply sorting
             if (currentSort.field) {
                 filteredCards.sort((a, b) => {
                     let aVal = a[currentSort.field];
@@ -893,6 +934,7 @@
                 });
             }
             
+            // Update totals
             totalElement.textContent = `${cardCollection.length} total cards`;
             filteredElement.textContent = `${filteredCards.length} filtered`;
             
