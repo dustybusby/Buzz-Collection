@@ -1,4 +1,457 @@
-<!DOCTYPE html>
+</style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">Buzz Collection</div>
+        <nav class="nav-links">
+            <a href="index.html">Add Card</a>
+            <a href="collection.html" class="active">View Collection</a>
+            <a href="inventory.html">Inventory</a>
+            <a href="#" onclick="exportToCSV()">Export CSV</a>
+        </nav>
+        <button class="menu-toggle" onclick="toggleMobileMenu()">☰</button>
+    </header>
+
+    <div class="container">
+        <h1>Card Collection</h1>
+        
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+            Loading your collection...
+        </div>
+
+        <div id="mainContent" style="display: none;">
+            <div class="collection-controls">
+                <div class="controls-row">
+                    <div class="card-count">
+                        <span id="totalCards">0 total cards</span> | 
+                        <span id="filteredCount">0 filtered</span>
+                    </div>
+                    
+                    <div class="view-toggle">
+                        <button id="listViewBtn" class="active" onclick="switchView('list')">📋 List</button>
+                        <button id="gridViewBtn" onclick="switchView('grid')">🃏 Cards</button>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="exportToCSV()">Export to CSV</button>
+                    
+                    <button class="btn" onclick="clearAllFilters()">Clear Filters</button>
+                </div>
+            </div>
+
+            <div id="listView" class="cards-list">
+                <div class="cards-list-header">
+                    <div class="column-header">
+                        <div class="sortable-header" onclick="sortBy('year')">
+                            Year <span class="sort-indicator" id="sort-year"></span>
+                        </div>
+                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-year" onkeyup="filterCollection()">
+                    </div>
+                    <div class="column-header">
+                        <div class="sortable-header" onclick="sortBy('product')">
+                            Product <span class="sort-indicator" id="sort-product"></span>
+                        </div>
+                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-product" onkeyup="filterCollection()">
+                    </div>
+                    <div class="column-header">
+                        <div class="sortable-header" onclick="sortBy('player')">
+                            Player <span class="sort-indicator" id="sort-player"></span>
+                        </div>
+                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-player" onkeyup="filterCollection()">
+                    </div>
+                    <div class="column-header">
+                        <div class="sortable-header" onclick="sortBy('team')">
+                            Team <span class="sort-indicator" id="sort-team"></span>
+                        </div>
+                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-team" onkeyup="filterCollection()">
+                    </div>
+                    <div class="column-header">
+                        <div class="sortable-header" onclick="sortBy('quantity')">
+                            Qty <span class="sort-indicator" id="sort-quantity"></span>
+                        </div>
+                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-quantity" onkeyup="filterCollection()">
+                    </div>
+                    <div class="column-header">
+                        <div class="sortable-header" onclick="sortBy('rookieCard')">
+                            RC <span class="sort-indicator" id="sort-rookieCard"></span>
+                        </div>
+                        <select class="filter-input" id="filter-rookieCard" onchange="filterCollection()">
+                            <option value="">All</option>
+                            <option value="Y">Yes</option>
+                            <option value="N">No</option>
+                        </select>
+                    </div>
+                    <div class="column-header">
+                        <div class="sortable-header" onclick="sortBy('parallel')">
+                            Parallel <span class="sort-indicator" id="sort-parallel"></span>
+                        </div>
+                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-parallel" onkeyup="filterCollection()">
+                    </div>
+                    <div class="column-header">
+                        <div class="sortable-header" onclick="sortBy('numbered')">
+                            Numbered <span class="sort-indicator" id="sort-numbered"></span>
+                        </div>
+                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-numbered" onkeyup="filterCollection()">
+                    </div>
+                    <div class="column-header">
+                        <div class="sortable-header" onclick="sortBy('description')">
+                            Add'l Notes <span class="sort-indicator" id="sort-description"></span>
+                        </div>
+                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-description" onkeyup="filterCollection()">
+                    </div>
+                    <div class="column-header">
+                        <div style="height: 32px;"></div>
+                        <div style="height: 32px;"></div>
+                    </div>
+                </div>
+                <div id="listContainer">
+                    <!-- List items will be populated here -->
+                </div>
+            </div>
+
+            <div id="gridView" class="cards-grid" style="display: none;">
+                <!-- Grid cards will be populated here -->
+            </div>
+
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <h3>No Cards Found</h3>
+                <p>Your collection is empty or no cards match your current filters.</p>
+                <a href="index.html" class="btn btn-primary">Add Your First Card</a>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+        import { getFirestore, collection, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "{{FIREBASE_API_KEY}}",
+            authDomain: "{{FIREBASE_AUTH_DOMAIN}}",
+            projectId: "{{FIREBASE_PROJECT_ID}}",
+            storageBucket: "{{FIREBASE_STORAGE_BUCKET}}",
+            messagingSenderId: "{{FIREBASE_MESSAGING_SENDER_ID}}",
+            appId: "{{FIREBASE_APP_ID}}"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let cardCollection = [];
+        let currentView = 'list';
+        let currentSort = { field: null, direction: 'asc' };
+
+        async function loadCollectionFromFirebase() {
+            try {
+                const querySnapshot = await getDocs(
+                    query(
+                        collection(db, 'cards'),
+                        orderBy('dateAdded', 'desc')
+                    )
+                );
+                
+                cardCollection = [];
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    cardCollection.push({
+                        id: doc.id,
+                        ...data,
+                        dateAdded: data.dateAdded?.toDate?.() || new Date(data.dateAdded),
+                        quantity: data.quantity || 1 // Default to 1 if not set
+                    });
+                });
+                
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+                
+                displayCollection();
+            } catch (error) {
+                console.error('Error loading collection:', error);
+                document.getElementById('loading').innerHTML = `
+                    <div style="color: #ff6b6b;">
+                        <h3>Error loading collection</h3>
+                        <p>${error.message}</p>
+                        <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #4a7bc8; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function switchView(view) {
+            currentView = view;
+            
+            const listView = document.getElementById('listView');
+            const gridView = document.getElementById('gridView');
+            const listBtn = document.getElementById('listViewBtn');
+            const gridBtn = document.getElementById('gridViewBtn');
+            
+            if (view === 'list') {
+                listView.style.display = 'block';
+                gridView.style.display = 'none';
+                listBtn.classList.add('active');
+                gridBtn.classList.remove('active');
+            } else {
+                listView.style.display = 'none';
+                gridView.style.display = 'grid';
+                listBtn.classList.remove('active');
+                gridBtn.classList.add('active');
+            }
+            
+            displayCollection();
+        }
+
+        function sortBy(field) {
+            // Toggle direction if clicking the same field
+            if (currentSort.field === field) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.field = field;
+                currentSort.direction = 'asc';
+            }
+            
+            updateSortIndicators();
+            displayCollection();
+        }
+
+        function updateSortIndicators() {
+            // Clear all indicators
+            document.querySelectorAll('.sort-indicator').forEach(indicator => {
+                indicator.textContent = '';
+            });
+            
+            // Set current sort indicator
+            if (currentSort.field) {
+                const indicator = document.getElementById(`sort-${currentSort.field}`);
+                if (indicator) {
+                    indicator.textContent = currentSort.direction === 'asc' ? '▲' : '▼';
+                }
+            }
+        }
+
+        function displayCollection() {
+            const totalElement = document.getElementById('totalCards');
+            const filteredElement = document.getElementById('filteredCount');
+            const emptyState = document.getElementById('emptyState');
+            
+            let filteredCards = [...cardCollection];
+            
+            // Apply filters from all columns
+            const filters = {
+                year: document.getElementById('filter-year')?.value?.toLowerCase() || '',
+                product: document.getElementById('filter-product')?.value?.toLowerCase() || '',
+                player: document.getElementById('filter-player')?.value?.toLowerCase() || '',
+                team: document.getElementById('filter-team')?.value?.toLowerCase() || '',
+                quantity: document.getElementById('filter-quantity')?.value?.toLowerCase() || '',
+                rookieCard: document.getElementById('filter-rookieCard')?.value || '',
+                parallel: document.getElementById('filter-parallel')?.value?.toLowerCase() || '',
+                numbered: document.getElementById('filter-numbered')?.value?.toLowerCase() || '',
+                description: document.getElementById('filter-description')?.value?.toLowerCase() || ''
+            };
+            
+            filteredCards = filteredCards.filter(card => {
+                return Object.keys(filters).every(key => {
+                    if (!filters[key]) return true;
+                    
+                    let cardValue = card[key]?.toString().toLowerCase() || '';
+                    
+                    // Special handling for rookie card
+                    if (key === 'rookieCard') {
+                        return card[key] === filters[key];
+                    }
+                    
+                    // Special handling for parallel and numbered
+                    if (key === 'parallel' || key === 'numbered') {
+                        if (card[key] === 'N') cardValue = '';
+                        else cardValue = card[key]?.toString().toLowerCase() || '';
+                    }
+                    
+                    return cardValue.includes(filters[key]);
+                });
+            });
+            
+            // Apply sorting
+            if (currentSort.field) {
+                filteredCards.sort((a, b) => {
+                    let aVal = a[currentSort.field];
+                    let bVal = b[currentSort.field];
+                    
+                    // Handle special cases
+                    if (currentSort.field === 'year' || currentSort.field === 'quantity') {
+                        aVal = parseInt(aVal) || 0;
+                        bVal = parseInt(bVal) || 0;
+                    } else if (typeof aVal === 'string' && typeof bVal === 'string') {
+                        aVal = aVal.toLowerCase();
+                        bVal = bVal.toLowerCase();
+                    }
+                    
+                    if (aVal < bVal) return currentSort.direction === 'asc' ? -1 : 1;
+                    if (aVal > bVal) return currentSort.direction === 'asc' ? 1 : -1;
+                    return 0;
+                });
+            }
+            
+            // Update totals
+            totalElement.textContent = `${cardCollection.length} total cards`;
+            filteredElement.textContent = `${filteredCards.length} filtered`;
+            
+            if (filteredCards.length === 0) {
+                document.getElementById('listView').style.display = 'none';
+                document.getElementById('gridView').style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            
+            if (currentView === 'list') {
+                displayListView(filteredCards);
+            } else {
+                displayGridView(filteredCards);
+            }
+        }
+
+        function displayListView(cards) {
+            const container = document.getElementById('listContainer');
+            
+            container.innerHTML = cards.map(card => {
+                return `
+                    <div class="list-item">
+                        <div>${card.year}</div>
+                        <div>${card.product}</div>
+                        <div class="list-item-player">${card.player}</div>
+                        <div>${card.team}</div>
+                        <div style="text-align: center;">${card.quantity || 1}</div>
+                        <div>${card.rookieCard === 'Y' ? '✓' : ''}</div>
+                        <div>${card.parallel !== 'N' ? card.parallel : ''}</div>
+                        <div>${card.numbered !== 'N' ? card.numbered : ''}</div>
+                        <div class="list-item-details">${card.description || ''}</div>
+                        <div>
+                            <button class="edit-btn" onclick="editCard('${card.id}')">Edit</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function clearAllFilters() {
+            document.getElementById('filter-year').value = '';
+            document.getElementById('filter-product').value = '';
+            document.getElementById('filter-player').value = '';
+            document.getElementById('filter-team').value = '';
+            document.getElementById('filter-quantity').value = '';
+            document.getElementById('filter-rookieCard').value = '';
+            document.getElementById('filter-parallel').value = '';
+            document.getElementById('filter-numbered').value = '';
+            document.getElementById('filter-description').value = '';
+            filterCollection();
+        }
+
+        function editCard(cardId) {
+            const card = cardCollection.find(c => c.id === cardId);
+            if (!card) return;
+            
+            // Store the card ID for editing and redirect to add card page
+            localStorage.setItem('editCardId', cardId);
+            localStorage.setItem('editCardData', JSON.stringify(card));
+            window.location.href = 'index.html?edit=true';
+        }
+
+        function displayGridView(cards) {
+            const container = document.getElementById('gridView');
+            
+            container.innerHTML = cards.map(card => `
+                <div class="card-item">
+                    <div class="card-header">
+                        <div class="card-title">${card.player}</div>
+                        <div class="card-category">${card.category}</div>
+                    </div>
+                    <div class="card-details">
+                        <strong>${card.year} ${card.product}</strong><br>
+                        Card #${card.cardNumber} | ${card.team}<br>
+                        ${card.quantity > 1 ? `<strong>Quantity: ${card.quantity}</strong><br>` : ''}
+                        ${card.rookieCard === 'Y' ? '<strong>Rookie Card</strong><br>' : ''}
+                        ${card.parallel !== 'N' ? `Parallel: ${card.parallel}<br>` : ''}
+                        ${card.numbered !== 'N' ? `Numbered: ${card.numbered}<br>` : ''}
+                        ${card.description ? `${card.description}<br>` : ''}
+                        <small>
+                            Purchased: ${card.purchaseDate === 'Unknown' ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString()}<br>
+                            ${card.purchaseCost ? `Cost: ${parseFloat(card.purchaseCost).toFixed(2)}` : 'Cost: Not specified'}
+                        </small>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showCardDetails(cardId) {
+            // Removed popup functionality
+        }
+
+        function filterCollection() {
+            displayCollection();
+        }
+
+        function sortCollection() {
+            displayCollection();
+        }
+
+        function exportToCSV() {
+            if (cardCollection.length === 0) {
+                alert('No cards to export!');
+                return;
+            }
+            
+            const headers = ['Category', 'Year', 'Product', 'Card #', 'Player', 'Team', 'Quantity', 'Rookie Card', 'Parallel', 'Numbered', 'Add\'l Description', 'Purchase Date', 'Purchase Cost'];
+            const csvContent = [
+                headers.join(','),
+                ...cardCollection.map(card => [
+                    card.category,
+                    card.year,
+                    card.product,
+                    card.cardNumber,
+                    card.player,
+                    card.team,
+                    card.quantity || 1,
+                    card.rookieCard,
+                    card.parallel,
+                    card.numbered,
+                    `"${card.description}"`,
+                    card.purchaseDate,
+                    card.purchaseCost
+                ].join(','))
+            ].join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `buzz_collection_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function toggleMobileMenu() {
+            const navLinks = document.querySelector('.nav-links');
+            navLinks.style.display = navLinks.style.display === 'none' ? 'flex' : 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCollectionFromFirebase();
+        });
+
+        window.switchView = switchView;
+        window.showCardDetails = showCardDetails;
+        window.filterCollection = filterCollection;
+        window.sortCollection = sortCollection;
+        window.exportToCSV = exportToCSV;
+        window.toggleMobileMenu = toggleMobileMenu;
+        window.sortBy = sortBy;
+        window.clearAllFilters = clearAllFilters;
+        window.editCard = editCard;
+    </script>
+</body>
+</html><!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -224,7 +677,7 @@
             background: rgba(20, 20, 20, 0.9);
             padding: 1rem;
             display: grid;
-            grid-template-columns: 80px 2fr 2fr 1.5fr 80px 1fr 80px 2fr 60px;
+            grid-template-columns: 80px 2fr 2fr 1.5fr 80px 80px 1fr 80px 2fr 60px;
             gap: 1rem;
             font-weight: 600;
             color: #f0f0f0;
@@ -279,7 +732,7 @@
         .list-item {
             padding: 1rem;
             display: grid;
-            grid-template-columns: 80px 2fr 2fr 1.5fr 80px 1fr 80px 2fr 60px;
+            grid-template-columns: 80px 2fr 2fr 1.5fr 80px 80px 1fr 80px 2fr 60px;
             gap: 1rem;
             align-items: center;
             border-bottom: 1px solid #333;
@@ -487,7 +940,8 @@
 
             .cards-list-header .column-header:nth-child(5),
             .cards-list-header .column-header:nth-child(6),
-            .cards-list-header .column-header:nth-child(7) {
+            .cards-list-header .column-header:nth-child(7),
+            .cards-list-header .column-header:nth-child(8) {
                 display: none;
             }
 
@@ -498,449 +952,8 @@
 
             .list-item > *:nth-child(5),
             .list-item > *:nth-child(6),
-            .list-item > *:nth-child(7) {
+            .list-item > *:nth-child(7),
+            .list-item > *:nth-child(8) {
                 display: none;
             }
         }
-    </style>
-</head>
-<body>
-    <header class="header">
-        <div class="logo">Buzz Collection</div>
-        <nav class="nav-links">
-            <a href="index.html">Add Card</a>
-            <a href="collection.html" class="active">View Collection</a>
-            <a href="inventory.html">Inventory</a>
-            <a href="#" onclick="exportToCSV()">Export CSV</a>
-        </nav>
-        <button class="menu-toggle" onclick="toggleMobileMenu()">☰</button>
-    </header>
-
-    <div class="container">
-        <h1>Card Collection</h1>
-        
-        <div id="loading" class="loading">
-            <div class="loading-spinner"></div>
-            Loading your collection...
-        </div>
-
-        <div id="mainContent" style="display: none;">
-            <div class="collection-controls">
-                <div class="controls-row">
-                    <div class="card-count">
-                        <span id="totalCards">0 total cards</span> | 
-                        <span id="filteredCount">0 filtered</span>
-                    </div>
-                    
-                    <div class="view-toggle">
-                        <button id="listViewBtn" class="active" onclick="switchView('list')">📋 List</button>
-                        <button id="gridViewBtn" onclick="switchView('grid')">🃏 Cards</button>
-                    </div>
-                    
-                    <button class="btn btn-primary" onclick="exportToCSV()">Export to CSV</button>
-                    
-                    <button class="btn" onclick="clearAllFilters()">Clear Filters</button>
-                </div>
-            </div>
-
-            <div id="listView" class="cards-list">
-                <div class="cards-list-header">
-                    <div class="column-header">
-                        <div class="sortable-header" onclick="sortBy('year')">
-                            Year <span class="sort-indicator" id="sort-year"></span>
-                        </div>
-                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-year" onkeyup="filterCollection()">
-                    </div>
-                    <div class="column-header">
-                        <div class="sortable-header" onclick="sortBy('product')">
-                            Product <span class="sort-indicator" id="sort-product"></span>
-                        </div>
-                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-product" onkeyup="filterCollection()">
-                    </div>
-                    <div class="column-header">
-                        <div class="sortable-header" onclick="sortBy('player')">
-                            Player <span class="sort-indicator" id="sort-player"></span>
-                        </div>
-                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-player" onkeyup="filterCollection()">
-                    </div>
-                    <div class="column-header">
-                        <div class="sortable-header" onclick="sortBy('team')">
-                            Team <span class="sort-indicator" id="sort-team"></span>
-                        </div>
-                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-team" onkeyup="filterCollection()">
-                    </div>
-                    <div class="column-header">
-                        <div class="sortable-header" onclick="sortBy('rookieCard')">
-                            RC <span class="sort-indicator" id="sort-rookieCard"></span>
-                        </div>
-                        <select class="filter-input" id="filter-rookieCard" onchange="filterCollection()">
-                            <option value="">All</option>
-                            <option value="Y">Yes</option>
-                            <option value="N">No</option>
-                        </select>
-                    </div>
-                    <div class="column-header">
-                        <div class="sortable-header" onclick="sortBy('parallel')">
-                            Parallel <span class="sort-indicator" id="sort-parallel"></span>
-                        </div>
-                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-parallel" onkeyup="filterCollection()">
-                    </div>
-                    <div class="column-header">
-                        <div class="sortable-header" onclick="sortBy('numbered')">
-                            Numbered <span class="sort-indicator" id="sort-numbered"></span>
-                        </div>
-                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-numbered" onkeyup="filterCollection()">
-                    </div>
-                    <div class="column-header">
-                        <div class="sortable-header" onclick="sortBy('description')">
-                            Add'l Notes <span class="sort-indicator" id="sort-description"></span>
-                        </div>
-                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-description" onkeyup="filterCollection()">
-                    </div>
-                    <div class="column-header">
-                        <div style="height: 32px;"></div>
-                        <div style="height: 32px;"></div>
-                    </div>
-                </div>
-                <div id="listContainer">
-                    <!-- List items will be populated here -->
-                </div>
-            </div>
-
-            <div id="gridView" class="cards-grid" style="display: none;">
-                <!-- Grid cards will be populated here -->
-            </div>
-
-            <div id="emptyState" class="empty-state" style="display: none;">
-                <h3>No Cards Found</h3>
-                <p>Your collection is empty or no cards match your current filters.</p>
-                <a href="index.html" class="btn btn-primary">Add Your First Card</a>
-            </div>
-        </div>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
-        import { getFirestore, collection, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
-
-        const firebaseConfig = {
-            apiKey: "{{FIREBASE_API_KEY}}",
-            authDomain: "{{FIREBASE_AUTH_DOMAIN}}",
-            projectId: "{{FIREBASE_PROJECT_ID}}",
-            storageBucket: "{{FIREBASE_STORAGE_BUCKET}}",
-            messagingSenderId: "{{FIREBASE_MESSAGING_SENDER_ID}}",
-            appId: "{{FIREBASE_APP_ID}}"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        let cardCollection = [];
-        let currentView = 'list';
-        let currentSort = { field: null, direction: 'asc' };
-
-        async function loadCollectionFromFirebase() {
-            try {
-                const querySnapshot = await getDocs(
-                    query(
-                        collection(db, 'cards'),
-                        orderBy('dateAdded', 'desc')
-                    )
-                );
-                
-                cardCollection = [];
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    cardCollection.push({
-                        id: doc.id,
-                        ...data,
-                        dateAdded: data.dateAdded?.toDate?.() || new Date(data.dateAdded)
-                    });
-                });
-                
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('mainContent').style.display = 'block';
-                
-                displayCollection();
-            } catch (error) {
-                console.error('Error loading collection:', error);
-                document.getElementById('loading').innerHTML = `
-                    <div style="color: #ff6b6b;">
-                        <h3>Error loading collection</h3>
-                        <p>${error.message}</p>
-                        <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #4a7bc8; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                            Retry
-                        </button>
-                    </div>
-                `;
-            }
-        }
-
-        function switchView(view) {
-            currentView = view;
-            
-            const listView = document.getElementById('listView');
-            const gridView = document.getElementById('gridView');
-            const listBtn = document.getElementById('listViewBtn');
-            const gridBtn = document.getElementById('gridViewBtn');
-            
-            if (view === 'list') {
-                listView.style.display = 'block';
-                gridView.style.display = 'none';
-                listBtn.classList.add('active');
-                gridBtn.classList.remove('active');
-            } else {
-                listView.style.display = 'none';
-                gridView.style.display = 'grid';
-                listBtn.classList.remove('active');
-                gridBtn.classList.add('active');
-            }
-            
-            displayCollection();
-        }
-
-        function sortBy(field) {
-            // Toggle direction if clicking the same field
-            if (currentSort.field === field) {
-                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
-            } else {
-                currentSort.field = field;
-                currentSort.direction = 'asc';
-            }
-            
-            updateSortIndicators();
-            displayCollection();
-        }
-
-        function updateSortIndicators() {
-            // Clear all indicators
-            document.querySelectorAll('.sort-indicator').forEach(indicator => {
-                indicator.textContent = '';
-            });
-            
-            // Set current sort indicator
-            if (currentSort.field) {
-                const indicator = document.getElementById(`sort-${currentSort.field}`);
-                if (indicator) {
-                    indicator.textContent = currentSort.direction === 'asc' ? '▲' : '▼';
-                }
-            }
-        }
-
-        function displayCollection() {
-            const totalElement = document.getElementById('totalCards');
-            const filteredElement = document.getElementById('filteredCount');
-            const emptyState = document.getElementById('emptyState');
-            
-            let filteredCards = [...cardCollection];
-            
-            // Apply filters from all columns
-            const filters = {
-                year: document.getElementById('filter-year')?.value?.toLowerCase() || '',
-                product: document.getElementById('filter-product')?.value?.toLowerCase() || '',
-                player: document.getElementById('filter-player')?.value?.toLowerCase() || '',
-                team: document.getElementById('filter-team')?.value?.toLowerCase() || '',
-                rookieCard: document.getElementById('filter-rookieCard')?.value || '',
-                parallel: document.getElementById('filter-parallel')?.value?.toLowerCase() || '',
-                numbered: document.getElementById('filter-numbered')?.value?.toLowerCase() || '',
-                description: document.getElementById('filter-description')?.value?.toLowerCase() || ''
-            };
-            
-            filteredCards = filteredCards.filter(card => {
-                return Object.keys(filters).every(key => {
-                    if (!filters[key]) return true;
-                    
-                    let cardValue = card[key]?.toString().toLowerCase() || '';
-                    
-                    // Special handling for rookie card
-                    if (key === 'rookieCard') {
-                        return card[key] === filters[key];
-                    }
-                    
-                    // Special handling for parallel and numbered
-                    if (key === 'parallel' || key === 'numbered') {
-                        if (card[key] === 'N') cardValue = '';
-                        else cardValue = card[key]?.toString().toLowerCase() || '';
-                    }
-                    
-                    return cardValue.includes(filters[key]);
-                });
-            });
-            
-            // Apply sorting
-            if (currentSort.field) {
-                filteredCards.sort((a, b) => {
-                    let aVal = a[currentSort.field];
-                    let bVal = b[currentSort.field];
-                    
-                    // Handle special cases
-                    if (currentSort.field === 'year') {
-                        aVal = parseInt(aVal) || 0;
-                        bVal = parseInt(bVal) || 0;
-                    } else if (typeof aVal === 'string' && typeof bVal === 'string') {
-                        aVal = aVal.toLowerCase();
-                        bVal = bVal.toLowerCase();
-                    }
-                    
-                    if (aVal < bVal) return currentSort.direction === 'asc' ? -1 : 1;
-                    if (aVal > bVal) return currentSort.direction === 'asc' ? 1 : -1;
-                    return 0;
-                });
-            }
-            
-            // Update totals
-            totalElement.textContent = `${cardCollection.length} total cards`;
-            filteredElement.textContent = `${filteredCards.length} filtered`;
-            
-            if (filteredCards.length === 0) {
-                document.getElementById('listView').style.display = 'none';
-                document.getElementById('gridView').style.display = 'none';
-                emptyState.style.display = 'block';
-                return;
-            }
-            
-            emptyState.style.display = 'none';
-            
-            if (currentView === 'list') {
-                displayListView(filteredCards);
-            } else {
-                displayGridView(filteredCards);
-            }
-        }
-
-        function displayListView(cards) {
-            const container = document.getElementById('listContainer');
-            
-            container.innerHTML = cards.map(card => {
-                return `
-                    <div class="list-item">
-                        <div>${card.year}</div>
-                        <div>${card.product}</div>
-                        <div class="list-item-player">${card.player}</div>
-                        <div>${card.team}</div>
-                        <div>${card.rookieCard === 'Y' ? '✓' : ''}</div>
-                        <div>${card.parallel !== 'N' ? card.parallel : ''}</div>
-                        <div>${card.numbered !== 'N' ? card.numbered : ''}</div>
-                        <div class="list-item-details">${card.description || ''}</div>
-                        <div>
-                            <button class="edit-btn" onclick="editCard('${card.id}')">Edit</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function clearAllFilters() {
-            document.getElementById('filter-year').value = '';
-            document.getElementById('filter-product').value = '';
-            document.getElementById('filter-player').value = '';
-            document.getElementById('filter-team').value = '';
-            document.getElementById('filter-rookieCard').value = '';
-            document.getElementById('filter-parallel').value = '';
-            document.getElementById('filter-numbered').value = '';
-            document.getElementById('filter-description').value = '';
-            filterCollection();
-        }
-
-        function editCard(cardId) {
-            const card = cardCollection.find(c => c.id === cardId);
-            if (!card) return;
-            
-            // Store the card ID for editing and redirect to add card page
-            localStorage.setItem('editCardId', cardId);
-            localStorage.setItem('editCardData', JSON.stringify(card));
-            window.location.href = 'index.html?edit=true';
-        }
-
-        function displayGridView(cards) {
-            const container = document.getElementById('gridView');
-            
-            container.innerHTML = cards.map(card => `
-                <div class="card-item">
-                    <div class="card-header">
-                        <div class="card-title">${card.player}</div>
-                        <div class="card-category">${card.category}</div>
-                    </div>
-                    <div class="card-details">
-                        <strong>${card.year} ${card.product}</strong><br>
-                        Card #${card.cardNumber} | ${card.team}<br>
-                        ${card.rookieCard === 'Y' ? '<strong>Rookie Card</strong><br>' : ''}
-                        ${card.parallel !== 'N' ? `Parallel: ${card.parallel}<br>` : ''}
-                        ${card.numbered !== 'N' ? `Numbered: ${card.numbered}<br>` : ''}
-                        ${card.description ? `${card.description}<br>` : ''}
-                        <small>
-                            Purchased: ${card.purchaseDate === 'Unknown' ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString()}<br>
-                            ${card.purchaseCost ? `Cost: ${parseFloat(card.purchaseCost).toFixed(2)}` : 'Cost: Not specified'}
-                        </small>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function showCardDetails(cardId) {
-            // Removed popup functionality
-        }
-
-        function filterCollection() {
-            displayCollection();
-        }
-
-        function sortCollection() {
-            displayCollection();
-        }
-
-        function exportToCSV() {
-            if (cardCollection.length === 0) {
-                alert('No cards to export!');
-                return;
-            }
-            
-            const headers = ['Category', 'Year', 'Product', 'Card #', 'Player', 'Team', 'Rookie Card', 'Parallel', 'Numbered', 'Add\'l Description', 'Purchase Date', 'Purchase Cost'];
-            const csvContent = [
-                headers.join(','),
-                ...cardCollection.map(card => [
-                    card.category,
-                    card.year,
-                    card.product,
-                    card.cardNumber,
-                    card.player,
-                    card.team,
-                    card.rookieCard,
-                    card.parallel,
-                    card.numbered,
-                    `"${card.description}"`,
-                    card.purchaseDate,
-                    card.purchaseCost
-                ].join(','))
-            ].join('\n');
-            
-            const blob = new Blob([csvContent], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `buzz_collection_${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
-            window.URL.revokeObjectURL(url);
-        }
-
-        function toggleMobileMenu() {
-            const navLinks = document.querySelector('.nav-links');
-            navLinks.style.display = navLinks.style.display === 'none' ? 'flex' : 'none';
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            loadCollectionFromFirebase();
-        });
-
-        window.switchView = switchView;
-        window.showCardDetails = showCardDetails;
-        window.filterCollection = filterCollection;
-        window.sortCollection = sortCollection;
-        window.exportToCSV = exportToCSV;
-        window.toggleMobileMenu = toggleMobileMenu;
-        window.sortBy = sortBy;
-        window.clearAllFilters = clearAllFilters;
-        window.editCard = editCard;
-    </script>
-</body>
-</html>
