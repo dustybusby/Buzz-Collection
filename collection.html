@@ -764,6 +764,9 @@
                     });
                 });
                 
+                // Update category filter options based on actual data
+                updateCategoryFilter();
+                
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('mainContent').style.display = 'block';
                 
@@ -779,6 +782,28 @@
                         </button>
                     </div>
                 `;
+            }
+        }
+
+        function updateCategoryFilter() {
+            const categoryFilter = document.getElementById('categoryFilter');
+            const currentValue = categoryFilter.value;
+            
+            // Get unique categories from the collection
+            const categories = [...new Set(cardCollection.map(card => card.category).filter(cat => cat))];
+            
+            // Clear and rebuild options
+            categoryFilter.innerHTML = '<option value="">All</option>';
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categoryFilter.appendChild(option);
+            });
+            
+            // Restore previous selection if it still exists
+            if (currentValue && categories.includes(currentValue)) {
+                categoryFilter.value = currentValue;
             }
         }
 
@@ -840,17 +865,6 @@
             
             // Get all filter values
             const categoryFilter = document.getElementById('categoryFilter')?.value || '';
-            
-            // DEBUG: Let's see what we're working with
-            console.log('=== FILTER DEBUG ===');
-            console.log('Total cards:', cardCollection.length);
-            console.log('Category filter value:', categoryFilter);
-            console.log('First few card categories:', cardCollection.slice(0, 3).map(card => ({
-                id: card.id,
-                category: card.category,
-                player: card.player
-            })));
-            
             const yearFilter = document.getElementById('filter-year')?.value?.toLowerCase() || '';
             const productFilter = document.getElementById('filter-product')?.value?.toLowerCase() || '';
             const playerFilter = document.getElementById('filter-player')?.value?.toLowerCase() || '';
@@ -863,19 +877,9 @@
             
             // Apply category filter first
             if (categoryFilter) {
-                console.log('Applying category filter for:', categoryFilter);
-                const beforeFilter = filteredCards.length;
                 filteredCards = filteredCards.filter(card => {
-                    const cardCategory = card.category?.toString() || '';
-                    const matches = cardCategory === categoryFilter;
-                    if (!matches) {
-                        console.log(`Card ${card.player} category "${cardCategory}" doesn't match "${categoryFilter}"`);
-                    }
-                    return matches;
+                    return card.category && card.category.toString() === categoryFilter;
                 });
-                console.log(`After category filter: ${beforeFilter} -> ${filteredCards.length} cards`);
-            } else {
-                console.log('No category filter applied (showing all)');
             }
             
             // Apply column filters
@@ -958,9 +962,6 @@
             // Update totals
             totalElement.textContent = `${cardCollection.length} total cards`;
             filteredElement.textContent = `${filteredCards.length} filtered`;
-            
-            console.log(`Final result: ${filteredCards.length} cards after all filters`);
-            console.log('=== END DEBUG ===');
             
             if (filteredCards.length === 0) {
                 document.getElementById('listView').style.display = 'none';
