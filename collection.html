@@ -1073,13 +1073,13 @@
                         <div class="card-category">${card.category}</div>
                     </div>
                     <div class="card-details">
-                        <strong>Card #:</strong> ${card.cardNumber}<br>
-                        <strong>Rookie Card:</strong> ${card.rookieCard === 'Y' ? 'Yes' : 'No'}<br>
-                        <strong>Parallel:</strong> ${card.parallel !== 'N' ? card.parallel : 'No'}<br>
-                        <strong>Numbered:</strong> ${card.numbered !== 'N' ? card.numbered : 'No'}<br>
-                        ${card.description ? `<strong>Add'l Notes:</strong> ${card.description}<br>` : '<strong>Add\'l Notes:</strong> None<br>'}
-                        <strong>Purchase Date:</strong> ${card.purchaseDate === 'Unknown' ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString()}<br>
-                        <strong>Purchase Cost:</strong> ${card.purchaseCost ? `${parseFloat(card.purchaseCost).toFixed(2)}` : 'Not specified'}<br>
+                        <strong>Card #:</strong> ${card.cardNumber}
+                        <strong>Rookie Card:</strong> ${card.rookieCard === 'Y' ? 'Yes' : 'No'}
+                        <strong>Parallel:</strong> ${card.parallel !== 'N' ? card.parallel : 'No'}
+                        <strong>Numbered:</strong> ${card.numbered !== 'N' ? card.numbered : 'No'}
+                        ${card.description ? `<strong>Add'l Notes:</strong> ${card.description}` : '<strong>Add\'l Notes:</strong> None'}
+                        <strong>Purchase Date:</strong> ${card.purchaseDate === 'Unknown' ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString()}
+                        <strong>Purchase Cost:</strong> ${card.purchaseCost ? `${parseFloat(card.purchaseCost).toFixed(2)}` : 'Not specified'}
                         <strong>Quantity:</strong> ${card.quantity || 1}
                     </div>
                 </div>
