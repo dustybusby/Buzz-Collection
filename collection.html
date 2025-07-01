@@ -121,6 +121,16 @@
         </div>
     </div>
 
+    <!-- Card View Modal -->
+    <div id="cardModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeCardModal()">&times;</span>
+            <div id="modalCardContent">
+                <!-- Card details will be populated here -->
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
         import { getFirestore, collection, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
@@ -328,6 +338,7 @@
                         <div>${card.numbered !== 'N' ? card.numbered : ''}</div>
                         <div class="list-item-details">${card.description || ''}</div>
                         <div class="action-buttons">
+                            <button class="view-btn" onclick="viewCard('${card.id}')">View</button>
                             <button class="edit-btn" onclick="editCard('${card.id}')">Edit</button>
                             <button class="delete-btn" onclick="deleteCard('${card.id}')">Delete</button>
                         </div>
@@ -347,6 +358,41 @@
             document.getElementById('filter-numbered').value = '';
             document.getElementById('filter-description').value = '';
             filterCollection();
+        }
+
+        function viewCard(cardId) {
+            const card = cardCollection.find(c => c.id === cardId);
+            if (!card) return;
+            
+            const modalContent = document.getElementById('modalCardContent');
+            modalContent.innerHTML = `
+                <div class="card-item" style="margin: 0; padding: 0; border: none; background: none; box-shadow: none;">
+                    <div class="card-header">
+                        <div class="card-title-section">
+                            <div class="card-title">${card.player}</div>
+                            <div class="card-subtitle">${card.team}</div>
+                            <div class="card-product">${card.year} ${card.product}</div>
+                        </div>
+                        <div class="card-category">${card.category}</div>
+                    </div>
+                    <div class="card-details">
+                        <strong>Card #:</strong> ${card.cardNumber}<br>
+                        ${card.rookieCard === 'Y' ? '<strong>Rookie Card:</strong> Yes<br>' : ''}
+                        ${card.parallel !== 'N' ? `<strong>Parallel:</strong> ${card.parallel}<br>` : ''}
+                        ${card.numbered !== 'N' ? `<strong>Numbered:</strong> ${card.numbered}<br>` : ''}
+                        ${card.description ? `<strong>Add'l Notes:</strong> ${card.description}<br>` : ''}
+                        <strong>Purchase Date:</strong> ${card.purchaseDate === 'Unknown' ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString()}<br>
+                        <strong>Purchase Cost:</strong> ${card.purchaseCost ? `${parseFloat(card.purchaseCost).toFixed(2)}` : 'Not specified'}<br>
+                        <strong>Quantity:</strong> ${card.quantity || 1}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('cardModal').style.display = 'block';
+        }
+
+        function closeCardModal() {
+            document.getElementById('cardModal').style.display = 'none';
         }
 
         function editCard(cardId) {
@@ -475,6 +521,14 @@
             loadCollectionFromFirebase();
         });
 
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('cardModal');
+            if (event.target === modal) {
+                closeCardModal();
+            }
+        }
+
         window.switchView = switchView;
         window.showCardDetails = showCardDetails;
         window.filterCollection = filterCollection;
@@ -483,6 +537,8 @@
         window.toggleMobileMenu = toggleMobileMenu;
         window.sortBy = sortBy;
         window.clearAllFilters = clearAllFilters;
+        window.viewCard = viewCard;
+        window.closeCardModal = closeCardModal;
         window.editCard = editCard;
         window.deleteCard = deleteCard;
     </script>
@@ -713,7 +769,7 @@
             background: rgba(20, 20, 20, 0.9);
             padding: 1rem;
             display: grid;
-            grid-template-columns: 80px 2fr 2fr 1.5fr 80px 80px 1fr 80px 2fr 100px;
+            grid-template-columns: 80px 2fr 2fr 1.5fr 80px 80px 1fr 80px 2fr 140px;
             gap: 1rem;
             font-weight: 600;
             color: #f0f0f0;
@@ -768,7 +824,7 @@
         .list-item {
             padding: 1rem;
             display: grid;
-            grid-template-columns: 80px 2fr 2fr 1.5fr 80px 80px 1fr 80px 2fr 100px;
+            grid-template-columns: 80px 2fr 2fr 1.5fr 80px 80px 1fr 80px 2fr 140px;
             gap: 1rem;
             align-items: center;
             border-bottom: 1px solid #333;
@@ -782,6 +838,22 @@
 
         .list-item:hover {
             background: rgba(40, 40, 40, 0.6);
+        }
+
+        .view-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.6rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: background 0.3s ease;
+            margin-right: 0.5rem;
+        }
+
+        .view-btn:hover {
+            background: #219a52;
         }
 
         .edit-btn {
@@ -889,11 +961,28 @@
             margin-bottom: 1rem;
         }
 
+        .card-title-section {
+            flex: 1;
+        }
+
         .card-title {
             font-family: 'Playfair Display', serif;
             font-size: 1.2rem;
             font-weight: 600;
             color: #f0f0f0;
+            margin-bottom: 0.25rem;
+        }
+
+        .card-subtitle {
+            color: #b0b0b0;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-product {
+            color: #e0e0e0;
+            font-size: 0.95rem;
+            font-weight: 500;
         }
 
         .card-category {
@@ -907,12 +996,55 @@
 
         .card-details {
             color: #b0b0b0;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             line-height: 1.5;
         }
 
         .card-details strong {
             color: #e0e0e0;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(15px);
+            border: 1px solid #333;
+            border-radius: 12px;
+            margin: 5% auto;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #fff;
+            text-decoration: none;
         }
 
         .loading {
@@ -992,7 +1124,7 @@
             }
 
             .cards-list-header {
-                grid-template-columns: 80px 2fr 1.5fr 80px 2fr 100px;
+                grid-template-columns: 80px 2fr 1.5fr 80px 2fr 140px;
                 gap: 0.5rem;
             }
 
@@ -1004,7 +1136,7 @@
             }
 
             .list-item {
-                grid-template-columns: 80px 2fr 1.5fr 80px 2fr 100px;
+                grid-template-columns: 80px 2fr 1.5fr 80px 2fr 140px;
                 gap: 0.5rem;
             }
 
