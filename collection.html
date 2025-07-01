@@ -614,6 +614,12 @@
                         <span id="totalCards">0 total cards</span> | 
                         <span id="filteredCount">0 filtered</span>
                     </div>
+
+                    <select id="categoryFilter" onchange="filterCollection()" style="background: rgba(40, 40, 40, 0.8); border: 1px solid #444; border-radius: 6px; padding: 0.75rem; color: #e0e0e0; font-family: inherit;">
+                        <option value="">All Categories</option>
+                        <option value="Baseball">Baseball</option>
+                        <option value="Football">Football</option>
+                    </select>
                     
                     <div class="view-toggle">
                         <button id="listViewBtn" class="active" onclick="switchView('list')">📋 List</button>
@@ -840,7 +846,8 @@
                 rookieCard: document.getElementById('filter-rookieCard')?.value || '',
                 parallel: document.getElementById('filter-parallel')?.value?.toLowerCase() || '',
                 numbered: document.getElementById('filter-numbered')?.value?.toLowerCase() || '',
-                description: document.getElementById('filter-description')?.value?.toLowerCase() || ''
+                description: document.getElementById('filter-description')?.value?.toLowerCase() || '',
+                category: document.getElementById('categoryFilter')?.value || ''
             };
             
             filteredCards = filteredCards.filter(card => {
@@ -850,6 +857,10 @@
                     let cardValue = card[key]?.toString().toLowerCase() || '';
                     
                     if (key === 'rookieCard') {
+                        return card[key] === filters[key];
+                    }
+
+                    if (key === 'category') {
                         return card[key] === filters[key];
                     }
                     
@@ -935,6 +946,7 @@
             document.getElementById('filter-parallel').value = '';
             document.getElementById('filter-numbered').value = '';
             document.getElementById('filter-description').value = '';
+            document.getElementById('categoryFilter').value = '';
             filterCollection();
         }
 
