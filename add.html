@@ -297,9 +297,11 @@
 
             .nav-links {
                 gap: 1rem;
+                order: 2;
             }
 
             .menu-toggle {
+                display: block;
                 order: -1;
             }
         }
@@ -658,6 +660,7 @@
             checkEditMode();
         });
 
+        // Close flyout menu when clicking outside
         document.addEventListener('click', function(event) {
             const menu = document.getElementById('flyoutMenu');
             const menuToggle = document.querySelector('.menu-toggle');

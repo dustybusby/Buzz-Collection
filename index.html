@@ -109,6 +109,61 @@
             background: rgba(255,255,255,0.1);
         }
 
+        .flyout-menu {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100vh;
+            background: rgba(25, 25, 25, 0.98);
+            backdrop-filter: blur(15px);
+            border-left: 1px solid #333;
+            transition: right 0.3s ease;
+            z-index: 2000;
+            padding: 2rem 1rem;
+        }
+
+        .flyout-menu.active {
+            right: 0;
+        }
+
+        .flyout-menu .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: #e0e0e0;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .flyout-menu nav ul {
+            list-style: none;
+            margin-top: 2rem;
+        }
+
+        .flyout-menu nav li {
+            margin: 1rem 0;
+        }
+
+        .flyout-menu nav a {
+            color: #e0e0e0;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 400;
+            transition: color 0.3s ease;
+            display: block;
+            padding: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .flyout-menu nav a:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.1);
+        }
+
         /* Main Content */
         .container {
             max-width: 1400px;
@@ -439,12 +494,23 @@
     <header class="header">
         <div class="logo">The Buzz Collection</div>
         <nav class="nav-links">
-            <a href="index.html">Dashboard</a>
+            <a href="index.html" class="active">Dashboard</a>
             <a href="collection.html">Collection</a>
-            <a href="add.html" class="active">Add Card</a>
+            <a href="add.html">Add Card</a>
         </nav>
-        <button class="menu-toggle" onclick="toggleMobileMenu()">☰</button>
+        <button class="menu-toggle" onclick="toggleMenu()">☰</button>
     </header>
+
+    <div class="flyout-menu" id="flyoutMenu">
+        <button class="close-btn" onclick="toggleMenu()">×</button>
+        <nav>
+            <ul>
+                <li><a href="index.html">Dashboard</a></li>
+                <li><a href="collection.html">Collection</a></li>
+                <li><a href="add.html">Add Card</a></li>
+            </ul>
+        </nav>
+    </div>
 
     <div class="container">
         <h1>Collection Overview</h1>
@@ -513,14 +579,6 @@
             <div class="inventory-section">
                 <h2>Most Expensive Cards</h2>
                 <div class="card-list" id="expensiveCards">
-                    <!-- Will be populated by JavaScript -->
-                </div>
-            </div>
-
-            <!-- Recent Additions -->
-            <div class="inventory-section">
-                <h2>Recent Additions</h2>
-                <div class="card-list" id="recentCards">
                     <!-- Will be populated by JavaScript -->
                 </div>
             </div>
@@ -615,7 +673,7 @@
                     <div style="text-align: center; padding: 4rem 2rem;">
                         <h2>No Cards Found</h2>
                         <p style="color: #b0b0b0; margin: 1rem 0;">Your collection appears to be empty.</p>
-                        <a href="index.html" class="btn btn-primary" style="display: inline-block; margin-top: 1rem; text-decoration: none;">Add Your First Card</a>
+                        <a href="add.html" class="btn btn-primary" style="display: inline-block; margin-top: 1rem; text-decoration: none;">Add Your First Card</a>
                     </div>
                 `;
                 return;
@@ -627,7 +685,6 @@
             displayTopProducts();
             displayTeamDistribution();
             displayExpensiveCards();
-            displayRecentCards();
         }
 
         // Update summary statistics
@@ -641,7 +698,7 @@
             console.log('Stats:', { totalCards, totalValue, rookieCards, numberedCards });
 
             document.getElementById('totalCards').textContent = totalCards.toLocaleString();
-            document.getElementById('totalValue').textContent = `${totalValue.toFixed(2)}`;
+            document.getElementById('totalValue').textContent = `$${totalValue.toFixed(2)}`;
             document.getElementById('rookieCards').textContent = rookieCards.toLocaleString();
             document.getElementById('numberedCards').textContent = numberedCards.toLocaleString();
         }
@@ -697,8 +754,9 @@
         function displayTopProducts() {
             const productStats = {};
             cardCollection.forEach(card => {
-                const product = card.product;
-                productStats[product] = (productStats[product] || 0) + 1;
+                // Combine year and product for the key
+                const productKey = `${card.year} ${card.product}`;
+                productStats[productKey] = (productStats[productKey] || 0) + 1;
             });
 
             const topProducts = Object.entries(productStats)
@@ -763,32 +821,10 @@
             `).join('');
         }
 
-        // Display recent additions
-        function displayRecentCards() {
-            const recentCards = [...cardCollection]
-                .sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded))
-                .slice(0, 6);
-
-            const container = document.getElementById('recentCards');
-            if (recentCards.length === 0) {
-                container.innerHTML = '<p style="color: #888; text-align: center; padding: 2rem;">No cards in collection yet.</p>';
-                return;
-            }
-
-            container.innerHTML = recentCards.map(card => `
-                <div class="mini-card">
-                    <div class="mini-card-header">
-                        <div class="mini-card-player">${card.player}</div>
-                        <div class="mini-card-price">${card.purchaseCost > 0 ? '$' + card.purchaseCost.toFixed(2) : 'N/A'}</div>
-                    </div>
-                    <div class="mini-card-details">
-                        ${card.year} ${card.product} #${card.cardNumber}<br>
-                        ${card.team} | ${card.category}
-                        ${card.rookieCard === 'Y' ? ' | RC' : ''}
-                        <br><small>Added: ${new Date(card.dateAdded).toLocaleDateString()}</small>
-                    </div>
-                </div>
-            `).join('');
+        // Toggle menu function
+        function toggleMenu() {
+            const menu = document.getElementById('flyoutMenu');
+            menu.classList.toggle('active');
         }
 
         // Initialize when page loads
@@ -803,14 +839,18 @@
             }, 1000);
         });
 
-        // Mobile menu toggle function
-        function toggleMobileMenu() {
-            const navLinks = document.querySelector('.nav-links');
-            navLinks.style.display = navLinks.style.display === 'none' ? 'flex' : 'none';
-        }
+        // Close flyout menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('flyoutMenu');
+            const menuToggle = document.querySelector('.menu-toggle');
+            
+            if (!menu.contains(event.target) && !menuToggle.contains(event.target)) {
+                menu.classList.remove('active');
+            }
+        });
 
-        // Make functions available globally if needed
-        window.toggleMobileMenu = toggleMobileMenu;
+        // Make functions available globally
+        window.toggleMenu = toggleMenu;
     </script>
 </body>
 </html>
