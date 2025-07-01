@@ -1021,7 +1021,7 @@
             // Store the card ID for editing and redirect to add card page
             localStorage.setItem('editCardId', cardId);
             localStorage.setItem('editCardData', JSON.stringify(card));
-            window.location.href = 'index.html?edit=true';
+            window.location.href = 'add.html?edit=true';
         }
 
         async function deleteCard(cardId) {
