@@ -109,61 +109,6 @@
             background: rgba(255,255,255,0.1);
         }
 
-        .flyout-menu {
-            position: fixed;
-            top: 0;
-            right: -300px;
-            width: 300px;
-            height: 100vh;
-            background: rgba(25, 25, 25, 0.98);
-            backdrop-filter: blur(15px);
-            border-left: 1px solid #333;
-            transition: right 0.3s ease;
-            z-index: 2000;
-            padding: 2rem 1rem;
-        }
-
-        .flyout-menu.active {
-            right: 0;
-        }
-
-        .flyout-menu .close-btn {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: none;
-            border: none;
-            color: #e0e0e0;
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-
-        .flyout-menu nav ul {
-            list-style: none;
-            margin-top: 2rem;
-        }
-
-        .flyout-menu nav li {
-            margin: 1rem 0;
-        }
-
-        .flyout-menu nav a {
-            color: #e0e0e0;
-            text-decoration: none;
-            font-size: 1.1rem;
-            font-weight: 400;
-            transition: color 0.3s ease;
-            display: block;
-            padding: 0.5rem;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .flyout-menu nav a:hover {
-            color: #fff;
-            background: rgba(255,255,255,0.1);
-        }
-
         /* Main Content */
         .container {
             max-width: 1400px;
@@ -498,19 +443,8 @@
             <a href="collection.html">Collection</a>
             <a href="add.html">Add Card</a>
         </nav>
-        <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+        <button class="menu-toggle" onclick="toggleMobileMenu()">☰</button>
     </header>
-
-    <div class="flyout-menu" id="flyoutMenu">
-        <button class="close-btn" onclick="toggleMenu()">×</button>
-        <nav>
-            <ul>
-                <li><a href="index.html">Dashboard</a></li>
-                <li><a href="collection.html">Collection</a></li>
-                <li><a href="add.html">Add Card</a></li>
-            </ul>
-        </nav>
-    </div>
 
     <div class="container">
         <h1>Collection Overview</h1>
