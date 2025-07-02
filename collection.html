@@ -16,13 +16,17 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: #1a1a1a;
+            background: #0a0a0f;
             background-image: 
-                radial-gradient(circle at 25% 25%, rgba(255,255,255,0.02) 0%, transparent 50%),
-                radial-gradient(circle at 75% 75%, rgba(255,255,255,0.02) 0%, transparent 50%);
-            color: #e0e0e0;
+                radial-gradient(circle at 20% 20%, rgba(0, 150, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0, 200, 255, 0.06) 0%, transparent 50%),
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' seed='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E"),
+                repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0, 100, 150, 0.01) 2px, rgba(0, 100, 150, 0.01) 4px),
+                repeating-linear-gradient(-45deg, transparent, transparent 2px, rgba(0, 150, 200, 0.005) 2px, rgba(0, 150, 200, 0.005) 4px);
+            color: #e0f4ff;
             min-height: 100vh;
             position: relative;
+            overflow-x: hidden;
         }
 
         body::before {
@@ -33,20 +37,25 @@
             right: 0;
             bottom: 0;
             background-image: 
-                linear-gradient(45deg, rgba(255,255,255,0.01) 25%, transparent 25%),
-                linear-gradient(-45deg, rgba(255,255,255,0.01) 25%, transparent 25%),
-                linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.01) 75%),
-                linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.01) 75%);
-            background-size: 20px 20px;
-            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+                linear-gradient(rgba(0, 150, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 150, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(rgba(0, 200, 255, 0.01) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 200, 255, 0.01) 1px, transparent 1px);
+            background-size: 60px 60px, 60px 60px, 20px 20px, 20px 20px;
+            background-position: 0 0, 0 0, 30px 30px, 30px 30px;
             pointer-events: none;
-            z-index: -1;
+            z-index: -2;
+            opacity: 0.4;
         }
 
         .header {
-            background: rgba(20, 20, 20, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid #333;
+            background: linear-gradient(135deg, rgba(5, 10, 20, 0.95), rgba(10, 15, 25, 0.9));
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 150, 255, 0.3);
+            box-shadow: 
+                0 4px 20px rgba(0, 0, 0, 0.5),
+                0 1px 0 rgba(0, 150, 255, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
             padding: 1rem 2rem;
             position: sticky;
             top: 0;
@@ -60,8 +69,14 @@
             font-family: 'Playfair Display', serif;
             font-size: 2rem;
             font-weight: 700;
-            color: #f0f0f0;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            color: #ffffff;
+            text-shadow: 
+                0 0 2px #00d4ff,
+                0 0 4px #00c8ff,
+                0 0 6px #0096ff,
+                0 0 8px rgba(0, 150, 255, 0.5);
+            letter-spacing: 2px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
         }
 
         .nav-links {
@@ -71,22 +86,41 @@
         }
 
         .nav-links a {
-            color: #e0e0e0;
+            color: #b8e6ff;
             text-decoration: none;
             font-weight: 500;
-            transition: all 0.3s ease;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 150, 255, 0.2);
+            background: linear-gradient(135deg, rgba(0, 100, 150, 0.1), rgba(0, 50, 100, 0.05));
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                0 2px 4px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
         .nav-links a:hover {
-            color: #4a7bc8;
-            background: rgba(255,255,255,0.1);
+            color: #ffffff;
+            border-color: rgba(0, 200, 255, 0.6);
+            box-shadow: 
+                0 0 3px #00c8ff,
+                0 0 6px rgba(0, 200, 255, 0.4),
+                0 4px 8px rgba(0, 0, 0, 0.3),
+                inset 0 0 10px rgba(0, 150, 255, 0.1);
+            transform: translateY(-2px);
         }
 
         .nav-links a.active {
-            background: #4a7bc8;
-            color: white;
+            background: linear-gradient(135deg, rgba(0, 150, 255, 0.3), rgba(0, 200, 255, 0.2));
+            border-color: rgba(0, 200, 255, 0.8);
+            color: #ffffff;
+            box-shadow: 
+                0 0 4px #00c8ff,
+                0 0 8px rgba(0, 200, 255, 0.3),
+                0 4px 12px rgba(0, 0, 0, 0.4),
+                inset 0 0 15px rgba(0, 150, 255, 0.2);
         }
 
         .menu-toggle {
@@ -118,15 +152,25 @@
             text-align: center;
             margin-bottom: 2rem;
             color: #f0f0f0;
+            text-shadow: 
+                0 0 2px #00d4ff,
+                0 0 4px #00c8ff,
+                0 0 6px rgba(0, 150, 255, 0.3),
+                0 2px 4px rgba(0, 0, 0, 0.5);
         }
 
         .collection-controls {
-            background: rgba(30, 30, 30, 0.8);
-            backdrop-filter: blur(10px);
-            border: 1px solid #333;
+            background: linear-gradient(135deg, rgba(5, 15, 25, 0.8), rgba(10, 20, 30, 0.7));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 150, 255, 0.3);
             border-radius: 12px;
             padding: 1.5rem;
             margin-bottom: 2rem;
+            box-shadow: 
+                0 10px 20px rgba(0, 0, 0, 0.4),
+                0 4px 8px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.2);
         }
 
         .controls-row {
@@ -143,26 +187,36 @@
         }
 
         .collection-controls select {
-            background: rgba(40, 40, 40, 0.8);
-            border: 1px solid #444;
+            background: linear-gradient(135deg, rgba(10, 20, 30, 0.9), rgba(15, 25, 35, 0.8));
+            border: 1px solid rgba(0, 150, 255, 0.4);
             border-radius: 6px;
             padding: 0.75rem;
             color: #e0e0e0;
             font-family: inherit;
             transition: border-color 0.3s ease;
+            box-shadow: 
+                0 2px 4px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
         .collection-controls select:focus {
             outline: none;
-            border-color: #666;
+            border-color: rgba(0, 200, 255, 0.6);
+            box-shadow: 
+                0 0 3px #00c8ff,
+                0 0 6px rgba(0, 200, 255, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
         .view-toggle {
             display: flex;
-            background: rgba(40, 40, 40, 0.8);
-            border: 1px solid #444;
+            background: linear-gradient(135deg, rgba(10, 20, 30, 0.9), rgba(15, 25, 35, 0.8));
+            border: 1px solid rgba(0, 150, 255, 0.4);
             border-radius: 6px;
             overflow: hidden;
+            box-shadow: 
+                0 2px 4px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
         .view-toggle button {
@@ -175,40 +229,50 @@
         }
 
         .view-toggle button.active {
-            background: #4a7bc8;
+            background: linear-gradient(135deg, rgba(0, 150, 255, 0.3), rgba(0, 200, 255, 0.2));
             color: white;
+            box-shadow: inset 0 0 10px rgba(0, 150, 255, 0.2);
         }
 
         .view-toggle button:hover:not(.active) {
             background: rgba(255,255,255,0.1);
         }
-
-        .btn {
-            background: linear-gradient(135deg, #333, #555);
-            color: #fff;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 6px;
+.btn {
+            background: linear-gradient(135deg, rgba(0, 100, 150, 0.8), rgba(0, 150, 200, 0.6));
+            color: #ffffff;
+            border: 1px solid #00c8ff;
+            padding: 0.8rem 1.8rem;
+            border-radius: 10px;
             cursor: pointer;
             font-family: inherit;
-            font-weight: 500;
-            transition: all 0.3s ease;
+            font-weight: 600;
+            transition: all 0.4s ease;
+            box-shadow: 
+                0 4px 15px rgba(0, 150, 255, 0.3),
+                0 2px 4px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
         }
 
         .btn:hover {
-            background: linear-gradient(135deg, #444, #666);
+            transform: translateY(-3px);
+            box-shadow: 
+                0 6px 20px rgba(0, 200, 255, 0.4),
+                inset 0 0 15px rgba(0, 150, 255, 0.2);
+            border-color: #00d4ff;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #2d5aa0, #4a7bc8);
+            background: linear-gradient(135deg, #00c8ff, #0096ff);
         }
 
         .btn-primary:hover {
-            background: linear-gradient(135deg, #3a6bb0, #5a8bd8);
+            background: linear-gradient(135deg, #00d4ff, #00c8ff);
         }
 
         .card-count {
-            color: #b0b0b0;
+            color: #b8e6ff;
             font-weight: 500;
         }
 
@@ -217,22 +281,27 @@
         }
 
         .cards-list {
-            background: rgba(30, 30, 30, 0.8);
-            backdrop-filter: blur(10px);
-            border: 1px solid #333;
+            background: linear-gradient(135deg, rgba(5, 15, 25, 0.8), rgba(10, 20, 30, 0.7));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 150, 255, 0.3);
             border-radius: 12px;
             overflow: hidden;
+            box-shadow: 
+                0 10px 20px rgba(0, 0, 0, 0.4),
+                0 4px 8px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.2);
         }
 
         .cards-list-header {
-            background: rgba(20, 20, 20, 0.9);
+            background: linear-gradient(135deg, rgba(5, 10, 20, 0.9), rgba(10, 15, 25, 0.8));
             padding: 1rem;
             display: grid;
             grid-template-columns: 80px 2fr 2fr 1.5fr 80px 80px 1fr 80px 2fr 160px;
             gap: 1rem;
             font-weight: 600;
             color: #f0f0f0;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid rgba(0, 150, 255, 0.3);
             font-size: 0.9rem;
         }
 
@@ -248,10 +317,15 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            color: #ffffff;
+            text-shadow: 
+                0 0 2px #00d4ff,
+                0 0 4px rgba(0, 200, 255, 0.3),
+                0 1px 2px rgba(0, 0, 0, 0.5);
         }
 
         .sortable-header:hover {
-            color: #4a7bc8;
+            color: #00d4ff;
         }
 
         .sort-indicator {
@@ -260,19 +334,24 @@
         }
 
         .filter-input {
-            background: rgba(40, 40, 40, 0.8);
-            border: 1px solid #444;
+            background: linear-gradient(135deg, rgba(10, 20, 30, 0.9), rgba(15, 25, 35, 0.8));
+            border: 1px solid rgba(0, 150, 255, 0.4);
             border-radius: 4px;
             padding: 0.4rem;
             color: #e0e0e0;
             font-family: inherit;
             font-size: 0.8rem;
             width: 100%;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
         .filter-input:focus {
             outline: none;
-            border-color: #666;
+            border-color: rgba(0, 200, 255, 0.6);
+            box-shadow: 
+                0 0 3px #00c8ff,
+                0 0 6px rgba(0, 200, 255, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
         .filter-input::placeholder {
@@ -286,7 +365,7 @@
             grid-template-columns: 80px 2fr 2fr 1.5fr 80px 80px 1fr 80px 2fr 160px;
             gap: 1rem;
             align-items: center;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid rgba(0, 150, 255, 0.2);
             transition: background 0.3s ease;
             font-size: 0.9rem;
         }
@@ -296,12 +375,10 @@
         }
 
         .list-item:hover {
-            background: rgba(40, 40, 40, 0.6);
+            background: rgba(0, 150, 255, 0.1);
         }
 
-        .view-btn {
-            background: #27ae60;
-            color: white;
+        .view-btn, .edit-btn, .delete-btn {
             border: none;
             padding: 0.3rem 0.5rem;
             border-radius: 4px;
@@ -309,6 +386,12 @@
             font-size: 0.65rem;
             transition: background 0.3s ease;
             margin-right: 0.25rem;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+
+        .view-btn {
+            background: #27ae60;
         }
 
         .view-btn:hover {
@@ -317,14 +400,6 @@
 
         .edit-btn {
             background: #4a7bc8;
-            color: white;
-            border: none;
-            padding: 0.3rem 0.5rem;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.65rem;
-            transition: background 0.3s ease;
-            margin-right: 0.25rem;
         }
 
         .edit-btn:hover {
@@ -333,13 +408,6 @@
 
         .delete-btn {
             background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 0.3rem 0.5rem;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.65rem;
-            transition: background 0.3s ease;
         }
 
         .delete-btn:hover {
@@ -355,11 +423,15 @@
 
         .list-item-player {
             font-weight: 600;
-            color: #f0f0f0;
+            color: #ffffff;
+            text-shadow: 
+                0 0 2px #00d4ff,
+                0 0 4px rgba(0, 200, 255, 0.3),
+                0 1px 2px rgba(0, 0, 0, 0.5);
         }
 
         .list-item-details {
-            color: #b0b0b0;
+            color: #b8e6ff;
             font-size: 0.8rem;
             line-height: 1.3;
         }
@@ -371,17 +443,27 @@
         }
 
         .card-item {
-            background: rgba(30, 30, 30, 0.8);
-            backdrop-filter: blur(10px);
-            border: 1px solid #333;
+            background: linear-gradient(135deg, rgba(5, 15, 25, 0.8), rgba(10, 20, 30, 0.7));
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 150, 255, 0.3);
             border-radius: 8px;
             padding: 1.5rem;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 6px 12px rgba(0, 0, 0, 0.3),
+                0 2px 4px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.2);
         }
 
         .card-item:hover {
             transform: translateY(-4px);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            box-shadow: 
+                0 12px 24px rgba(0, 0, 0, 0.4),
+                0 0 8px rgba(0, 200, 255, 0.3),
+                0 0 16px rgba(0, 150, 255, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.3);
         }
 
         .card-header {
@@ -399,12 +481,16 @@
             font-family: 'Playfair Display', serif;
             font-size: 1.2rem;
             font-weight: 600;
-            color: #f0f0f0;
+            color: #ffffff;
             margin-bottom: 0.25rem;
+            text-shadow: 
+                0 0 2px #00d4ff,
+                0 0 4px rgba(0, 200, 255, 0.3),
+                0 1px 2px rgba(0, 0, 0, 0.5);
         }
 
         .card-subtitle {
-            color: #b0b0b0;
+            color: #b8e6ff;
             font-size: 0.9rem;
             margin-bottom: 0.5rem;
         }
@@ -422,10 +508,11 @@
             border-radius: 4px;
             font-size: 0.8rem;
             font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
         }
 
         .card-details {
-            color: #b0b0b0;
+            color: #b8e6ff;
             font-size: 0.8rem;
             line-height: 1.5;
         }
@@ -434,7 +521,6 @@
             color: #e0e0e0;
         }
 
-        /* Modal styles */
         .modal {
             display: none;
             position: fixed;
@@ -448,9 +534,9 @@
         }
 
         .modal-content {
-            background: rgba(30, 30, 30, 0.95);
+            background: linear-gradient(135deg, rgba(5, 15, 25, 0.95), rgba(10, 20, 30, 0.9));
             backdrop-filter: blur(15px);
-            border: 1px solid #333;
+            border: 1px solid rgba(0, 150, 255, 0.3);
             border-radius: 12px;
             margin: 3% auto;
             padding: 3rem 2rem 2rem 2rem;
@@ -460,7 +546,11 @@
             max-height: 80vh;
             overflow-y: auto;
             position: relative;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            box-shadow: 
+                0 20px 60px rgba(0,0,0,0.5),
+                0 10px 20px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.2);
         }
 
         .close {
@@ -492,13 +582,13 @@
         .loading {
             text-align: center;
             padding: 3rem;
-            color: #b0b0b0;
+            color: #b8e6ff;
         }
 
         .loading-spinner {
             width: 40px;
             height: 40px;
-            border: 3px solid #333;
+            border: 3px solid rgba(0, 150, 255, 0.2);
             border-top: 3px solid #4a7bc8;
             border-radius: 50%;
             animation: spin 1s linear infinite;
@@ -513,25 +603,33 @@
         .empty-state {
             text-align: center;
             padding: 4rem 2rem;
-            background: rgba(30, 30, 30, 0.8);
-            backdrop-filter: blur(10px);
-            border: 1px solid #333;
+            background: linear-gradient(135deg, rgba(5, 15, 25, 0.8), rgba(10, 20, 30, 0.7));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 150, 255, 0.3);
             border-radius: 12px;
             margin: 2rem 0;
+            box-shadow: 
+                0 10px 20px rgba(0, 0, 0, 0.4),
+                0 4px 8px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.2);
         }
 
         .empty-state h3 {
-            color: #f0f0f0;
+            color: #ffffff;
             margin-bottom: 1rem;
             font-family: 'Playfair Display', serif;
+            text-shadow: 
+                0 0 2px #00d4ff,
+                0 0 4px rgba(0, 200, 255, 0.3),
+                0 1px 2px rgba(0, 0, 0, 0.5);
         }
 
         .empty-state p {
-            color: #b0b0b0;
+            color: #b8e6ff;
             margin-bottom: 2rem;
         }
-
-        @media (max-width: 768px) {
+@media (max-width: 768px) {
             .header {
                 padding: 1rem;
                 flex-direction: column;
@@ -618,7 +716,7 @@
                         <span id="filteredCount">0 filtered</span>
                     </div>
 
-                    <select id="categoryFilter" onchange="filterCollection()" style="background: rgba(40, 40, 40, 0.8); border: 1px solid #444; border-radius: 6px; padding: 0.75rem; color: #e0e0e0; font-family: inherit;">
+                    <select id="categoryFilter" onchange="filterCollection()">
                         <option value="">All</option>
                         <option value="Baseball">Baseball</option>
                         <option value="Football">Football</option>
@@ -691,7 +789,7 @@
                     </div>
                     <div class="column-header">
                         <div class="sortable-header" onclick="sortBy('description')">
-                            Add'l Notes <span class="sort-indicator" id="sort-description"></span>
+                            Notes <span class="sort-indicator" id="sort-description"></span>
                         </div>
                         <input type="text" class="filter-input" placeholder="Filter..." id="filter-description" onkeyup="filterCollection()">
                     </div>
@@ -717,17 +815,13 @@
         </div>
     </div>
 
-    <!-- Card View Modal -->
     <div id="cardModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeCardModal()">&times;</span>
-            <div id="modalCardContent">
-                <!-- Card details will be populated here -->
-            </div>
+            <div id="modalCardContent"></div>
         </div>
     </div>
-
-    <script type="module">
+<script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
         import { getFirestore, collection, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 
@@ -750,10 +844,7 @@
         async function loadCollectionFromFirebase() {
             try {
                 const querySnapshot = await getDocs(
-                    query(
-                        collection(db, 'cards'),
-                        orderBy('dateAdded', 'desc')
-                    )
+                    query(collection(db, 'cards'), orderBy('dateAdded', 'desc'))
                 );
                 
                 cardCollection = [];
@@ -767,35 +858,24 @@
                     });
                 });
                 
-                // Update category filter options based on actual data
                 updateCategoryFilter();
-                
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('mainContent').style.display = 'block';
-                
                 displayCollection();
             } catch (error) {
                 console.error('Error loading collection:', error);
-                document.getElementById('loading').innerHTML = `
-                    <div style="color: #ff6b6b;">
-                        <h3>Error loading collection</h3>
-                        <p>${error.message}</p>
-                        <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #4a7bc8; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                            Retry
-                        </button>
-                    </div>
-                `;
+                const errorHTML = '<div style="color: #ff6b6b;"><h3>Error loading collection</h3><p>' + 
+                    error.message + '</p><button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; ' + 
+                    'background: #4a7bc8; color: white; border: none; border-radius: 4px; cursor: pointer;">Retry</button></div>';
+                document.getElementById('loading').innerHTML = errorHTML;
             }
         }
 
         function updateCategoryFilter() {
             const categoryFilter = document.getElementById('categoryFilter');
             const currentValue = categoryFilter.value;
-            
-            // Get unique categories from the collection
             const categories = [...new Set(cardCollection.map(card => card.category).filter(cat => cat))];
             
-            // Clear and rebuild options
             categoryFilter.innerHTML = '<option value="">All</option>';
             categories.forEach(category => {
                 const option = document.createElement('option');
@@ -804,7 +884,6 @@
                 categoryFilter.appendChild(option);
             });
             
-            // Restore previous selection if it still exists
             if (currentValue && categories.includes(currentValue)) {
                 categoryFilter.value = currentValue;
             }
@@ -812,7 +891,6 @@
 
         function switchView(view) {
             currentView = view;
-            
             const listView = document.getElementById('listView');
             const gridView = document.getElementById('gridView');
             const listBtn = document.getElementById('listViewBtn');
@@ -829,7 +907,6 @@
                 listBtn.classList.remove('active');
                 gridBtn.classList.add('active');
             }
-            
             displayCollection();
         }
 
@@ -840,7 +917,6 @@
                 currentSort.field = field;
                 currentSort.direction = 'asc';
             }
-            
             updateSortIndicators();
             displayCollection();
         }
@@ -851,7 +927,7 @@
             });
             
             if (currentSort.field) {
-                const indicator = document.getElementById(`sort-${currentSort.field}`);
+                const indicator = document.getElementById('sort-' + currentSort.field);
                 if (indicator) {
                     indicator.textContent = currentSort.direction === 'asc' ? '▲' : '▼';
                 }
@@ -863,86 +939,56 @@
             const filteredElement = document.getElementById('filteredCount');
             const emptyState = document.getElementById('emptyState');
             
-            // Start fresh with all cards
             let filteredCards = [...cardCollection];
             
-            // Get all filter values
-            const categoryFilter = document.getElementById('categoryFilter')?.value || '';
-            const yearFilter = document.getElementById('filter-year')?.value?.toLowerCase() || '';
-            const productFilter = document.getElementById('filter-product')?.value?.toLowerCase() || '';
-            const playerFilter = document.getElementById('filter-player')?.value?.toLowerCase() || '';
-            const teamFilter = document.getElementById('filter-team')?.value?.toLowerCase() || '';
-            const quantityFilter = document.getElementById('filter-quantity')?.value?.toLowerCase() || '';
-            const rookieCardFilter = document.getElementById('filter-rookieCard')?.value || '';
-            const parallelFilter = document.getElementById('filter-parallel')?.value?.toLowerCase() || '';
-            const numberedFilter = document.getElementById('filter-numbered')?.value?.toLowerCase() || '';
-            const descriptionFilter = document.getElementById('filter-description')?.value?.toLowerCase() || '';
+            const categoryFilter = document.getElementById('categoryFilter').value || '';
+            const yearFilter = document.getElementById('filter-year').value.toLowerCase() || '';
+            const productFilter = document.getElementById('filter-product').value.toLowerCase() || '';
+            const playerFilter = document.getElementById('filter-player').value.toLowerCase() || '';
+            const teamFilter = document.getElementById('filter-team').value.toLowerCase() || '';
+            const quantityFilter = document.getElementById('filter-quantity').value.toLowerCase() || '';
+            const rookieCardFilter = document.getElementById('filter-rookieCard').value || '';
+            const parallelFilter = document.getElementById('filter-parallel').value.toLowerCase() || '';
+            const numberedFilter = document.getElementById('filter-numbered').value.toLowerCase() || '';
+            const descriptionFilter = document.getElementById('filter-description').value.toLowerCase() || '';
             
-            // Apply category filter first
             if (categoryFilter) {
-                filteredCards = filteredCards.filter(card => {
-                    return card.category && card.category.toString() === categoryFilter;
-                });
+                filteredCards = filteredCards.filter(card => card.category && card.category.toString() === categoryFilter);
             }
-            
-            // Apply column filters
             if (yearFilter) {
-                filteredCards = filteredCards.filter(card => 
-                    card.year?.toString().toLowerCase().includes(yearFilter)
-                );
+                filteredCards = filteredCards.filter(card => card.year && card.year.toString().toLowerCase().includes(yearFilter));
             }
-            
             if (productFilter) {
-                filteredCards = filteredCards.filter(card => 
-                    card.product?.toString().toLowerCase().includes(productFilter)
-                );
+                filteredCards = filteredCards.filter(card => card.product && card.product.toString().toLowerCase().includes(productFilter));
             }
-            
             if (playerFilter) {
-                filteredCards = filteredCards.filter(card => 
-                    card.player?.toString().toLowerCase().includes(playerFilter)
-                );
+                filteredCards = filteredCards.filter(card => card.player && card.player.toString().toLowerCase().includes(playerFilter));
             }
-            
             if (teamFilter) {
-                filteredCards = filteredCards.filter(card => 
-                    card.team?.toString().toLowerCase().includes(teamFilter)
-                );
+                filteredCards = filteredCards.filter(card => card.team && card.team.toString().toLowerCase().includes(teamFilter));
             }
-            
             if (quantityFilter) {
-                filteredCards = filteredCards.filter(card => 
-                    card.quantity?.toString().toLowerCase().includes(quantityFilter)
-                );
+                filteredCards = filteredCards.filter(card => card.quantity && card.quantity.toString().toLowerCase().includes(quantityFilter));
             }
-            
             if (rookieCardFilter) {
-                filteredCards = filteredCards.filter(card => 
-                    card.rookieCard === rookieCardFilter
-                );
+                filteredCards = filteredCards.filter(card => card.rookieCard === rookieCardFilter);
             }
-            
             if (parallelFilter) {
                 filteredCards = filteredCards.filter(card => {
-                    const parallelValue = card.parallel === 'N' ? '' : (card.parallel?.toString().toLowerCase() || '');
+                    const parallelValue = card.parallel === 'N' ? '' : (card.parallel || '').toString().toLowerCase();
                     return parallelValue.includes(parallelFilter);
                 });
             }
-            
             if (numberedFilter) {
                 filteredCards = filteredCards.filter(card => {
-                    const numberedValue = card.numbered === 'N' ? '' : (card.numbered?.toString().toLowerCase() || '');
+                    const numberedValue = card.numbered === 'N' ? '' : (card.numbered || '').toString().toLowerCase();
                     return numberedValue.includes(numberedFilter);
                 });
             }
-            
             if (descriptionFilter) {
-                filteredCards = filteredCards.filter(card => 
-                    card.description?.toString().toLowerCase().includes(descriptionFilter)
-                );
+                filteredCards = filteredCards.filter(card => card.description && card.description.toString().toLowerCase().includes(descriptionFilter));
             }
             
-            // Apply sorting
             if (currentSort.field) {
                 filteredCards.sort((a, b) => {
                     let aVal = a[currentSort.field];
@@ -962,9 +1008,8 @@
                 });
             }
             
-            // Update totals
-            totalElement.textContent = `${cardCollection.length} total cards`;
-            filteredElement.textContent = `${filteredCards.length} filtered`;
+            totalElement.textContent = cardCollection.length + ' total cards';
+            filteredElement.textContent = filteredCards.length + ' filtered';
             
             if (filteredCards.length === 0) {
                 document.getElementById('listView').style.display = 'none';
@@ -981,30 +1026,38 @@
                 displayGridView(filteredCards);
             }
         }
-
-        function displayListView(cards) {
+function displayListView(cards) {
             const container = document.getElementById('listContainer');
-            
-            container.innerHTML = cards.map(card => {
-                return `
-                    <div class="list-item">
-                        <div>${card.year}</div>
-                        <div>${card.product}</div>
-                        <div class="list-item-player">${card.player}</div>
-                        <div>${card.team}</div>
-                        <div style="text-align: center;">${card.quantity || 1}</div>
-                        <div>${card.rookieCard === 'Y' ? '✓' : ''}</div>
-                        <div>${card.parallel !== 'N' ? card.parallel : ''}</div>
-                        <div>${card.numbered !== 'N' ? card.numbered : ''}</div>
-                        <div class="list-item-details">${card.description || ''}</div>
-                        <div class="action-buttons">
-                            <button class="view-btn" onclick="viewCard('${card.id}')">View</button>
-                            <button class="edit-btn" onclick="editCard('${card.id}')">Edit</button>
-                            <button class="delete-btn" onclick="deleteCard('${card.id}')">Delete</button>
-                        </div>
-                    </div>
-                `;
+            const listHTML = cards.map(card => {
+                const year = card.year || '';
+                const product = card.product || '';
+                const player = card.player || '';
+                const team = card.team || '';
+                const quantity = card.quantity || 1;
+                const rookieCheck = card.rookieCard === 'Y' ? '✓' : '';
+                const parallel = card.parallel !== 'N' ? (card.parallel || '') : '';
+                const numbered = card.numbered !== 'N' ? (card.numbered || '') : '';
+                const description = card.description || '';
+                const cardId = card.id;
+                
+                return '<div class="list-item">' +
+                    '<div>' + year + '</div>' +
+                    '<div>' + product + '</div>' +
+                    '<div class="list-item-player">' + player + '</div>' +
+                    '<div>' + team + '</div>' +
+                    '<div style="text-align: center;">' + quantity + '</div>' +
+                    '<div>' + rookieCheck + '</div>' +
+                    '<div>' + parallel + '</div>' +
+                    '<div>' + numbered + '</div>' +
+                    '<div class="list-item-details">' + description + '</div>' +
+                    '<div class="action-buttons">' +
+                        '<button class="view-btn" onclick="viewCard(\'' + cardId + '\')">View</button>' +
+                        '<button class="edit-btn" onclick="editCard(\'' + cardId + '\')">Edit</button>' +
+                        '<button class="delete-btn" onclick="deleteCard(\'' + cardId + '\')">Delete</button>' +
+                    '</div>' +
+                '</div>';
             }).join('');
+            container.innerHTML = listHTML;
         }
 
         function clearAllFilters() {
@@ -1025,30 +1078,42 @@
             const card = cardCollection.find(c => c.id === cardId);
             if (!card) return;
             
-            const modalContent = document.getElementById('modalCardContent');
-            modalContent.innerHTML = `
-                <div style="margin: 0; padding: 0;">
-                    <div class="card-header">
-                        <div class="card-title-section">
-                            <div class="card-title">${card.player}</div>
-                            <div class="card-subtitle">${card.team}</div>
-                            <div class="card-product">${card.year} ${card.product}</div>
-                        </div>
-                        <div class="card-category">${card.category}</div>
-                    </div>
-                    <div class="card-details" style="margin-top: 1.5rem; line-height: 2;">
-                        <div><strong>Card #:</strong> ${card.cardNumber}</div>
-                        <div><strong>Rookie Card:</strong> ${card.rookieCard === 'Y' ? 'Yes' : 'No'}</div>
-                        <div><strong>Parallel:</strong> ${card.parallel && card.parallel !== 'N' ? card.parallel : 'No'}</div>
-                        <div><strong>Numbered:</strong> ${card.numbered && card.numbered !== 'N' ? card.numbered : 'No'}</div>
-                        <div><strong>Add'l Notes:</strong> ${card.description || 'None'}</div>
-                        <div><strong>Purchase Date:</strong> ${card.purchaseDate === 'Unknown' ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString()}</div>
-                        <div><strong>Purchase Cost:</strong> ${card.purchaseCost ? `${parseFloat(card.purchaseCost).toFixed(2)}` : 'Not specified'}</div>
-                        <div><strong>Quantity:</strong> ${card.quantity || 1}</div>
-                    </div>
-                </div>
-            `;
+            const player = card.player || '';
+            const team = card.team || '';
+            const year = card.year || '';
+            const product = card.product || '';
+            const category = card.category || '';
+            const cardNumber = card.cardNumber || '';
+            const rookieText = card.rookieCard === 'Y' ? 'Yes' : 'No';
+            const parallelText = card.parallel && card.parallel !== 'N' ? card.parallel : 'No';
+            const numberedText = card.numbered && card.numbered !== 'N' ? card.numbered : 'No';
+            const description = card.description || 'None';
+            const purchaseDate = card.purchaseDate === 'Unknown' || !card.purchaseDate ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString();
+            const purchaseCost = card.purchaseCost ? '$' + parseFloat(card.purchaseCost).toFixed(2) : 'Not available';
+            const quantity = card.quantity || 1;
             
+            const modalHTML = '<div style="margin: 0; padding: 0;">' +
+                '<div class="card-header">' +
+                    '<div class="card-title-section">' +
+                        '<div class="card-title">' + player + '</div>' +
+                        '<div class="card-subtitle">' + team + '</div>' +
+                        '<div class="card-product">' + year + ' ' + product + '</div>' +
+                    '</div>' +
+                    '<div class="card-category">' + category + '</div>' +
+                '</div>' +
+                '<div class="card-details" style="margin-top: 1.5rem; line-height: 2;">' +
+                    '<div><strong>Card Number:</strong> ' + cardNumber + '</div>' +
+                    '<div><strong>Rookie Card:</strong> ' + rookieText + '</div>' +
+                    '<div><strong>Parallel:</strong> ' + parallelText + '</div>' +
+                    '<div><strong>Numbered:</strong> ' + numberedText + '</div>' +
+                    '<div><strong>Additional Notes:</strong> ' + description + '</div>' +
+                    '<div><strong>Purchase Date:</strong> ' + purchaseDate + '</div>' +
+                    '<div><strong>Purchase Cost:</strong> ' + purchaseCost + '</div>' +
+                    '<div><strong>Quantity:</strong> ' + quantity + '</div>' +
+                '</div>' +
+            '</div>';
+            
+            document.getElementById('modalCardContent').innerHTML = modalHTML;
             document.getElementById('cardModal').style.display = 'block';
         }
 
@@ -1069,23 +1134,23 @@
             const card = cardCollection.find(c => c.id === cardId);
             if (!card) return;
             
-            const confirmDelete = confirm(`Are you sure you want to delete this card?\n\n${card.year} ${card.product}\n${card.player} - ${card.team}\nCard #${card.cardNumber}`);
+            const year = card.year || '';
+            const product = card.product || '';
+            const player = card.player || '';
+            const team = card.team || '';
+            const cardNumber = card.cardNumber || '';
             
+            const confirmDelete = confirm('Are you sure you want to delete this card?\n\n' + year + ' ' + product + '\n' + player + ' - ' + team + '\nCard #' + cardNumber);
             if (!confirmDelete) return;
             
-            const finalConfirm = confirm(`This action cannot be undone!\n\nClick OK to permanently delete this card from your collection.`);
-            
+            const finalConfirm = confirm('This action cannot be undone!\n\nClick OK to permanently delete this card from your collection.');
             if (!finalConfirm) return;
             
             try {
                 const { deleteDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
-                
                 await deleteDoc(doc(db, 'cards', cardId));
-                
                 cardCollection = cardCollection.filter(c => c.id !== cardId);
-                
                 displayCollection();
-                
                 alert('Card deleted successfully!');
             } catch (error) {
                 console.error('Error deleting card:', error);
@@ -1095,29 +1160,43 @@
 
         function displayGridView(cards) {
             const container = document.getElementById('gridView');
-            
-            container.innerHTML = cards.map(card => `
-                <div class="card-item">
-                    <div class="card-header">
-                        <div class="card-title-section">
-                            <div class="card-title">${card.player}</div>
-                            <div class="card-subtitle">${card.team}</div>
-                            <div class="card-product">${card.year} ${card.product}</div>
-                        </div>
-                        <div class="card-category">${card.category}</div>
-                    </div>
-                    <div class="card-details">
-                        <strong>Card #:</strong> ${card.cardNumber}<br>
-                        <strong>Rookie Card:</strong> ${card.rookieCard === 'Y' ? 'Yes' : 'No'}<br>
-                        <strong>Parallel:</strong> ${card.parallel !== 'N' ? card.parallel : 'No'}<br>
-                        <strong>Numbered:</strong> ${card.numbered !== 'N' ? card.numbered : 'No'}<br>
-                        ${card.description ? `<strong>Add'l Notes:</strong> ${card.description}<br>` : '<strong>Add\'l Notes:</strong> None<br>'}
-                        <strong>Purchase Date:</strong> ${card.purchaseDate === 'Unknown' ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString()}<br>
-                        <strong>Purchase Cost:</strong> ${card.purchaseCost ? `${parseFloat(card.purchaseCost).toFixed(2)}` : 'Not specified'}<br>
-                        <strong>Quantity:</strong> ${card.quantity || 1}
-                    </div>
-                </div>
-            `).join('');
+            const gridHTML = cards.map(card => {
+                const player = card.player || '';
+                const team = card.team || '';
+                const year = card.year || '';
+                const product = card.product || '';
+                const category = card.category || '';
+                const cardNumber = card.cardNumber || '';
+                const rookieText = card.rookieCard === 'Y' ? 'Yes' : 'No';
+                const parallelText = card.parallel !== 'N' ? (card.parallel || '') : 'No';
+                const numberedText = card.numbered !== 'N' ? (card.numbered || '') : 'No';
+                const description = card.description || 'None';
+                const purchaseDate = card.purchaseDate === 'Unknown' || !card.purchaseDate ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString();
+                const purchaseCost = card.purchaseCost ? '$' + parseFloat(card.purchaseCost).toFixed(2) : 'Not available';
+                const quantity = card.quantity || 1;
+                
+                return '<div class="card-item">' +
+                    '<div class="card-header">' +
+                        '<div class="card-title-section">' +
+                            '<div class="card-title">' + player + '</div>' +
+                            '<div class="card-subtitle">' + team + '</div>' +
+                            '<div class="card-product">' + year + ' ' + product + '</div>' +
+                        '</div>' +
+                        '<div class="card-category">' + category + '</div>' +
+                    '</div>' +
+                    '<div class="card-details">' +
+                        '<strong>Card Number:</strong> ' + cardNumber + '<br>' +
+                        '<strong>Rookie Card:</strong> ' + rookieText + '<br>' +
+                        '<strong>Parallel:</strong> ' + parallelText + '<br>' +
+                        '<strong>Numbered:</strong> ' + numberedText + '<br>' +
+                        '<strong>Additional Notes:</strong> ' + description + '<br>' +
+                        '<strong>Purchase Date:</strong> ' + purchaseDate + '<br>' +
+                        '<strong>Purchase Cost:</strong> ' + purchaseCost + '<br>' +
+                        '<strong>Quantity:</strong> ' + quantity +
+                    '</div>' +
+                '</div>';
+            }).join('');
+            container.innerHTML = gridHTML;
         }
 
         function filterCollection() {
@@ -1130,31 +1209,34 @@
                 return;
             }
             
-            const headers = ['Category', 'Year', 'Product', 'Card #', 'Player', 'Team', 'Quantity', 'Rookie Card', 'Parallel', 'Numbered', 'Add\'l Description', 'Purchase Date', 'Purchase Cost'];
-            const csvContent = [
-                headers.join(','),
-                ...cardCollection.map(card => [
-                    card.category,
-                    card.year,
-                    card.product,
-                    card.cardNumber,
-                    card.player,
-                    card.team,
-                    card.quantity || 1,
-                    card.rookieCard,
-                    card.parallel,
-                    card.numbered,
-                    `"${card.description}"`,
-                    card.purchaseDate,
-                    card.purchaseCost
-                ].join(','))
-            ].join('\n');
+            const headers = ['Category', 'Year', 'Product', 'Card Number', 'Player', 'Team', 'Quantity', 'Rookie Card', 'Parallel', 'Numbered', 'Additional Description', 'Purchase Date', 'Purchase Cost'];
+            const csvRows = [headers.join(',')];
             
+            cardCollection.forEach(card => {
+                const row = [
+                    card.category || '',
+                    card.year || '',
+                    card.product || '',
+                    card.cardNumber || '',
+                    card.player || '',
+                    card.team || '',
+                    card.quantity || 1,
+                    card.rookieCard || 'N',
+                    card.parallel || 'N',
+                    card.numbered || 'N',
+                    '"' + (card.description || '') + '"',
+                    card.purchaseDate || 'Unknown',
+                    card.purchaseCost || ''
+                ];
+                csvRows.push(row.join(','));
+            });
+            
+            const csvContent = csvRows.join('\n');
             const blob = new Blob([csvContent], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `buzz_collection_${new Date().toISOString().split('T')[0]}.csv`;
+            a.download = 'buzz_collection_' + new Date().toISOString().split('T')[0] + '.csv';
             a.click();
             window.URL.revokeObjectURL(url);
         }
