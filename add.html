@@ -129,6 +129,223 @@
         </div>
     </div>
 
-    <script src="js/script.js"></script>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+        import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "{{FIREBASE_API_KEY}}",
+            authDomain: "{{FIREBASE_AUTH_DOMAIN}}",
+            projectId: "{{FIREBASE_PROJECT_ID}}",
+            storageBucket: "{{FIREBASE_STORAGE_BUCKET}}",
+            messagingSenderId: "{{FIREBASE_MESSAGING_SENDER_ID}}",
+            appId: "{{FIREBASE_APP_ID}}"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let isEditMode = false;
+        let editCardId = null;
+
+        function initializeYearDropdown() {
+            const yearSelect = document.getElementById('year');
+            for (let year = 2025; year >= 1970; year--) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearSelect.appendChild(option);
+            }
+        }
+
+        function checkEditMode() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const editMode = urlParams.get('edit');
+            
+            if (editMode && localStorage.getItem('editCardData')) {
+                isEditMode = true;
+                editCardId = localStorage.getItem('editCardId');
+                const cardData = JSON.parse(localStorage.getItem('editCardData'));
+                
+                document.querySelector('h1').textContent = 'Edit Card';
+                document.querySelector('.btn-primary').textContent = 'Update Card';
+                
+                populateForm(cardData);
+                
+                localStorage.removeItem('editCardData');
+                localStorage.removeItem('editCardId');
+            }
+        }
+
+        function populateForm(card) {
+            document.getElementById('category').value = card.category || '';
+            document.getElementById('year').value = card.year || '';
+            document.getElementById('product').value = card.product || '';
+            document.getElementById('cardNumber').value = card.cardNumber || '';
+            document.getElementById('player').value = card.player || '';
+            document.getElementById('team').value = card.team || '';
+            document.getElementById('quantity').value = card.quantity || 1;
+            document.getElementById('rookieCard').value = card.rookieCard || 'N';
+            
+            if (card.parallel && card.parallel !== 'N') {
+                document.getElementById('parallelSelect').value = 'Y';
+                document.getElementById('parallelText').style.display = 'block';
+                document.getElementById('parallelText').value = card.parallel;
+            }
+            
+            if (card.numbered && card.numbered !== 'N') {
+                document.getElementById('numberedSelect').value = 'Y';
+                document.getElementById('numberedText').style.display = 'block';
+                document.getElementById('numberedText').value = card.numbered;
+            }
+            
+            document.getElementById('description').value = card.description || '';
+            
+            if (card.purchaseDate && card.purchaseDate !== 'Unknown') {
+                document.getElementById('purchaseDate').value = card.purchaseDate;
+            } else {
+                document.getElementById('unknownDate').checked = true;
+                document.getElementById('purchaseDate').disabled = true;
+            }
+            
+            document.getElementById('purchaseCost').value = card.purchaseCost || '';
+        }
+
+        function toggleParallelInput() {
+            const select = document.getElementById('parallelSelect');
+            const text = document.getElementById('parallelText');
+            text.style.display = select.value === 'Y' ? 'block' : 'none';
+            if (select.value === 'N') text.value = '';
+        }
+
+        function toggleNumberedInput() {
+            const select = document.getElementById('numberedSelect');
+            const text = document.getElementById('numberedText');
+            text.style.display = select.value === 'Y' ? 'block' : 'none';
+            if (select.value === 'N') text.value = '';
+        }
+
+        function toggleDateInput() {
+            const checkbox = document.getElementById('unknownDate');
+            const dateInput = document.getElementById('purchaseDate');
+            dateInput.disabled = checkbox.checked;
+            if (checkbox.checked) dateInput.value = '';
+        }
+
+        async function addCard(event) {
+            event.preventDefault();
+            
+            const card = {
+                category: document.getElementById('category').value,
+                year: parseInt(document.getElementById('year').value),
+                product: document.getElementById('product').value,
+                cardNumber: document.getElementById('cardNumber').value,
+                player: document.getElementById('player').value,
+                team: document.getElementById('team').value,
+                quantity: parseInt(document.getElementById('quantity').value) || 1,
+                rookieCard: document.getElementById('rookieCard').value,
+                parallel: document.getElementById('parallelSelect').value === 'Y' ? document.getElementById('parallelText').value : 'N',
+                numbered: document.getElementById('numberedSelect').value === 'Y' ? document.getElementById('numberedText').value : 'N',
+                description: document.getElementById('description').value,
+                purchaseDate: document.getElementById('unknownDate').checked ? 'Unknown' : document.getElementById('purchaseDate').value,
+                purchaseCost: parseFloat(document.getElementById('purchaseCost').value) || 0
+            };
+
+            try {
+                if (isEditMode && editCardId) {
+                    const { updateDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
+                    await updateDoc(doc(db, 'cards', editCardId), card);
+                    alert('Card updated successfully!');
+                    
+                    isEditMode = false;
+                    editCardId = null;
+                    document.querySelector('h1').textContent = 'Add New Card';
+                    document.querySelector('.btn-primary').textContent = 'Add Card';
+                    
+                    window.location.href = 'collection.html';
+                } else {
+                    card.dateAdded = new Date();
+                    const docRef = await addDoc(collection(db, 'cards'), card);
+                    console.log('Document written with ID: ', docRef.id);
+                    alert('Card added successfully!');
+                }
+                
+                if (!isEditMode) {
+                    event.target.reset();
+                    document.getElementById('parallelText').style.display = 'none';
+                    document.getElementById('numberedText').style.display = 'none';
+                    document.getElementById('quantity').value = 1;
+                }
+            } catch (error) {
+                console.error('Error saving card:', error);
+                alert('Error saving card: ' + error.message);
+            }
+        }
+
+        async function handleCSVUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const csv = e.target.result;
+                const lines = csv.split('\n');
+                
+                let successCount = 0;
+                let errorCount = 0;
+                
+                for (let i = 1; i < lines.length; i++) {
+                    if (lines[i].trim() === '') continue;
+                    
+                    const values = lines[i].split(',').map(v => v.trim());
+                    const card = {
+                        category: values[0] || '',
+                        year: parseInt(values[1]) || 0,
+                        product: values[2] || '',
+                        cardNumber: values[3] || '',
+                        player: values[4] || '',
+                        team: values[5] || '',
+                        quantity: parseInt(values[6]) || 1,
+                        rookieCard: values[7] || 'N',
+                        parallel: values[8] || 'N',
+                        numbered: values[9] || 'N',
+                        description: values[10] || '',
+                        purchaseDate: values[11] || 'Unknown',
+                        purchaseCost: parseFloat(values[12]) || 0,
+                        dateAdded: new Date()
+                    };
+                    
+                    try {
+                        await addDoc(collection(db, 'cards'), card);
+                        successCount++;
+                    } catch (error) {
+                        console.error('Error adding card:', error);
+                        errorCount++;
+                    }
+                }
+                
+                alert(`Import complete! ${successCount} cards added successfully.${errorCount > 0 ? ` ${errorCount} errors.` : ''}`);
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        function toggleMobileMenu() {
+            const navLinks = document.querySelector('.nav-links');
+            navLinks.style.display = navLinks.style.display === 'none' ? 'flex' : 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeYearDropdown();
+            checkEditMode();
+        });
+
+        window.toggleMobileMenu = toggleMobileMenu;
+        window.toggleParallelInput = toggleParallelInput;
+        window.toggleNumberedInput = toggleNumberedInput;
+        window.toggleDateInput = toggleDateInput;
+        window.addCard = addCard;
+        window.handleCSVUpload = handleCSVUpload;
+    </script>
 </body>
 </html>
