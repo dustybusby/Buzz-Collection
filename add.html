@@ -100,21 +100,46 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="description">Additional Notes</label>
-                            <textarea id="description" rows="3"></textarea>
+                            <label for="estimatedValue">Estimated Value ($)</label>
+                            <input type="number" id="estimatedValue" step="0.01" min="0">
+                            <label style="margin-top: 0.5rem;">
+                                <input type="checkbox" id="unknownEstimatedValue" onchange="toggleEstimatedValueInput()"> Unknown
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="estimatedValueDate">Estimated Value As Of</label>
+                            <input type="date" id="estimatedValueDate">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="imageVariation">Image Variation</label>
+                            <select id="imageVariationSelect" onchange="toggleImageVariationInput()">
+                                <option value="N">No</option>
+                                <option value="Y">Yes</option>
+                            </select>
+                            <input type="text" id="imageVariationText" placeholder="Enter image variation description" style="display:none; margin-top: 0.5rem;">
                         </div>
 
                         <div class="form-group">
                             <label for="purchaseDate">Purchase Date</label>
                             <input type="date" id="purchaseDate">
                             <label style="margin-top: 0.5rem;">
-                                <input type="checkbox" id="unknownDate" onchange="toggleDateInput()"> Unknown Date
+                                <input type="checkbox" id="unknownDate" onchange="toggleDateInput()"> Unknown
                             </label>
                         </div>
 
                         <div class="form-group">
                             <label for="purchaseCost">Purchase Cost ($)</label>
                             <input type="number" id="purchaseCost" step="0.01" min="0">
+                            <label style="margin-top: 0.5rem;">
+                                <input type="checkbox" id="unknownCost" onchange="toggleCostInput()"> Unknown
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description">Additional Notes</label>
+                            <textarea id="description" rows="3"></textarea>
                         </div>
                     </div>
 
@@ -128,7 +153,7 @@
                     <p>Drop a CSV file here or click to select</p>
                     <input type="file" id="csvFile" accept=".csv" onchange="handleCSVUpload(event)">
                     <p class="help-text">
-                        CSV should include: Category, Year, Brand, Card #, Player, Team, Quantity, Rookie Card, Parallel, Numbered, Add'l Description, Purchase Date, Purchase Cost
+                        CSV should include: Category, Year, Brand, Card #, Player, Team, Quantity, Rookie Card, Parallel, Numbered, Estimated Value, Estimated Value As Of, Image Variation, Purchase Date, Purchase Cost, Add'l Description
                     </p>
                 </div>
             </div>

@@ -121,7 +121,6 @@ function isAddPage() {
            document.getElementById('cardForm') !== null ||
            document.querySelector('form[onsubmit*="addCard"]') !== null;
 }
-
 // ============================================================================
 // ADD PAGE FUNCTIONS (for add.html)
 // ============================================================================
@@ -197,6 +196,29 @@ function populateForm(card) {
         }
     }
     
+    // Handle estimated value field
+    const estimatedValue = document.getElementById('estimatedValue');
+    const unknownEstimatedValue = document.getElementById('unknownEstimatedValue');
+    if (card.estimatedValue && card.estimatedValue !== 'Unknown') {
+        if (estimatedValue) estimatedValue.value = card.estimatedValue;
+    } else {
+        if (unknownEstimatedValue) unknownEstimatedValue.checked = true;
+        if (estimatedValue) estimatedValue.disabled = true;
+    }
+    
+    setFieldValue('estimatedValueDate', card.estimatedValueDate);
+    
+    // Handle image variation field
+    if (card.imageVariation && card.imageVariation !== 'N') {
+        const imageVariationSelect = document.getElementById('imageVariationSelect');
+        const imageVariationText = document.getElementById('imageVariationText');
+        if (imageVariationSelect && imageVariationText) {
+            imageVariationSelect.value = 'Y';
+            imageVariationText.style.display = 'block';
+            imageVariationText.value = card.imageVariation;
+        }
+    }
+    
     setFieldValue('description', card.description);
     
     // Handle purchase date
@@ -209,9 +231,16 @@ function populateForm(card) {
         if (purchaseDate) purchaseDate.disabled = true;
     }
     
-    setFieldValue('purchaseCost', card.purchaseCost);
+    // Handle purchase cost
+    const purchaseCost = document.getElementById('purchaseCost');
+    const unknownCost = document.getElementById('unknownCost');
+    if (card.purchaseCost && card.purchaseCost !== 'Unknown') {
+        if (purchaseCost) purchaseCost.value = card.purchaseCost;
+    } else {
+        if (unknownCost) unknownCost.checked = true;
+        if (purchaseCost) purchaseCost.disabled = true;
+    }
 }
-
 function toggleParallelInput() {
     const select = document.getElementById('parallelSelect');
     const text = document.getElementById('parallelText');
@@ -230,12 +259,39 @@ function toggleNumberedInput() {
     }
 }
 
+function toggleEstimatedValueInput() {
+    const checkbox = document.getElementById('unknownEstimatedValue');
+    const valueInput = document.getElementById('estimatedValue');
+    if (checkbox && valueInput) {
+        valueInput.disabled = checkbox.checked;
+        if (checkbox.checked) valueInput.value = '';
+    }
+}
+
+function toggleImageVariationInput() {
+    const select = document.getElementById('imageVariationSelect');
+    const text = document.getElementById('imageVariationText');
+    if (select && text) {
+        text.style.display = select.value === 'Y' ? 'block' : 'none';
+        if (select.value === 'N') text.value = '';
+    }
+}
+
 function toggleDateInput() {
     const checkbox = document.getElementById('unknownDate');
     const dateInput = document.getElementById('purchaseDate');
     if (checkbox && dateInput) {
         dateInput.disabled = checkbox.checked;
         if (checkbox.checked) dateInput.value = '';
+    }
+}
+
+function toggleCostInput() {
+    const checkbox = document.getElementById('unknownCost');
+    const costInput = document.getElementById('purchaseCost');
+    if (checkbox && costInput) {
+        costInput.disabled = checkbox.checked;
+        if (checkbox.checked) costInput.value = '';
     }
 }
 
@@ -258,9 +314,12 @@ async function addCard(event) {
         rookieCard: getFieldValue('rookieCard'),
         parallel: document.getElementById('parallelSelect')?.value === 'Y' ? getFieldValue('parallelText') : 'N',
         numbered: document.getElementById('numberedSelect')?.value === 'Y' ? getFieldValue('numberedText') : 'N',
+        estimatedValue: document.getElementById('unknownEstimatedValue')?.checked ? 'Unknown' : (parseFloat(getFieldValue('estimatedValue')) || 0),
+        estimatedValueDate: getFieldValue('estimatedValueDate'),
+        imageVariation: document.getElementById('imageVariationSelect')?.value === 'Y' ? getFieldValue('imageVariationText') : 'N',
         description: getFieldValue('description'),
         purchaseDate: document.getElementById('unknownDate')?.checked ? 'Unknown' : getFieldValue('purchaseDate'),
-        purchaseCost: parseFloat(getFieldValue('purchaseCost')) || 0
+        purchaseCost: document.getElementById('unknownCost')?.checked ? 'Unknown' : (parseFloat(getFieldValue('purchaseCost')) || 0)
     };
 
     try {
@@ -289,10 +348,12 @@ async function addCard(event) {
             event.target.reset();
             const parallelText = document.getElementById('parallelText');
             const numberedText = document.getElementById('numberedText');
+            const imageVariationText = document.getElementById('imageVariationText');
             const quantity = document.getElementById('quantity');
             
             if (parallelText) parallelText.style.display = 'none';
             if (numberedText) numberedText.style.display = 'none';
+            if (imageVariationText) imageVariationText.style.display = 'none';
             if (quantity) quantity.value = 1;
         }
     } catch (error) {
@@ -330,9 +391,12 @@ async function handleCSVUpload(event) {
                 rookieCard: values[7] || 'N',
                 parallel: values[8] || 'N',
                 numbered: values[9] || 'N',
-                description: values[10] || '',
-                purchaseDate: values[11] || 'Unknown',
-                purchaseCost: parseFloat(values[12]) || 0,
+                estimatedValue: values[10] ? (values[10].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[10]) || 0) : 0,
+                estimatedValueDate: values[11] || '',
+                imageVariation: values[12] || 'N',
+                purchaseDate: values[13] || 'Unknown',
+                purchaseCost: values[14] ? (values[14].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[14]) || 0) : 0,
+                description: values[15] || '',
                 dateAdded: new Date()
             };
             
@@ -350,7 +414,6 @@ async function handleCSVUpload(event) {
     };
     reader.readAsText(file);
 }
-
 // ============================================================================
 // DASHBOARD/INVENTORY FUNCTIONS (for index.html)
 // ============================================================================
@@ -380,7 +443,11 @@ function displayInventory() {
 
 function updateSummaryStats() {
     const totalCards = cardCollection.length;
-    const totalValue = cardCollection.reduce((sum, card) => sum + (card.purchaseCost || 0), 0);
+    const totalValue = cardCollection.reduce((sum, card) => {
+        const cost = card.purchaseCost;
+        if (cost === 'Unknown' || !cost) return sum;
+        return sum + parseFloat(cost);
+    }, 0);
     const rookieCards = cardCollection.filter(card => card.rookieCard === 'Y').length;
     const numberedCards = cardCollection.filter(card => card.numbered !== 'N').length;
 
@@ -403,7 +470,10 @@ function displayCategoryBreakdown() {
             categoryStats[category] = { count: 0, value: 0 };
         }
         categoryStats[category].count++;
-        categoryStats[category].value += card.purchaseCost || 0;
+        const cost = card.purchaseCost;
+        if (cost !== 'Unknown' && cost) {
+            categoryStats[category].value += parseFloat(cost);
+        }
     });
 
     const container = document.getElementById('categoryStats');
@@ -495,8 +565,8 @@ function displayTeamDistribution() {
 
 function displayExpensiveCards() {
     const expensiveCards = [...cardCollection]
-        .filter(card => card.purchaseCost > 0)
-        .sort((a, b) => b.purchaseCost - a.purchaseCost)
+        .filter(card => card.purchaseCost !== 'Unknown' && card.purchaseCost > 0)
+        .sort((a, b) => parseFloat(b.purchaseCost) - parseFloat(a.purchaseCost))
         .slice(0, 6);
 
     const container = document.getElementById('expensiveCards');
@@ -510,7 +580,7 @@ function displayExpensiveCards() {
             <div class="mini-card">
                 <div class="mini-card-header">
                     <div class="mini-card-player">${card.player || 'Unknown Player'}</div>
-                    <div class="mini-card-price">$${card.purchaseCost.toFixed(2)}</div>
+                    <div class="mini-card-price">$${parseFloat(card.purchaseCost).toFixed(2)}</div>
                 </div>
                 <div class="mini-card-details">
                     ${card.year || 'Unknown'} ${card.product || 'Unknown'} #${card.cardNumber || 'N/A'}<br>
@@ -521,7 +591,6 @@ function displayExpensiveCards() {
         `).join('');
     }
 }
-
 // ============================================================================
 // COLLECTION VIEW FUNCTIONS (for collection.html)
 // ============================================================================
@@ -738,9 +807,12 @@ function displayGridView(cards) {
         const rookieText = card.rookieCard === 'Y' ? 'Yes' : 'No';
         const parallelText = card.parallel !== 'N' ? (card.parallel || '') : 'No';
         const numberedText = card.numbered !== 'N' ? (card.numbered || '') : 'No';
+        const estimatedValue = card.estimatedValue === 'Unknown' || !card.estimatedValue ? 'Unknown' : '$' + parseFloat(card.estimatedValue).toFixed(2);
+        const estimatedValueDate = card.estimatedValueDate || 'Not specified';
+        const imageVariationText = card.imageVariation !== 'N' ? (card.imageVariation || '') : 'No';
         const description = card.description || 'None';
         const purchaseDate = card.purchaseDate === 'Unknown' || !card.purchaseDate ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString();
-        const purchaseCost = card.purchaseCost ? '$' + parseFloat(card.purchaseCost).toFixed(2) : 'Not available';
+        const purchaseCost = card.purchaseCost === 'Unknown' || !card.purchaseCost ? 'Unknown' : '$' + parseFloat(card.purchaseCost).toFixed(2);
         const quantity = card.quantity || 1;
         
         return `<div class="card-item">
@@ -757,16 +829,18 @@ function displayGridView(cards) {
                 <strong>Rookie Card:</strong> ${rookieText}<br>
                 <strong>Parallel:</strong> ${parallelText}<br>
                 <strong>Numbered:</strong> ${numberedText}<br>
-                <strong>Additional Notes:</strong> ${description}<br>
+                <strong>Estimated Value:</strong> ${estimatedValue}<br>
+                <strong>Est. Value As Of:</strong> ${estimatedValueDate}<br>
+                <strong>Image Variation:</strong> ${imageVariationText}<br>
                 <strong>Purchase Date:</strong> ${purchaseDate}<br>
                 <strong>Purchase Cost:</strong> ${purchaseCost}<br>
-                <strong>Quantity:</strong> ${quantity}
+                <strong>Quantity:</strong> ${quantity}<br>
+                <strong>Additional Notes:</strong> ${description}
             </div>
         </div>`;
     }).join('');
     container.innerHTML = gridHTML;
 }
-
 function clearAllFilters() {
     const filters = [
         'filter-year', 'filter-product', 'filter-player', 'filter-team',
@@ -799,9 +873,12 @@ function viewCard(cardId) {
     const rookieText = card.rookieCard === 'Y' ? 'Yes' : 'No';
     const parallelText = card.parallel && card.parallel !== 'N' ? card.parallel : 'No';
     const numberedText = card.numbered && card.numbered !== 'N' ? card.numbered : 'No';
+    const estimatedValue = card.estimatedValue === 'Unknown' || !card.estimatedValue ? 'Unknown' : '$' + parseFloat(card.estimatedValue).toFixed(2);
+    const estimatedValueDate = card.estimatedValueDate || 'Not specified';
+    const imageVariationText = card.imageVariation && card.imageVariation !== 'N' ? card.imageVariation : 'No';
     const description = card.description || 'None';
     const purchaseDate = card.purchaseDate === 'Unknown' || !card.purchaseDate ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString();
-    const purchaseCost = card.purchaseCost ? '$' + parseFloat(card.purchaseCost).toFixed(2) : 'Not available';
+    const purchaseCost = card.purchaseCost === 'Unknown' || !card.purchaseCost ? 'Unknown' : '$' + parseFloat(card.purchaseCost).toFixed(2);
     const quantity = card.quantity || 1;
     
     const modalHTML = `<div style="margin: 0; padding: 0;">
@@ -818,10 +895,13 @@ function viewCard(cardId) {
             <div><strong>Rookie Card:</strong> ${rookieText}</div>
             <div><strong>Parallel:</strong> ${parallelText}</div>
             <div><strong>Numbered:</strong> ${numberedText}</div>
-            <div><strong>Additional Notes:</strong> ${description}</div>
+            <div><strong>Estimated Value:</strong> ${estimatedValue}</div>
+            <div><strong>Est. Value As Of:</strong> ${estimatedValueDate}</div>
+            <div><strong>Image Variation:</strong> ${imageVariationText}</div>
             <div><strong>Purchase Date:</strong> ${purchaseDate}</div>
             <div><strong>Purchase Cost:</strong> ${purchaseCost}</div>
             <div><strong>Quantity:</strong> ${quantity}</div>
+            <div><strong>Additional Notes:</strong> ${description}</div>
         </div>
     </div>`;
     
@@ -876,7 +956,7 @@ function exportToCSV() {
         return;
     }
     
-    const headers = ['Category', 'Year', 'Product', 'Card Number', 'Player', 'Team', 'Quantity', 'Rookie Card', 'Parallel', 'Numbered', 'Additional Description', 'Purchase Date', 'Purchase Cost'];
+    const headers = ['Category', 'Year', 'Brand', 'Card Number', 'Player', 'Team', 'Quantity', 'Rookie Card', 'Parallel', 'Numbered', 'Estimated Value', 'Estimated Value As Of', 'Image Variation', 'Purchase Date', 'Purchase Cost', 'Additional Description'];
     const csvRows = [headers.join(',')];
     
     cardCollection.forEach(card => {
@@ -891,9 +971,12 @@ function exportToCSV() {
             card.rookieCard || 'N',
             card.parallel || 'N',
             card.numbered || 'N',
-            '"' + (card.description || '') + '"',
+            card.estimatedValue || '',
+            card.estimatedValueDate || '',
+            card.imageVariation || 'N',
             card.purchaseDate || 'Unknown',
-            card.purchaseCost || ''
+            card.purchaseCost || '',
+            '"' + (card.description || '') + '"'
         ];
         csvRows.push(row.join(','));
     });
@@ -1011,6 +1094,9 @@ window.deleteCard = deleteCard;
 // Add page specific functions
 window.toggleParallelInput = toggleParallelInput;
 window.toggleNumberedInput = toggleNumberedInput;
+window.toggleEstimatedValueInput = toggleEstimatedValueInput;
+window.toggleImageVariationInput = toggleImageVariationInput;
 window.toggleDateInput = toggleDateInput;
+window.toggleCostInput = toggleCostInput;
 window.addCard = addCard;
 window.handleCSVUpload = handleCSVUpload;
