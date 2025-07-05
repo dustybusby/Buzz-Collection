@@ -3,6 +3,10 @@ let app, db, cardCollection = [];
 let currentView = 'list';
 let currentSort = { field: null, direction: 'asc' };
 
+// Add page specific variables
+let isEditMode = false;
+let editCardId = null;
+
 // Initialize Firebase with dynamic imports
 async function initFirebase() {
     try {
@@ -30,7 +34,9 @@ async function initFirebase() {
             query: firestore.query,
             orderBy: firestore.orderBy,
             deleteDoc: firestore.deleteDoc,
-            doc: firestore.doc
+            doc: firestore.doc,
+            addDoc: firestore.addDoc,
+            updateDoc: firestore.updateDoc
         };
         
         return true;
@@ -64,14 +70,17 @@ async function loadCollectionFromFirebase() {
             });
         });
         
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('mainContent').style.display = 'block';
+        const loadingEl = document.getElementById('loading');
+        const mainContentEl = document.getElementById('mainContent');
+        
+        if (loadingEl) loadingEl.style.display = 'none';
+        if (mainContentEl) mainContentEl.style.display = 'block';
         
         // Call appropriate display function based on current page
         if (isCollectionPage()) {
             updateCategoryFilter();
             displayCollection();
-        } else {
+        } else if (isDashboardPage()) {
             displayInventory();
         }
         
@@ -95,10 +104,250 @@ async function loadCollectionFromFirebase() {
     }
 }
 
-// Helper function to determine current page
+// Helper functions to determine current page
 function isCollectionPage() {
     return window.location.pathname.includes('collection.html') || 
            document.getElementById('listView') !== null;
+}
+
+function isDashboardPage() {
+    return window.location.pathname.includes('index.html') || 
+           (window.location.pathname === '/' || window.location.pathname === '') ||
+           document.getElementById('totalCards') !== null;
+}
+
+function isAddPage() {
+    return window.location.pathname.includes('add.html') || 
+           document.getElementById('cardForm') !== null;
+}
+
+// ============================================================================
+// ADD PAGE FUNCTIONS (for add.html)
+// ============================================================================
+
+function initializeYearDropdown() {
+    const yearSelect = document.getElementById('year');
+    if (!yearSelect) return;
+    
+    for (let year = 2025; year >= 1970; year--) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        yearSelect.appendChild(option);
+    }
+}
+
+function checkEditMode() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const editMode = urlParams.get('edit');
+    
+    if (editMode && localStorage.getItem('editCardData')) {
+        isEditMode = true;
+        editCardId = localStorage.getItem('editCardId');
+        const cardData = JSON.parse(localStorage.getItem('editCardData'));
+        
+        const titleEl = document.querySelector('h1');
+        const submitBtn = document.querySelector('.btn-primary');
+        
+        if (titleEl) titleEl.textContent = 'Edit Card';
+        if (submitBtn) submitBtn.textContent = 'Update Card';
+        
+        populateForm(cardData);
+        
+        localStorage.removeItem('editCardData');
+        localStorage.removeItem('editCardId');
+    }
+}
+
+function populateForm(card) {
+    const setFieldValue = (id, value) => {
+        const element = document.getElementById(id);
+        if (element) element.value = value || '';
+    };
+    
+    setFieldValue('category', card.category);
+    setFieldValue('year', card.year);
+    setFieldValue('product', card.product);
+    setFieldValue('cardNumber', card.cardNumber);
+    setFieldValue('player', card.player);
+    setFieldValue('team', card.team);
+    setFieldValue('quantity', card.quantity || 1);
+    setFieldValue('rookieCard', card.rookieCard || 'N');
+    
+    // Handle parallel field
+    if (card.parallel && card.parallel !== 'N') {
+        const parallelSelect = document.getElementById('parallelSelect');
+        const parallelText = document.getElementById('parallelText');
+        if (parallelSelect && parallelText) {
+            parallelSelect.value = 'Y';
+            parallelText.style.display = 'block';
+            parallelText.value = card.parallel;
+        }
+    }
+    
+    // Handle numbered field
+    if (card.numbered && card.numbered !== 'N') {
+        const numberedSelect = document.getElementById('numberedSelect');
+        const numberedText = document.getElementById('numberedText');
+        if (numberedSelect && numberedText) {
+            numberedSelect.value = 'Y';
+            numberedText.style.display = 'block';
+            numberedText.value = card.numbered;
+        }
+    }
+    
+    setFieldValue('description', card.description);
+    
+    // Handle purchase date
+    const purchaseDate = document.getElementById('purchaseDate');
+    const unknownDate = document.getElementById('unknownDate');
+    if (card.purchaseDate && card.purchaseDate !== 'Unknown') {
+        if (purchaseDate) purchaseDate.value = card.purchaseDate;
+    } else {
+        if (unknownDate) unknownDate.checked = true;
+        if (purchaseDate) purchaseDate.disabled = true;
+    }
+    
+    setFieldValue('purchaseCost', card.purchaseCost);
+}
+
+function toggleParallelInput() {
+    const select = document.getElementById('parallelSelect');
+    const text = document.getElementById('parallelText');
+    if (select && text) {
+        text.style.display = select.value === 'Y' ? 'block' : 'none';
+        if (select.value === 'N') text.value = '';
+    }
+}
+
+function toggleNumberedInput() {
+    const select = document.getElementById('numberedSelect');
+    const text = document.getElementById('numberedText');
+    if (select && text) {
+        text.style.display = select.value === 'Y' ? 'block' : 'none';
+        if (select.value === 'N') text.value = '';
+    }
+}
+
+function toggleDateInput() {
+    const checkbox = document.getElementById('unknownDate');
+    const dateInput = document.getElementById('purchaseDate');
+    if (checkbox && dateInput) {
+        dateInput.disabled = checkbox.checked;
+        if (checkbox.checked) dateInput.value = '';
+    }
+}
+
+async function addCard(event) {
+    event.preventDefault();
+    
+    const getFieldValue = (id) => {
+        const element = document.getElementById(id);
+        return element ? element.value : '';
+    };
+    
+    const card = {
+        category: getFieldValue('category'),
+        year: parseInt(getFieldValue('year')) || 0,
+        product: getFieldValue('product'),
+        cardNumber: getFieldValue('cardNumber'),
+        player: getFieldValue('player'),
+        team: getFieldValue('team'),
+        quantity: parseInt(getFieldValue('quantity')) || 1,
+        rookieCard: getFieldValue('rookieCard'),
+        parallel: document.getElementById('parallelSelect')?.value === 'Y' ? getFieldValue('parallelText') : 'N',
+        numbered: document.getElementById('numberedSelect')?.value === 'Y' ? getFieldValue('numberedText') : 'N',
+        description: getFieldValue('description'),
+        purchaseDate: document.getElementById('unknownDate')?.checked ? 'Unknown' : getFieldValue('purchaseDate'),
+        purchaseCost: parseFloat(getFieldValue('purchaseCost')) || 0
+    };
+
+    try {
+        if (isEditMode && editCardId) {
+            const { updateDoc, doc } = window.firebaseRefs;
+            await updateDoc(doc(db, 'cards', editCardId), card);
+            alert('Card updated successfully!');
+            
+            isEditMode = false;
+            editCardId = null;
+            
+            const titleEl = document.querySelector('h1');
+            const submitBtn = document.querySelector('.btn-primary');
+            if (titleEl) titleEl.textContent = 'Add New Card';
+            if (submitBtn) submitBtn.textContent = 'Add Card';
+            
+            window.location.href = 'collection.html';
+        } else {
+            const { addDoc, collection } = window.firebaseRefs;
+            card.dateAdded = new Date();
+            const docRef = await addDoc(collection(db, 'cards'), card);
+            console.log('Document written with ID: ', docRef.id);
+            alert('Card added successfully!');
+            
+            // Reset form
+            event.target.reset();
+            const parallelText = document.getElementById('parallelText');
+            const numberedText = document.getElementById('numberedText');
+            const quantity = document.getElementById('quantity');
+            
+            if (parallelText) parallelText.style.display = 'none';
+            if (numberedText) numberedText.style.display = 'none';
+            if (quantity) quantity.value = 1;
+        }
+    } catch (error) {
+        console.error('Error saving card:', error);
+        alert('Error saving card: ' + error.message);
+    }
+}
+
+async function handleCSVUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+        const csv = e.target.result;
+        const lines = csv.split('\n');
+        
+        let successCount = 0;
+        let errorCount = 0;
+        
+        const { addDoc, collection } = window.firebaseRefs;
+        
+        for (let i = 1; i < lines.length; i++) {
+            if (lines[i].trim() === '') continue;
+            
+            const values = lines[i].split(',').map(v => v.trim());
+            const card = {
+                category: values[0] || '',
+                year: parseInt(values[1]) || 0,
+                product: values[2] || '',
+                cardNumber: values[3] || '',
+                player: values[4] || '',
+                team: values[5] || '',
+                quantity: parseInt(values[6]) || 1,
+                rookieCard: values[7] || 'N',
+                parallel: values[8] || 'N',
+                numbered: values[9] || 'N',
+                description: values[10] || '',
+                purchaseDate: values[11] || 'Unknown',
+                purchaseCost: parseFloat(values[12]) || 0,
+                dateAdded: new Date()
+            };
+            
+            try {
+                await addDoc(collection(db, 'cards'), card);
+                successCount++;
+            } catch (error) {
+                console.error('Error adding card:', error);
+                errorCount++;
+            }
+        }
+        
+        alert(`Import complete! ${successCount} cards added successfully.${errorCount > 0 ? ` ${errorCount} errors.` : ''}`);
+        event.target.value = '';
+    };
+    reader.readAsText(file);
 }
 
 // ============================================================================
@@ -551,7 +800,7 @@ function viewCard(cardId) {
     const numberedText = card.numbered && card.numbered !== 'N' ? card.numbered : 'No';
     const description = card.description || 'None';
     const purchaseDate = card.purchaseDate === 'Unknown' || !card.purchaseDate ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString();
-    const purchaseCost = card.purchaseCost ? '$' + parseFloat(card.purchaseCost).toFixed(2) : 'Not available';
+    const purchaseCost = card.purchaseCost ? ' + parseFloat(card.purchaseCost).toFixed(2) : 'Not available';
     const quantity = card.quantity || 1;
     
     const modalHTML = `<div style="margin: 0; padding: 0;">
@@ -678,17 +927,30 @@ document.addEventListener('DOMContentLoaded', async function() {
     const loadingEl = document.getElementById('loading');
     const mainContentEl = document.getElementById('mainContent');
     
-    if (!loadingEl || !mainContentEl) {
-        console.error('Required DOM elements not found!');
-        return;
-    }
-    
+    // Initialize Firebase first
     const success = await initFirebase();
     
     if (success) {
-        setTimeout(() => {
-            loadCollectionFromFirebase();
-        }, 1000);
+        // Handle add page specific initialization
+        if (isAddPage()) {
+            initializeYearDropdown();
+            checkEditMode();
+            
+            // Only load collection data if not on add page or if we need it for validation
+            // For now, we'll skip loading the full collection on add page for performance
+            if (loadingEl) loadingEl.style.display = 'none';
+            if (mainContentEl) mainContentEl.style.display = 'block';
+        } else {
+            // Load collection data for dashboard and collection pages
+            if (!loadingEl || !mainContentEl) {
+                console.error('Required DOM elements not found!');
+                return;
+            }
+            
+            setTimeout(() => {
+                loadCollectionFromFirebase();
+            }, 1000);
+        }
     } else {
         if (loadingEl) {
             loadingEl.innerHTML = `
@@ -727,3 +989,10 @@ window.viewCard = viewCard;
 window.closeCardModal = closeCardModal;
 window.editCard = editCard;
 window.deleteCard = deleteCard;
+
+// Add page specific functions
+window.toggleParallelInput = toggleParallelInput;
+window.toggleNumberedInput = toggleNumberedInput;
+window.toggleDateInput = toggleDateInput;
+window.addCard = addCard;
+window.handleCSVUpload = handleCSVUpload;
