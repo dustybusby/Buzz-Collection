@@ -1,42 +1,26 @@
-// Firebase configuration and initialization
-let app, db, cardCollection = [];
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+import { getFirestore, collection, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 
-// Initialize Firebase when the script loads
-async function initializeFirebase() {
-    try {
-        const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js');
-        const { getFirestore } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
-        
-        const firebaseConfig = {
-            apiKey: "{{FIREBASE_API_KEY}}",
-            authDomain: "{{FIREBASE_AUTH_DOMAIN}}",
-            projectId: "{{FIREBASE_PROJECT_ID}}",
-            storageBucket: "{{FIREBASE_STORAGE_BUCKET}}",
-            messagingSenderId: "{{FIREBASE_MESSAGING_SENDER_ID}}",
-            appId: "{{FIREBASE_APP_ID}}"
-        };
+const firebaseConfig = {
+    apiKey: "{{FIREBASE_API_KEY}}",
+    authDomain: "{{FIREBASE_AUTH_DOMAIN}}",
+    projectId: "{{FIREBASE_PROJECT_ID}}",
+    storageBucket: "{{FIREBASE_STORAGE_BUCKET}}",
+    messagingSenderId: "{{FIREBASE_MESSAGING_SENDER_ID}}",
+    appId: "{{FIREBASE_APP_ID}}"
+};
 
-        app = initializeApp(firebaseConfig);
-        db = getFirestore(app);
-        console.log('🔥 Firebase initialized successfully');
-    } catch (error) {
-        console.error('❌ Firebase initialization error:', error);
-    }
-}
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+console.log('🔥 Firebase initialized successfully');
 
-// Dashboard functions
+let cardCollection = [];
+
 async function loadCollectionFromFirebase() {
-    if (!db) {
-        console.error('Database not initialized');
-        return;
-    }
-
     try {
         console.log('📖 Loading collection from Firebase...');
-        console.log('🔥 Firebase config check:', app);
+        console.log('🔥 Firebase config check:', firebaseConfig);
         console.log('🔥 Database object:', db);
-        
-        const { collection, getDocs, query, orderBy } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
         
         const querySnapshot = await getDocs(
             query(
@@ -234,34 +218,19 @@ function displayExpensiveCards() {
     `).join('');
 }
 
-// Common utility function (shared across all pages)
 function toggleMobileMenu() {
     const navLinks = document.querySelector('.nav-links');
     navLinks.style.display = navLinks.style.display === 'none' ? 'flex' : 'none';
 }
 
-// Dashboard initialization
-async function initializeDashboard() {
+document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Initializing Inventory Overview...');
-    
-    // Initialize Firebase first
-    await initializeFirebase();
-    
     console.log('🔧 Firebase app:', app);
     console.log('🗄️ Firestore db:', db);
     
     setTimeout(() => {
         loadCollectionFromFirebase();
     }, 1000);
-}
-
-// Page detection and initialization
-document.addEventListener('DOMContentLoaded', function() {
-    // Check if this is the dashboard page by looking for dashboard-specific elements
-    if (document.getElementById('totalCards') && document.getElementById('categoryStats')) {
-        initializeDashboard();
-    }
 });
 
-// Export functions to global scope for HTML onclick handlers
 window.toggleMobileMenu = toggleMobileMenu;
