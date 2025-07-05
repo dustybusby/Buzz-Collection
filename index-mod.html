@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Buzz Collection</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="logo">The Buzz Collection</div>
+        <nav class="nav-links">
+            <a href="index.html" class="active">Dashboard</a>
+            <a href="collection.html">Collection</a>
+            <a href="add.html">Add Card</a>
+        </nav>
+        <button class="menu-toggle" onclick="toggleMobileMenu()">☰</button>
+    </header>
+
+    <div class="container">
+        <h1>Collection Overview</h1>
+        
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+            Loading your collection data...
+        </div>
+
+        <div id="mainContent" style="display: none;">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalCards">0</div>
+                    <div class="stat-label">Total Cards</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalValue">$0.00</div>
+                    <div class="stat-label">Estimated Value</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="rookieCards">0</div>
+                    <div class="stat-label">Rookie Cards</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="numberedCards">0</div>
+                    <div class="stat-label">Numbered Cards</div>
+                </div>
+            </div>
+
+            <div class="inventory-section">
+                <h2>Category Breakdown</h2>
+                <div class="category-stats" id="categoryStats">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="inventory-section">
+                <h2>Collection by Year</h2>
+                <div class="year-chart" id="yearChart">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="inventory-section">
+                <h2>Top Products</h2>
+                <div class="product-list" id="productList">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="inventory-section">
+                <h2>Teams Represented</h2>
+                <div class="team-grid" id="teamGrid">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="inventory-section">
+                <h2>Most Expensive Cards</h2>
+                <div class="card-list" id="expensiveCards">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/script.js"></script>
+</body>
+</html>
