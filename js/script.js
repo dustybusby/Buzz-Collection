@@ -218,7 +218,7 @@ function populateForm(card) {
             imageVariationText.value = card.imageVariation;
         }
     }
-    setFieldValue('description', card.description);
+setFieldValue('description', card.description);
     
     // Handle purchase date
     const purchaseDate = document.getElementById('purchaseDate');
@@ -944,34 +944,30 @@ function viewCard(cardId) {
     }
     
     const modalHTML = `
-        <div class="virtual-card">
-            <div class="virtual-card-header">
-                <div class="virtual-card-main-info">
-                    <div class="virtual-card-player">${player}</div>
-                    <div class="virtual-card-team">${team}</div>
-                    <div class="virtual-card-details-line">
-                        Card #${cardNumber} | ${year} ${product}
-                    </div>
-                </div>
-                <div class="virtual-card-category">${category}</div>
+        <div class="card-header">
+            <div class="card-title-section">
+                <div class="card-title">${player}</div>
+                <div class="card-subtitle">${team}</div>
+                <div class="card-product">Card #${cardNumber} | ${year} ${product}</div>
+            </div>
+            <div class="card-category">${category}</div>
+        </div>
+        
+        <div class="card-body">
+            <div class="card-details">
+                ${numberedText ? `<div class="card-detail-line">${numberedText}</div>` : ''}
+                ${parallelText ? `<div class="card-detail-line">${parallelText}</div>` : ''}
+                ${rookieText ? `<div class="card-detail-line">${rookieText}</div>` : ''}
+                ${imageVariationText ? `<div class="card-detail-line">${imageVariationText}</div>` : ''}
+                <div class="card-detail-line">Quantity: ${quantity}</div>
+                ${description ? `<div class="card-detail-line">Notes: ${description}</div>` : ''}
             </div>
             
-            <div class="virtual-card-body">
-                <div class="virtual-card-attributes">
-                    ${numberedText ? `<div class="virtual-card-attribute">${numberedText}</div>` : ''}
-                    ${parallelText ? `<div class="virtual-card-attribute">${parallelText}</div>` : ''}
-                    ${rookieText ? `<div class="virtual-card-attribute">${rookieText}</div>` : ''}
-                    ${imageVariationText ? `<div class="virtual-card-attribute">${imageVariationText}</div>` : ''}
-                    <div class="virtual-card-attribute">Quantity: ${quantity}</div>
-                    ${description ? `<div class="virtual-card-attribute">Notes: ${description}</div>` : ''}
-                </div>
-                
-                <div class="virtual-card-monetary">
-                    <div class="monetary-field">Grade: N/A</div>
-                    <div class="monetary-field">Purchase Date: ${purchaseDate}</div>
-                    <div class="monetary-field">Purchase Price: ${purchaseCost}</div>
-                    <div class="monetary-field estimated-value">${estimatedValueText}</div>
-                </div>
+            <div class="card-monetary">
+                <div class="monetary-field">Grade: N/A</div>
+                <div class="monetary-field">Purchase Date: ${purchaseDate}</div>
+                <div class="monetary-field">Purchase Price: ${purchaseCost}</div>
+                <div class="monetary-field estimated-value">${estimatedValueText}</div>
             </div>
         </div>
     `;
