@@ -1,12 +1,13 @@
-// Dynamic import approach for external files
-let firebaseApp, firestore;
+// Global variables
 let app, db, cardCollection = [];
 
 // Initialize Firebase with dynamic imports
 async function initFirebase() {
     try {
-        firebaseApp = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js');
-        firestore = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
+        console.log('🔥 Starting Firebase initialization...');
+        
+        const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js');
+        const { getFirestore, collection, getDocs, query, orderBy } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
         
         const firebaseConfig = {
             apiKey: "{{FIREBASE_API_KEY}}",
@@ -17,9 +18,20 @@ async function initFirebase() {
             appId: "{{FIREBASE_APP_ID}}"
         };
 
-        app = firebaseApp.initializeApp(firebaseConfig);
-        db = firestore.getFirestore(app);
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        
         console.log('🔥 Firebase initialized successfully');
+        console.log('🗄️ Database object:', db);
+        
+        // Store Firebase functions globally for later use
+        window.firebaseFunctions = {
+            collection,
+            getDocs,
+            query,
+            orderBy
+        };
+        
         return true;
     } catch (error) {
         console.error('❌ Firebase initialization error:', error);
@@ -32,10 +44,12 @@ async function loadCollectionFromFirebase() {
         console.log('📖 Loading collection from Firebase...');
         console.log('🔥 Database object:', db);
         
-        const querySnapshot = await firestore.getDocs(
-            firestore.query(
-                firestore.collection(db, 'cards'),
-                firestore.orderBy('dateAdded', 'desc')
+        const { collection, getDocs, query, orderBy } = window.firebaseFunctions;
+        
+        const querySnapshot = await getDocs(
+            query(
+                collection(db, 'cards'),
+                orderBy('dateAdded', 'desc')
             )
         );
         
@@ -131,7 +145,7 @@ function displayCategoryBreakdown() {
         <div class="category-item">
             <div class="category-name">${category}</div>
             <div class="category-count">${stats.count}</div>
-            <div class="category-value">${stats.value.toFixed(2)}</div>
+            <div class="category-value">$${stats.value.toFixed(2)}</div>
         </div>
     `).join('');
 }
@@ -217,7 +231,7 @@ function displayExpensiveCards() {
         <div class="mini-card">
             <div class="mini-card-header">
                 <div class="mini-card-player">${card.player}</div>
-                <div class="mini-card-price">${card.purchaseCost.toFixed(2)}</div>
+                <div class="mini-card-price">$${card.purchaseCost.toFixed(2)}</div>
             </div>
             <div class="mini-card-details">
                 ${card.year} ${card.product} #${card.cardNumber}<br>
@@ -244,6 +258,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.log('🔧 Firebase app:', app);
         console.log('🗄️ Firestore db:', db);
         
+        // Give Firebase a moment to fully initialize
         setTimeout(() => {
             loadCollectionFromFirebase();
         }, 1000);
@@ -260,4 +275,5 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 });
 
+// Make toggleMobileMenu globally available
 window.toggleMobileMenu = toggleMobileMenu;
