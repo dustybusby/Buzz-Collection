@@ -1,6 +1,4 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
-import { getFirestore, collection, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
-
+// Firebase configuration
 const firebaseConfig = {
     apiKey: "{{FIREBASE_API_KEY}}",
     authDomain: "{{FIREBASE_AUTH_DOMAIN}}",
@@ -10,17 +8,31 @@ const firebaseConfig = {
     appId: "{{FIREBASE_APP_ID}}"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-console.log('🔥 Firebase initialized successfully');
+let app, db, cardCollection = [];
 
-let cardCollection = [];
+// Initialize Firebase
+async function initializeFirebase() {
+    try {
+        const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js');
+        const { getFirestore } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
+        
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        console.log('🔥 Firebase initialized successfully');
+        return true;
+    } catch (error) {
+        console.error('❌ Firebase initialization error:', error);
+        return false;
+    }
+}
 
 async function loadCollectionFromFirebase() {
     try {
         console.log('📖 Loading collection from Firebase...');
         console.log('🔥 Firebase config check:', firebaseConfig);
         console.log('🔥 Database object:', db);
+        
+        const { collection, getDocs, query, orderBy } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
         
         const querySnapshot = await getDocs(
             query(
@@ -223,14 +235,31 @@ function toggleMobileMenu() {
     navLinks.style.display = navLinks.style.display === 'none' ? 'flex' : 'none';
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+// Initialize everything when DOM is ready
+document.addEventListener('DOMContentLoaded', async function() {
     console.log('🚀 Initializing Inventory Overview...');
-    console.log('🔧 Firebase app:', app);
-    console.log('🗄️ Firestore db:', db);
     
-    setTimeout(() => {
-        loadCollectionFromFirebase();
-    }, 1000);
+    // Initialize Firebase first
+    const firebaseInitialized = await initializeFirebase();
+    
+    if (firebaseInitialized) {
+        console.log('🔧 Firebase app:', app);
+        console.log('🗄️ Firestore db:', db);
+        
+        setTimeout(() => {
+            loadCollectionFromFirebase();
+        }, 1000);
+    } else {
+        document.getElementById('loading').innerHTML = `
+            <div style="color: #ff6b6b;">
+                <h3>Firebase Initialization Failed</h3>
+                <p>Could not connect to the database</p>
+                <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #4a7bc8; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    Retry
+                </button>
+            </div>
+        `;
+    }
 });
 
 window.toggleMobileMenu = toggleMobileMenu;
