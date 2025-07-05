@@ -1,29 +1,42 @@
-// Firebase configuration and imports
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
-import { getFirestore, collection, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+// Firebase configuration and initialization
+let app, db, cardCollection = [];
 
-const firebaseConfig = {
-    apiKey: "{{FIREBASE_API_KEY}}",
-    authDomain: "{{FIREBASE_AUTH_DOMAIN}}",
-    projectId: "{{FIREBASE_PROJECT_ID}}",
-    storageBucket: "{{FIREBASE_STORAGE_BUCKET}}",
-    messagingSenderId: "{{FIREBASE_MESSAGING_SENDER_ID}}",
-    appId: "{{FIREBASE_APP_ID}}"
-};
+// Initialize Firebase when the script loads
+async function initializeFirebase() {
+    try {
+        const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js');
+        const { getFirestore } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
+        
+        const firebaseConfig = {
+            apiKey: "{{FIREBASE_API_KEY}}",
+            authDomain: "{{FIREBASE_AUTH_DOMAIN}}",
+            projectId: "{{FIREBASE_PROJECT_ID}}",
+            storageBucket: "{{FIREBASE_STORAGE_BUCKET}}",
+            messagingSenderId: "{{FIREBASE_MESSAGING_SENDER_ID}}",
+            appId: "{{FIREBASE_APP_ID}}"
+        };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-console.log('🔥 Firebase initialized successfully');
-
-// Global variables for index.html (Dashboard)
-let cardCollection = [];
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        console.log('🔥 Firebase initialized successfully');
+    } catch (error) {
+        console.error('❌ Firebase initialization error:', error);
+    }
+}
 
 // Dashboard functions
 async function loadCollectionFromFirebase() {
+    if (!db) {
+        console.error('Database not initialized');
+        return;
+    }
+
     try {
         console.log('📖 Loading collection from Firebase...');
-        console.log('🔥 Firebase config check:', firebaseConfig);
+        console.log('🔥 Firebase config check:', app);
         console.log('🔥 Database object:', db);
+        
+        const { collection, getDocs, query, orderBy } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
         
         const querySnapshot = await getDocs(
             query(
@@ -228,8 +241,12 @@ function toggleMobileMenu() {
 }
 
 // Dashboard initialization
-function initializeDashboard() {
+async function initializeDashboard() {
     console.log('🚀 Initializing Inventory Overview...');
+    
+    // Initialize Firebase first
+    await initializeFirebase();
+    
     console.log('🔧 Firebase app:', app);
     console.log('🗄️ Firestore db:', db);
     
