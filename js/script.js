@@ -218,7 +218,6 @@ function populateForm(card) {
             imageVariationText.value = card.imageVariation;
         }
     }
-    
     setFieldValue('description', card.description);
     
     // Handle purchase date
@@ -711,7 +710,6 @@ function updateSortIndicators() {
         }
     }
 }
-
 function displayCollection() {
     const totalElement = document.getElementById('totalCards');
     const filteredElement = document.getElementById('filteredCount');
@@ -859,12 +857,12 @@ function displayGridView(cards) {
         const rookieText = card.rookieCard === 'Y' ? 'Yes' : 'No';
         const parallelText = card.parallel !== 'N' ? (card.parallel || '') : 'No';
         const numberedText = card.numbered !== 'N' ? (card.numbered || '') : 'No';
-        const estimatedValue = card.estimatedValue === 'Unknown' || !card.estimatedValue ? 'Unknown' : '$' + parseFloat(card.estimatedValue).toFixed(2);
+        const estimatedValue = card.estimatedValue === 'Unknown' || !card.estimatedValue ? 'Unknown' : ' + parseFloat(card.estimatedValue).toFixed(2);
         const estimatedValueDate = card.estimatedValueDate || 'Not specified';
         const imageVariationText = card.imageVariation !== 'N' ? (card.imageVariation || '') : 'No';
         const description = card.description || 'None';
         const purchaseDate = card.purchaseDate === 'Unknown' || !card.purchaseDate ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString();
-        const purchaseCost = card.purchaseCost === 'Unknown' || !card.purchaseCost ? 'Unknown' : '$' + parseFloat(card.purchaseCost).toFixed(2);
+        const purchaseCost = card.purchaseCost === 'Unknown' || !card.purchaseCost ? 'Unknown' : ' + parseFloat(card.purchaseCost).toFixed(2);
         const quantity = card.quantity || 1;
         
         return `<div class="card-item">
@@ -916,46 +914,67 @@ function viewCard(cardId) {
     const card = cardCollection.find(c => c.id === cardId);
     if (!card) return;
     
-    const player = card.player || '';
-    const team = card.team || '';
+    const player = card.player || 'Unknown Player';
+    const team = card.team || 'Unknown Team';
     const year = card.year || '';
     const product = card.product || '';
-    const category = card.category || '';
-    const cardNumber = card.cardNumber || '';
-    const rookieText = card.rookieCard === 'Y' ? 'Yes' : 'No';
-    const parallelText = card.parallel && card.parallel !== 'N' ? card.parallel : 'No';
-    const numberedText = card.numbered && card.numbered !== 'N' ? card.numbered : 'No';
-    const estimatedValue = card.estimatedValue === 'Unknown' || !card.estimatedValue ? 'Unknown' : '$' + parseFloat(card.estimatedValue).toFixed(2);
-    const estimatedValueDate = card.estimatedValueDate || 'Not specified';
-    const imageVariationText = card.imageVariation && card.imageVariation !== 'N' ? card.imageVariation : 'No';
-    const description = card.description || 'None';
-    const purchaseDate = card.purchaseDate === 'Unknown' || !card.purchaseDate ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString();
-    const purchaseCost = card.purchaseCost === 'Unknown' || !card.purchaseCost ? 'Unknown' : '$' + parseFloat(card.purchaseCost).toFixed(2);
+    const category = card.category || 'Unknown';
+    const cardNumber = card.cardNumber || 'N/A';
+    const rookieText = card.rookieCard === 'Y' ? 'Rookie Card' : '';
+    const parallelText = card.parallel && card.parallel !== 'N' ? `Parallel: ${card.parallel}` : '';
+    const numberedText = card.numbered && card.numbered !== 'N' ? `Numbered: ${card.numbered}` : '';
+    const imageVariationText = card.imageVariation && card.imageVariation !== 'N' ? `Image Variation: ${card.imageVariation}` : '';
+    const description = card.description || '';
     const quantity = card.quantity || 1;
     
-    const modalHTML = `<div style="margin: 0; padding: 0;">
-        <div class="card-header">
-            <div class="card-title-section">
-                <div class="card-title">${player}</div>
-                <div class="card-subtitle">${team}</div>
-                <div class="card-product">${year} ${product}</div>
+    // Monetary data formatting
+    const purchaseDate = card.purchaseDate === 'Unknown' || !card.purchaseDate ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString();
+    const purchaseCost = card.purchaseCost === 'Unknown' || !card.purchaseCost ? 'Unknown' : '$' + parseFloat(card.purchaseCost).toFixed(2);
+    const estimatedValue = card.estimatedValue === 'Unknown' || !card.estimatedValue ? 'Unknown' : '$' + parseFloat(card.estimatedValue).toFixed(2);
+    const estimatedValueDate = card.estimatedValueDate || 'Not specified';
+    
+    // Format estimated value text
+    let estimatedValueText = '';
+    if (estimatedValue !== 'Unknown' && estimatedValueDate !== 'Not specified') {
+        estimatedValueText = `Estimated value as of ${estimatedValueDate} is ${estimatedValue}`;
+    } else if (estimatedValue !== 'Unknown') {
+        estimatedValueText = `Estimated value: ${estimatedValue}`;
+    } else {
+        estimatedValueText = 'Estimated value: Unknown';
+    }
+    
+    const modalHTML = `
+        <div class="virtual-card">
+            <div class="virtual-card-header">
+                <div class="virtual-card-main-info">
+                    <div class="virtual-card-player">${player}</div>
+                    <div class="virtual-card-team">${team}</div>
+                    <div class="virtual-card-details-line">
+                        Card #${cardNumber} | ${year} ${product}
+                    </div>
+                </div>
+                <div class="virtual-card-category">${category}</div>
             </div>
-            <div class="card-category">${category}</div>
+            
+            <div class="virtual-card-body">
+                <div class="virtual-card-attributes">
+                    ${numberedText ? `<div class="virtual-card-attribute">${numberedText}</div>` : ''}
+                    ${parallelText ? `<div class="virtual-card-attribute">${parallelText}</div>` : ''}
+                    ${rookieText ? `<div class="virtual-card-attribute">${rookieText}</div>` : ''}
+                    ${imageVariationText ? `<div class="virtual-card-attribute">${imageVariationText}</div>` : ''}
+                    <div class="virtual-card-attribute">Quantity: ${quantity}</div>
+                    ${description ? `<div class="virtual-card-attribute">Notes: ${description}</div>` : ''}
+                </div>
+                
+                <div class="virtual-card-monetary">
+                    <div class="monetary-field">Grade: N/A</div>
+                    <div class="monetary-field">Purchase Date: ${purchaseDate}</div>
+                    <div class="monetary-field">Purchase Price: ${purchaseCost}</div>
+                    <div class="monetary-field estimated-value">${estimatedValueText}</div>
+                </div>
+            </div>
         </div>
-        <div class="card-details" style="margin-top: 1.5rem; line-height: 2;">
-            <div><strong>Card Number:</strong> ${cardNumber}</div>
-            <div><strong>Rookie Card:</strong> ${rookieText}</div>
-            <div><strong>Parallel:</strong> ${parallelText}</div>
-            <div><strong>Numbered:</strong> ${numberedText}</div>
-            <div><strong>Estimated Value:</strong> ${estimatedValue}</div>
-            <div><strong>Est. Value As Of:</strong> ${estimatedValueDate}</div>
-            <div><strong>Image Variation:</strong> ${imageVariationText}</div>
-            <div><strong>Purchase Date:</strong> ${purchaseDate}</div>
-            <div><strong>Purchase Cost:</strong> ${purchaseCost}</div>
-            <div><strong>Quantity:</strong> ${quantity}</div>
-            <div><strong>Additional Notes:</strong> ${description}</div>
-        </div>
-    </div>`;
+    `;
     
     document.getElementById('modalCardContent').innerHTML = modalHTML;
     document.getElementById('cardModal').style.display = 'block';
@@ -1126,7 +1145,6 @@ window.onclick = function(event) {
         closeCardModal();
     }
 }
-
 // ============================================================================
 // GLOBAL FUNCTION EXPORTS
 // ============================================================================
