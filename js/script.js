@@ -857,12 +857,12 @@ function displayGridView(cards) {
         const rookieText = card.rookieCard === 'Y' ? 'Yes' : 'No';
         const parallelText = card.parallel !== 'N' ? (card.parallel || '') : 'No';
         const numberedText = card.numbered !== 'N' ? (card.numbered || '') : 'No';
-        const estimatedValue = card.estimatedValue === 'Unknown' || !card.estimatedValue ? 'Unknown' : ' + parseFloat(card.estimatedValue).toFixed(2);
+        const estimatedValue = card.estimatedValue === 'Unknown' || !card.estimatedValue ? 'Unknown' : '$' + parseFloat(card.estimatedValue).toFixed(2);
         const estimatedValueDate = card.estimatedValueDate || 'Not specified';
         const imageVariationText = card.imageVariation !== 'N' ? (card.imageVariation || '') : 'No';
         const description = card.description || 'None';
         const purchaseDate = card.purchaseDate === 'Unknown' || !card.purchaseDate ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString();
-        const purchaseCost = card.purchaseCost === 'Unknown' || !card.purchaseCost ? 'Unknown' : ' + parseFloat(card.purchaseCost).toFixed(2);
+        const purchaseCost = card.purchaseCost === 'Unknown' || !card.purchaseCost ? 'Unknown' : '$' + parseFloat(card.purchaseCost).toFixed(2);
         const quantity = card.quantity || 1;
         
         return `<div class="card-item">
