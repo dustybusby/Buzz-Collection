@@ -1,5 +1,7 @@
 // Global variables
 let app, db, cardCollection = [];
+let currentView = 'list';
+let currentSort = { field: null, direction: 'asc' };
 
 // Initialize Firebase with dynamic imports
 async function initFirebase() {
@@ -26,7 +28,9 @@ async function initFirebase() {
             collection: firestore.collection,
             getDocs: firestore.getDocs,
             query: firestore.query,
-            orderBy: firestore.orderBy
+            orderBy: firestore.orderBy,
+            deleteDoc: firestore.deleteDoc,
+            doc: firestore.doc
         };
         
         return true;
@@ -36,6 +40,7 @@ async function initFirebase() {
     }
 }
 
+// Shared function to load collection from Firebase
 async function loadCollectionFromFirebase() {
     try {
         if (!db) {
@@ -54,21 +59,28 @@ async function loadCollectionFromFirebase() {
             cardCollection.push({
                 id: doc.id,
                 ...data,
-                dateAdded: data.dateAdded?.toDate?.() || new Date(data.dateAdded)
+                dateAdded: data.dateAdded?.toDate?.() || new Date(data.dateAdded),
+                quantity: data.quantity || 1
             });
         });
         
         document.getElementById('loading').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
         
-        displayInventory();
+        // Call appropriate display function based on current page
+        if (isCollectionPage()) {
+            updateCategoryFilter();
+            displayCollection();
+        } else {
+            displayInventory();
+        }
         
     } catch (error) {
         console.error('Error loading collection:', error);
         
         const loadingEl = document.getElementById('loading');
         if (loadingEl) {
-            loadingEl.innerHTML = `
+            const errorHTML = `
                 <div style="color: #ff6b6b; text-align: center; padding: 2rem;">
                     <h3>Error Loading Collection</h3>
                     <p><strong>Error:</strong> ${error.message}</p>
@@ -78,9 +90,20 @@ async function loadCollectionFromFirebase() {
                     </button>
                 </div>
             `;
+            loadingEl.innerHTML = errorHTML;
         }
     }
 }
+
+// Helper function to determine current page
+function isCollectionPage() {
+    return window.location.pathname.includes('collection.html') || 
+           document.getElementById('listView') !== null;
+}
+
+// ============================================================================
+// DASHBOARD/INVENTORY FUNCTIONS (for index.html)
+// ============================================================================
 
 function displayInventory() {
     if (cardCollection.length === 0) {
@@ -249,12 +272,406 @@ function displayExpensiveCards() {
     }
 }
 
+// ============================================================================
+// COLLECTION VIEW FUNCTIONS (for collection.html)
+// ============================================================================
+
+function updateCategoryFilter() {
+    const categoryFilter = document.getElementById('categoryFilter');
+    if (!categoryFilter) return;
+    
+    const currentValue = categoryFilter.value;
+    const categories = [...new Set(cardCollection.map(card => card.category).filter(cat => cat))];
+    
+    categoryFilter.innerHTML = '<option value="">All</option>';
+    categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category;
+        option.textContent = category;
+        categoryFilter.appendChild(option);
+    });
+    
+    if (currentValue && categories.includes(currentValue)) {
+        categoryFilter.value = currentValue;
+    }
+}
+
+function switchView(view) {
+    currentView = view;
+    const listView = document.getElementById('listView');
+    const gridView = document.getElementById('gridView');
+    const listBtn = document.getElementById('listViewBtn');
+    const gridBtn = document.getElementById('gridViewBtn');
+    
+    if (view === 'list') {
+        listView.style.display = 'block';
+        gridView.style.display = 'none';
+        listBtn.classList.add('active');
+        gridBtn.classList.remove('active');
+    } else {
+        listView.style.display = 'none';
+        gridView.style.display = 'grid';
+        listBtn.classList.remove('active');
+        gridBtn.classList.add('active');
+    }
+    displayCollection();
+}
+
+function sortBy(field) {
+    if (currentSort.field === field) {
+        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+    } else {
+        currentSort.field = field;
+        currentSort.direction = 'asc';
+    }
+    updateSortIndicators();
+    displayCollection();
+}
+
+function updateSortIndicators() {
+    document.querySelectorAll('.sort-indicator').forEach(indicator => {
+        indicator.textContent = '';
+    });
+    
+    if (currentSort.field) {
+        const indicator = document.getElementById('sort-' + currentSort.field);
+        if (indicator) {
+            indicator.textContent = currentSort.direction === 'asc' ? '▲' : '▼';
+        }
+    }
+}
+
+function displayCollection() {
+    const totalElement = document.getElementById('totalCards');
+    const filteredElement = document.getElementById('filteredCount');
+    const emptyState = document.getElementById('emptyState');
+    
+    if (!totalElement || !filteredElement) return;
+    
+    let filteredCards = [...cardCollection];
+    
+    // Apply filters
+    const categoryFilter = document.getElementById('categoryFilter')?.value || '';
+    const yearFilter = document.getElementById('filter-year')?.value.toLowerCase() || '';
+    const productFilter = document.getElementById('filter-product')?.value.toLowerCase() || '';
+    const playerFilter = document.getElementById('filter-player')?.value.toLowerCase() || '';
+    const teamFilter = document.getElementById('filter-team')?.value.toLowerCase() || '';
+    const quantityFilter = document.getElementById('filter-quantity')?.value.toLowerCase() || '';
+    const rookieCardFilter = document.getElementById('filter-rookieCard')?.value || '';
+    const parallelFilter = document.getElementById('filter-parallel')?.value.toLowerCase() || '';
+    const numberedFilter = document.getElementById('filter-numbered')?.value.toLowerCase() || '';
+    const descriptionFilter = document.getElementById('filter-description')?.value.toLowerCase() || '';
+    
+    if (categoryFilter) {
+        filteredCards = filteredCards.filter(card => card.category && card.category.toString() === categoryFilter);
+    }
+    if (yearFilter) {
+        filteredCards = filteredCards.filter(card => card.year && card.year.toString().toLowerCase().includes(yearFilter));
+    }
+    if (productFilter) {
+        filteredCards = filteredCards.filter(card => card.product && card.product.toString().toLowerCase().includes(productFilter));
+    }
+    if (playerFilter) {
+        filteredCards = filteredCards.filter(card => card.player && card.player.toString().toLowerCase().includes(playerFilter));
+    }
+    if (teamFilter) {
+        filteredCards = filteredCards.filter(card => card.team && card.team.toString().toLowerCase().includes(teamFilter));
+    }
+    if (quantityFilter) {
+        filteredCards = filteredCards.filter(card => card.quantity && card.quantity.toString().toLowerCase().includes(quantityFilter));
+    }
+    if (rookieCardFilter) {
+        filteredCards = filteredCards.filter(card => card.rookieCard === rookieCardFilter);
+    }
+    if (parallelFilter) {
+        filteredCards = filteredCards.filter(card => {
+            const parallelValue = card.parallel === 'N' ? '' : (card.parallel || '').toString().toLowerCase();
+            return parallelValue.includes(parallelFilter);
+        });
+    }
+    if (numberedFilter) {
+        filteredCards = filteredCards.filter(card => {
+            const numberedValue = card.numbered === 'N' ? '' : (card.numbered || '').toString().toLowerCase();
+            return numberedValue.includes(numberedFilter);
+        });
+    }
+    if (descriptionFilter) {
+        filteredCards = filteredCards.filter(card => card.description && card.description.toString().toLowerCase().includes(descriptionFilter));
+    }
+    
+    // Apply sorting
+    if (currentSort.field) {
+        filteredCards.sort((a, b) => {
+            let aVal = a[currentSort.field];
+            let bVal = b[currentSort.field];
+            
+            if (currentSort.field === 'year' || currentSort.field === 'quantity') {
+                aVal = parseInt(aVal) || 0;
+                bVal = parseInt(bVal) || 0;
+            } else if (typeof aVal === 'string' && typeof bVal === 'string') {
+                aVal = aVal.toLowerCase();
+                bVal = bVal.toLowerCase();
+            }
+            
+            if (aVal < bVal) return currentSort.direction === 'asc' ? -1 : 1;
+            if (aVal > bVal) return currentSort.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }
+    
+    totalElement.textContent = cardCollection.length + ' total cards';
+    filteredElement.textContent = filteredCards.length + ' filtered';
+    
+    if (filteredCards.length === 0) {
+        document.getElementById('listView').style.display = 'none';
+        document.getElementById('gridView').style.display = 'none';
+        if (emptyState) emptyState.style.display = 'block';
+        return;
+    }
+    
+    if (emptyState) emptyState.style.display = 'none';
+    
+    if (currentView === 'list') {
+        displayListView(filteredCards);
+    } else {
+        displayGridView(filteredCards);
+    }
+}
+
+function displayListView(cards) {
+    const container = document.getElementById('listContainer');
+    if (!container) return;
+    
+    const listHTML = cards.map(card => {
+        const year = card.year || '';
+        const product = card.product || '';
+        const player = card.player || '';
+        const team = card.team || '';
+        const quantity = card.quantity || 1;
+        const rookieCheck = card.rookieCard === 'Y' ? '✓' : '';
+        const parallel = card.parallel !== 'N' ? (card.parallel || '') : '';
+        const numbered = card.numbered !== 'N' ? (card.numbered || '') : '';
+        const description = card.description || '';
+        const cardId = card.id;
+        
+        return `<div class="list-item">
+            <div>${year}</div>
+            <div>${product}</div>
+            <div class="list-item-player">${player}</div>
+            <div>${team}</div>
+            <div style="text-align: center;">${quantity}</div>
+            <div>${rookieCheck}</div>
+            <div>${parallel}</div>
+            <div>${numbered}</div>
+            <div class="list-item-details">${description}</div>
+            <div class="action-buttons">
+                <button class="view-btn" onclick="viewCard('${cardId}')">View</button>
+                <button class="edit-btn" onclick="editCard('${cardId}')">Edit</button>
+                <button class="delete-btn" onclick="deleteCard('${cardId}')">Delete</button>
+            </div>
+        </div>`;
+    }).join('');
+    container.innerHTML = listHTML;
+}
+
+function displayGridView(cards) {
+    const container = document.getElementById('gridView');
+    if (!container) return;
+    
+    const gridHTML = cards.map(card => {
+        const player = card.player || '';
+        const team = card.team || '';
+        const year = card.year || '';
+        const product = card.product || '';
+        const category = card.category || '';
+        const cardNumber = card.cardNumber || '';
+        const rookieText = card.rookieCard === 'Y' ? 'Yes' : 'No';
+        const parallelText = card.parallel !== 'N' ? (card.parallel || '') : 'No';
+        const numberedText = card.numbered !== 'N' ? (card.numbered || '') : 'No';
+        const description = card.description || 'None';
+        const purchaseDate = card.purchaseDate === 'Unknown' || !card.purchaseDate ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString();
+        const purchaseCost = card.purchaseCost ? '$' + parseFloat(card.purchaseCost).toFixed(2) : 'Not available';
+        const quantity = card.quantity || 1;
+        
+        return `<div class="card-item">
+            <div class="card-header">
+                <div class="card-title-section">
+                    <div class="card-title">${player}</div>
+                    <div class="card-subtitle">${team}</div>
+                    <div class="card-product">${year} ${product}</div>
+                </div>
+                <div class="card-category">${category}</div>
+            </div>
+            <div class="card-details">
+                <strong>Card Number:</strong> ${cardNumber}<br>
+                <strong>Rookie Card:</strong> ${rookieText}<br>
+                <strong>Parallel:</strong> ${parallelText}<br>
+                <strong>Numbered:</strong> ${numberedText}<br>
+                <strong>Additional Notes:</strong> ${description}<br>
+                <strong>Purchase Date:</strong> ${purchaseDate}<br>
+                <strong>Purchase Cost:</strong> ${purchaseCost}<br>
+                <strong>Quantity:</strong> ${quantity}
+            </div>
+        </div>`;
+    }).join('');
+    container.innerHTML = gridHTML;
+}
+
+function clearAllFilters() {
+    const filters = [
+        'filter-year', 'filter-product', 'filter-player', 'filter-team',
+        'filter-quantity', 'filter-rookieCard', 'filter-parallel',
+        'filter-numbered', 'filter-description', 'categoryFilter'
+    ];
+    
+    filters.forEach(filterId => {
+        const element = document.getElementById(filterId);
+        if (element) element.value = '';
+    });
+    
+    filterCollection();
+}
+
+function filterCollection() {
+    displayCollection();
+}
+
+function viewCard(cardId) {
+    const card = cardCollection.find(c => c.id === cardId);
+    if (!card) return;
+    
+    const player = card.player || '';
+    const team = card.team || '';
+    const year = card.year || '';
+    const product = card.product || '';
+    const category = card.category || '';
+    const cardNumber = card.cardNumber || '';
+    const rookieText = card.rookieCard === 'Y' ? 'Yes' : 'No';
+    const parallelText = card.parallel && card.parallel !== 'N' ? card.parallel : 'No';
+    const numberedText = card.numbered && card.numbered !== 'N' ? card.numbered : 'No';
+    const description = card.description || 'None';
+    const purchaseDate = card.purchaseDate === 'Unknown' || !card.purchaseDate ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString();
+    const purchaseCost = card.purchaseCost ? '$' + parseFloat(card.purchaseCost).toFixed(2) : 'Not available';
+    const quantity = card.quantity || 1;
+    
+    const modalHTML = `<div style="margin: 0; padding: 0;">
+        <div class="card-header">
+            <div class="card-title-section">
+                <div class="card-title">${player}</div>
+                <div class="card-subtitle">${team}</div>
+                <div class="card-product">${year} ${product}</div>
+            </div>
+            <div class="card-category">${category}</div>
+        </div>
+        <div class="card-details" style="margin-top: 1.5rem; line-height: 2;">
+            <div><strong>Card Number:</strong> ${cardNumber}</div>
+            <div><strong>Rookie Card:</strong> ${rookieText}</div>
+            <div><strong>Parallel:</strong> ${parallelText}</div>
+            <div><strong>Numbered:</strong> ${numberedText}</div>
+            <div><strong>Additional Notes:</strong> ${description}</div>
+            <div><strong>Purchase Date:</strong> ${purchaseDate}</div>
+            <div><strong>Purchase Cost:</strong> ${purchaseCost}</div>
+            <div><strong>Quantity:</strong> ${quantity}</div>
+        </div>
+    </div>`;
+    
+    document.getElementById('modalCardContent').innerHTML = modalHTML;
+    document.getElementById('cardModal').style.display = 'block';
+}
+
+function closeCardModal() {
+    document.getElementById('cardModal').style.display = 'none';
+}
+
+function editCard(cardId) {
+    const card = cardCollection.find(c => c.id === cardId);
+    if (!card) return;
+    
+    localStorage.setItem('editCardId', cardId);
+    localStorage.setItem('editCardData', JSON.stringify(card));
+    window.location.href = 'add.html?edit=true';
+}
+
+async function deleteCard(cardId) {
+    const card = cardCollection.find(c => c.id === cardId);
+    if (!card) return;
+    
+    const year = card.year || '';
+    const product = card.product || '';
+    const player = card.player || '';
+    const team = card.team || '';
+    const cardNumber = card.cardNumber || '';
+    
+    const confirmDelete = confirm(`Are you sure you want to delete this card?\n\n${year} ${product}\n${player} - ${team}\nCard #${cardNumber}`);
+    if (!confirmDelete) return;
+    
+    const finalConfirm = confirm('This action cannot be undone!\n\nClick OK to permanently delete this card from your collection.');
+    if (!finalConfirm) return;
+    
+    try {
+        const { deleteDoc, doc } = window.firebaseRefs;
+        await deleteDoc(doc(db, 'cards', cardId));
+        cardCollection = cardCollection.filter(c => c.id !== cardId);
+        displayCollection();
+        alert('Card deleted successfully!');
+    } catch (error) {
+        console.error('Error deleting card:', error);
+        alert('Error deleting card: ' + error.message);
+    }
+}
+
+function exportToCSV() {
+    if (cardCollection.length === 0) {
+        alert('No cards to export!');
+        return;
+    }
+    
+    const headers = ['Category', 'Year', 'Product', 'Card Number', 'Player', 'Team', 'Quantity', 'Rookie Card', 'Parallel', 'Numbered', 'Additional Description', 'Purchase Date', 'Purchase Cost'];
+    const csvRows = [headers.join(',')];
+    
+    cardCollection.forEach(card => {
+        const row = [
+            card.category || '',
+            card.year || '',
+            card.product || '',
+            card.cardNumber || '',
+            card.player || '',
+            card.team || '',
+            card.quantity || 1,
+            card.rookieCard || 'N',
+            card.parallel || 'N',
+            card.numbered || 'N',
+            '"' + (card.description || '') + '"',
+            card.purchaseDate || 'Unknown',
+            card.purchaseCost || ''
+        ];
+        csvRows.push(row.join(','));
+    });
+    
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'buzz_collection_' + new Date().toISOString().split('T')[0] + '.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
+// ============================================================================
+// SHARED UTILITY FUNCTIONS
+// ============================================================================
+
 function toggleMobileMenu() {
     const navLinks = document.querySelector('.nav-links');
     if (navLinks) {
         navLinks.style.display = navLinks.style.display === 'none' ? 'flex' : 'none';
     }
 }
+
+// ============================================================================
+// INITIALIZATION
+// ============================================================================
 
 // Initialize everything when DOM is ready
 document.addEventListener('DOMContentLoaded', async function() {
@@ -287,5 +704,26 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 });
 
-// Make toggleMobileMenu globally available
+// Modal click outside to close
+window.onclick = function(event) {
+    const modal = document.getElementById('cardModal');
+    if (event.target === modal) {
+        closeCardModal();
+    }
+}
+
+// ============================================================================
+// GLOBAL FUNCTION EXPORTS
+// ============================================================================
+
+// Make functions globally available for HTML onclick handlers
 window.toggleMobileMenu = toggleMobileMenu;
+window.switchView = switchView;
+window.filterCollection = filterCollection;
+window.exportToCSV = exportToCSV;
+window.sortBy = sortBy;
+window.clearAllFilters = clearAllFilters;
+window.viewCard = viewCard;
+window.closeCardModal = closeCardModal;
+window.editCard = editCard;
+window.deleteCard = deleteCard;
