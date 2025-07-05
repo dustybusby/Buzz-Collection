@@ -262,9 +262,18 @@ function toggleNumberedInput() {
 function toggleEstimatedValueInput() {
     const checkbox = document.getElementById('unknownEstimatedValue');
     const valueInput = document.getElementById('estimatedValue');
+    const dateInput = document.getElementById('estimatedValueDate');
+    
     if (checkbox && valueInput) {
         valueInput.disabled = checkbox.checked;
         if (checkbox.checked) valueInput.value = '';
+    }
+    
+    // Gray out the date field when Unknown is checked
+    if (checkbox && dateInput) {
+        dateInput.disabled = checkbox.checked;
+        dateInput.style.opacity = checkbox.checked ? '0.5' : '1';
+        if (checkbox.checked) dateInput.value = '';
     }
 }
 
@@ -326,7 +335,7 @@ async function addCard(event) {
         if (isEditMode && editCardId) {
             const { updateDoc, doc } = window.firebaseRefs;
             await updateDoc(doc(db, 'cards', editCardId), card);
-            alert('Card updated successfully!');
+            showSuccessModal('Card updated successfully!', true);
             
             isEditMode = false;
             editCardId = null;
@@ -335,31 +344,74 @@ async function addCard(event) {
             const submitBtn = document.querySelector('.btn-primary');
             if (titleEl) titleEl.textContent = 'Add New Card';
             if (submitBtn) submitBtn.textContent = 'Add Card';
-            
-            window.location.href = 'collection.html';
         } else {
             const { addDoc, collection } = window.firebaseRefs;
             card.dateAdded = new Date();
             const docRef = await addDoc(collection(db, 'cards'), card);
             console.log('Document written with ID: ', docRef.id);
-            alert('Card added successfully!');
-            
-            // Reset form
-            event.target.reset();
-            const parallelText = document.getElementById('parallelText');
-            const numberedText = document.getElementById('numberedText');
-            const imageVariationText = document.getElementById('imageVariationText');
-            const quantity = document.getElementById('quantity');
-            
-            if (parallelText) parallelText.style.display = 'none';
-            if (numberedText) numberedText.style.display = 'none';
-            if (imageVariationText) imageVariationText.style.display = 'none';
-            if (quantity) quantity.value = 1;
+            showSuccessModal('Card added successfully!', false);
         }
     } catch (error) {
         console.error('Error saving card:', error);
         alert('Error saving card: ' + error.message);
     }
+}
+
+// Success modal functions
+function showSuccessModal(message, isEdit) {
+    const modal = document.getElementById('successModal');
+    const messageEl = modal.querySelector('h3');
+    const descriptionEl = modal.querySelector('p');
+    
+    if (isEdit) {
+        messageEl.textContent = 'Card Updated Successfully!';
+        descriptionEl.textContent = 'Your card has been updated. What would you like to do next?';
+    } else {
+        messageEl.textContent = 'Card Added Successfully!';
+        descriptionEl.textContent = 'This card has been added to your collection. What would you like to do next?';
+    }
+    
+    modal.style.display = 'block';
+}
+
+function addAnotherCard() {
+    const modal = document.getElementById('successModal');
+    modal.style.display = 'none';
+    
+    // Reset form
+    const form = document.getElementById('cardForm');
+    if (form) {
+        form.reset();
+        
+        // Reset conditional fields
+        const parallelText = document.getElementById('parallelText');
+        const numberedText = document.getElementById('numberedText');
+        const imageVariationText = document.getElementById('imageVariationText');
+        const quantity = document.getElementById('quantity');
+        
+        if (parallelText) parallelText.style.display = 'none';
+        if (numberedText) numberedText.style.display = 'none';
+        if (imageVariationText) imageVariationText.style.display = 'none';
+        if (quantity) quantity.value = 1;
+        
+        // Reset disabled states and opacity
+        const estimatedValue = document.getElementById('estimatedValue');
+        const estimatedValueDate = document.getElementById('estimatedValueDate');
+        const purchaseDate = document.getElementById('purchaseDate');
+        const purchaseCost = document.getElementById('purchaseCost');
+        
+        if (estimatedValue) estimatedValue.disabled = false;
+        if (estimatedValueDate) {
+            estimatedValueDate.disabled = false;
+            estimatedValueDate.style.opacity = '1';
+        }
+        if (purchaseDate) purchaseDate.disabled = false;
+        if (purchaseCost) purchaseCost.disabled = false;
+    }
+}
+
+function viewCollection() {
+    window.location.href = 'collection.html';
 }
 
 async function handleCSVUpload(event) {
@@ -1100,3 +1152,7 @@ window.toggleDateInput = toggleDateInput;
 window.toggleCostInput = toggleCostInput;
 window.addCard = addCard;
 window.handleCSVUpload = handleCSVUpload;
+
+// Success modal functions
+window.addAnotherCard = addAnotherCard;
+window.viewCollection = viewCollection;
