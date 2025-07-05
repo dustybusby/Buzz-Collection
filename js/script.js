@@ -4,8 +4,6 @@ let app, db, cardCollection = [];
 // Initialize Firebase with dynamic imports
 async function initFirebase() {
     try {
-        console.log('🔥 Initializing Firebase...');
-        
         const firebaseApp = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js');
         const firestore = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
         
@@ -17,12 +15,6 @@ async function initFirebase() {
             messagingSenderId: "{{FIREBASE_MESSAGING_SENDER_ID}}",
             appId: "{{FIREBASE_APP_ID}}"
         };
-
-        // Log the config to see if placeholders were replaced
-        console.log('🔧 Firebase config:', {
-            ...firebaseConfig,
-            apiKey: firebaseConfig.apiKey.substring(0, 10) + '...' // Hide most of the key
-        });
 
         app = firebaseApp.initializeApp(firebaseConfig);
         db = firestore.getFirestore(app);
@@ -37,32 +29,24 @@ async function initFirebase() {
             orderBy: firestore.orderBy
         };
         
-        console.log('✅ Firebase initialized successfully');
         return true;
     } catch (error) {
-        console.error('❌ Firebase initialization error:', error);
+        console.error('Firebase initialization error:', error);
         return false;
     }
 }
 
 async function loadCollectionFromFirebase() {
     try {
-        console.log('📖 Loading collection from Firebase...');
-        
         if (!db) {
             throw new Error('Database reference is null or undefined');
         }
         
         const { collection, getDocs, query, orderBy } = window.firebaseRefs;
         
-        console.log('🔍 Creating query...');
         const cardsCollection = collection(db, 'cards');
         const cardsQuery = query(cardsCollection, orderBy('dateAdded', 'desc'));
-        
-        console.log('🚀 Executing query...');
         const querySnapshot = await getDocs(cardsQuery);
-        
-        console.log('📊 Query results:', querySnapshot.size, 'documents');
         
         cardCollection = [];
         querySnapshot.forEach((doc) => {
@@ -74,20 +58,13 @@ async function loadCollectionFromFirebase() {
             });
         });
         
-        console.log('📋 Loaded', cardCollection.length, 'cards');
-        
         document.getElementById('loading').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
         
         displayInventory();
         
     } catch (error) {
-        console.error('❌ Error loading collection:', error);
-        console.error('❌ Error details:', {
-            name: error.name,
-            message: error.message,
-            code: error.code
-        });
+        console.error('Error loading collection:', error);
         
         const loadingEl = document.getElementById('loading');
         if (loadingEl) {
@@ -106,10 +83,7 @@ async function loadCollectionFromFirebase() {
 }
 
 function displayInventory() {
-    console.log('🎯 Displaying inventory for', cardCollection.length, 'cards');
-    
     if (cardCollection.length === 0) {
-        console.log('⚠️ No cards found - showing empty state');
         const mainContentEl = document.getElementById('mainContent');
         if (mainContentEl) {
             mainContentEl.innerHTML = `
@@ -129,8 +103,6 @@ function displayInventory() {
     displayTopProducts();
     displayTeamDistribution();
     displayExpensiveCards();
-    
-    console.log('✅ Inventory display complete');
 }
 
 function updateSummaryStats() {
@@ -286,13 +258,11 @@ function toggleMobileMenu() {
 
 // Initialize everything when DOM is ready
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('🚀 Starting application...');
-    
     const loadingEl = document.getElementById('loading');
     const mainContentEl = document.getElementById('mainContent');
     
     if (!loadingEl || !mainContentEl) {
-        console.error('❌ Required DOM elements not found!');
+        console.error('Required DOM elements not found!');
         return;
     }
     
