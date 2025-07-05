@@ -1,17 +1,4 @@
-// Firebase configuration and initialization
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
-import { 
-    getFirestore, 
-    collection, 
-    addDoc, 
-    getDocs, 
-    deleteDoc, 
-    updateDoc, 
-    doc, 
-    query, 
-    orderBy 
-} from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
-
+// Firebase configuration
 const firebaseConfig = {
     apiKey: "{{FIREBASE_API_KEY}}",
     authDomain: "{{FIREBASE_AUTH_DOMAIN}}",
@@ -21,23 +8,40 @@ const firebaseConfig = {
     appId: "{{FIREBASE_APP_ID}}"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
 // Global variables
+let app, db;
 let cardCollection = [];
 let currentView = 'list';
 let currentSort = { field: null, direction: 'asc' };
 let isEditMode = false;
 let editCardId = null;
 
+// Initialize Firebase when the script loads
+async function initFirebase() {
+    try {
+        const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js');
+        const { getFirestore } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
+        
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        console.log('🔥 Firebase initialized successfully');
+    } catch (error) {
+        console.error('❌ Firebase initialization error:', error);
+    }
+}
+
 // Common utility functions
 function toggleMobileMenu() {
     const navLinks = document.querySelector('.nav-links');
-    navLinks.style.display = navLinks.style.display === 'none' ? 'flex' : 'none';
+    if (navLinks) {
+        navLinks.style.display = navLinks.style.display === 'none' ? 'flex' : 'none';
+    }
 }
 
-// Add Card Page Functions
+// ===========================================
+// ADD CARD PAGE FUNCTIONS
+// ===========================================
+
 function initializeYearDropdown() {
     const yearSelect = document.getElementById('year');
     if (!yearSelect) return;
@@ -73,15 +77,22 @@ function checkEditMode() {
 }
 
 function populateForm(card) {
-    const fields = [
-        'category', 'year', 'product', 'cardNumber', 'player', 'team', 
-        'quantity', 'rookieCard', 'description', 'purchaseCost'
-    ];
+    const elements = {
+        category: document.getElementById('category'),
+        year: document.getElementById('year'),
+        product: document.getElementById('product'),
+        cardNumber: document.getElementById('cardNumber'),
+        player: document.getElementById('player'),
+        team: document.getElementById('team'),
+        quantity: document.getElementById('quantity'),
+        rookieCard: document.getElementById('rookieCard'),
+        description: document.getElementById('description'),
+        purchaseCost: document.getElementById('purchaseCost')
+    };
     
-    fields.forEach(field => {
-        const element = document.getElementById(field);
-        if (element && card[field] !== undefined) {
-            element.value = card[field];
+    Object.keys(elements).forEach(key => {
+        if (elements[key] && card[key] !== undefined) {
+            elements[key].value = card[key];
         }
     });
     
@@ -150,6 +161,11 @@ function toggleDateInput() {
 async function addCard(event) {
     event.preventDefault();
     
+    if (!db) {
+        console.error('Database not initialized');
+        return;
+    }
+
     const getElementValue = (id) => {
         const element = document.getElementById(id);
         return element ? element.value : '';
@@ -172,6 +188,8 @@ async function addCard(event) {
     };
 
     try {
+        const { addDoc, updateDoc, doc, collection } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
+        
         if (isEditMode && editCardId) {
             await updateDoc(doc(db, 'cards', editCardId), card);
             alert('Card updated successfully!');
@@ -210,7 +228,7 @@ async function addCard(event) {
 
 async function handleCSVUpload(event) {
     const file = event.target.files[0];
-    if (!file) return;
+    if (!file || !db) return;
     
     const reader = new FileReader();
     reader.onload = async function(e) {
@@ -219,6 +237,8 @@ async function handleCSVUpload(event) {
         
         let successCount = 0;
         let errorCount = 0;
+        
+        const { addDoc, collection } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
         
         for (let i = 1; i < lines.length; i++) {
             if (lines[i].trim() === '') continue;
@@ -256,9 +276,19 @@ async function handleCSVUpload(event) {
     reader.readAsText(file);
 }
 
-// Collection Page Functions
+// ===========================================
+// COLLECTION PAGE FUNCTIONS
+// ===========================================
+
 async function loadCollectionFromFirebase() {
+    if (!db) {
+        console.error('Database not initialized');
+        return;
+    }
+
     try {
+        const { getDocs, collection, query, orderBy } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
+        
         const querySnapshot = await getDocs(
             query(collection(db, 'cards'), orderBy('dateAdded', 'desc'))
         );
@@ -287,9 +317,7 @@ async function loadCollectionFromFirebase() {
         console.error('Error loading collection:', error);
         const loading = document.getElementById('loading');
         if (loading) {
-            const errorHTML = '<div style="color: #ff6b6b;"><h3>Error loading collection</h3><p>' + 
-                error.message + '</p><button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; ' + 
-                'background: #4a7bc8; color: white; border: none; border-radius: 4px; cursor: pointer;">Retry</button></div>';
+            const errorHTML = `<div style="color: #ff6b6b;"><h3>Error loading collection</h3><p>${error.message}</p><button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #4a7bc8; color: white; border: none; border-radius: 4px; cursor: pointer;">Retry</button></div>`;
             loading.innerHTML = errorHTML;
         }
     }
@@ -372,42 +400,39 @@ function displayCollection() {
     let filteredCards = [...cardCollection];
     
     // Apply filters
-    const filters = [
-        { id: 'categoryFilter', field: 'category', exact: true },
-        { id: 'filter-year', field: 'year', transform: (val) => val.toString().toLowerCase() },
-        { id: 'filter-product', field: 'product', transform: (val) => val.toString().toLowerCase() },
-        { id: 'filter-player', field: 'player', transform: (val) => val.toString().toLowerCase() },
-        { id: 'filter-team', field: 'team', transform: (val) => val.toString().toLowerCase() },
-        { id: 'filter-quantity', field: 'quantity', transform: (val) => val.toString().toLowerCase() },
-        { id: 'filter-rookieCard', field: 'rookieCard', exact: true },
-        { id: 'filter-parallel', field: 'parallel', special: 'parallel' },
-        { id: 'filter-numbered', field: 'numbered', special: 'numbered' },
-        { id: 'filter-description', field: 'description', transform: (val) => val.toString().toLowerCase() }
+    const filterElements = [
+        { id: 'categoryFilter', field: 'category' },
+        { id: 'filter-year', field: 'year' },
+        { id: 'filter-product', field: 'product' },
+        { id: 'filter-player', field: 'player' },
+        { id: 'filter-team', field: 'team' },
+        { id: 'filter-quantity', field: 'quantity' },
+        { id: 'filter-rookieCard', field: 'rookieCard' },
+        { id: 'filter-parallel', field: 'parallel' },
+        { id: 'filter-numbered', field: 'numbered' },
+        { id: 'filter-description', field: 'description' }
     ];
     
-    filters.forEach(filter => {
+    filterElements.forEach(filter => {
         const element = document.getElementById(filter.id);
-        if (!element) return;
+        if (!element || !element.value) return;
         
-        const filterValue = element.value;
-        if (!filterValue) return;
+        const filterValue = element.value.toLowerCase();
         
         filteredCards = filteredCards.filter(card => {
             const cardValue = card[filter.field];
             if (!cardValue) return false;
             
-            if (filter.exact) {
-                return cardValue.toString() === filterValue;
-            } else if (filter.special === 'parallel') {
+            if (filter.field === 'categoryFilter' || filter.field === 'rookieCard') {
+                return cardValue.toString() === element.value;
+            } else if (filter.field === 'parallel') {
                 const parallelValue = cardValue === 'N' ? '' : cardValue.toString().toLowerCase();
-                return parallelValue.includes(filterValue.toLowerCase());
-            } else if (filter.special === 'numbered') {
+                return parallelValue.includes(filterValue);
+            } else if (filter.field === 'numbered') {
                 const numberedValue = cardValue === 'N' ? '' : cardValue.toString().toLowerCase();
-                return numberedValue.includes(filterValue.toLowerCase());
-            } else if (filter.transform) {
-                return filter.transform(cardValue).includes(filterValue.toLowerCase());
+                return numberedValue.includes(filterValue);
             } else {
-                return cardValue.toString().toLowerCase().includes(filterValue.toLowerCase());
+                return cardValue.toString().toLowerCase().includes(filterValue);
             }
         });
     });
@@ -458,31 +483,20 @@ function displayListView(cards) {
     if (!container) return;
     
     const listHTML = cards.map(card => {
-        const year = card.year || '';
-        const product = card.product || '';
-        const player = card.player || '';
-        const team = card.team || '';
-        const quantity = card.quantity || 1;
-        const rookieCheck = card.rookieCard === 'Y' ? '✓' : '';
-        const parallel = card.parallel !== 'N' ? (card.parallel || '') : '';
-        const numbered = card.numbered !== 'N' ? (card.numbered || '') : '';
-        const description = card.description || '';
-        const cardId = card.id;
-        
         return `<div class="list-item">
-            <div>${year}</div>
-            <div>${product}</div>
-            <div class="list-item-player">${player}</div>
-            <div>${team}</div>
-            <div style="text-align: center;">${quantity}</div>
-            <div>${rookieCheck}</div>
-            <div>${parallel}</div>
-            <div>${numbered}</div>
-            <div class="list-item-details">${description}</div>
+            <div>${card.year || ''}</div>
+            <div>${card.product || ''}</div>
+            <div class="list-item-player">${card.player || ''}</div>
+            <div>${card.team || ''}</div>
+            <div style="text-align: center;">${card.quantity || 1}</div>
+            <div>${card.rookieCard === 'Y' ? '✓' : ''}</div>
+            <div>${card.parallel !== 'N' ? (card.parallel || '') : ''}</div>
+            <div>${card.numbered !== 'N' ? (card.numbered || '') : ''}</div>
+            <div class="list-item-details">${card.description || ''}</div>
             <div class="action-buttons">
-                <button class="view-btn" onclick="viewCard('${cardId}')">View</button>
-                <button class="edit-btn" onclick="editCard('${cardId}')">Edit</button>
-                <button class="delete-btn" onclick="deleteCard('${cardId}')">Delete</button>
+                <button class="view-btn" onclick="viewCard('${card.id}')">View</button>
+                <button class="edit-btn" onclick="editCard('${card.id}')">Edit</button>
+                <button class="delete-btn" onclick="deleteCard('${card.id}')">Delete</button>
             </div>
         </div>`;
     }).join('');
@@ -494,38 +508,27 @@ function displayGridView(cards) {
     if (!container) return;
     
     const gridHTML = cards.map(card => {
-        const player = card.player || '';
-        const team = card.team || '';
-        const year = card.year || '';
-        const product = card.product || '';
-        const category = card.category || '';
-        const cardNumber = card.cardNumber || '';
-        const rookieText = card.rookieCard === 'Y' ? 'Yes' : 'No';
-        const parallelText = card.parallel !== 'N' ? (card.parallel || '') : 'No';
-        const numberedText = card.numbered !== 'N' ? (card.numbered || '') : 'No';
-        const description = card.description || 'None';
         const purchaseDate = card.purchaseDate === 'Unknown' || !card.purchaseDate ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString();
         const purchaseCost = card.purchaseCost ? ' + parseFloat(card.purchaseCost).toFixed(2) : 'Not available';
-        const quantity = card.quantity || 1;
         
         return `<div class="card-item">
             <div class="card-header">
                 <div class="card-title-section">
-                    <div class="card-title">${player}</div>
-                    <div class="card-subtitle">${team}</div>
-                    <div class="card-product">${year} ${product}</div>
+                    <div class="card-title">${card.player || ''}</div>
+                    <div class="card-subtitle">${card.team || ''}</div>
+                    <div class="card-product">${card.year || ''} ${card.product || ''}</div>
                 </div>
-                <div class="card-category">${category}</div>
+                <div class="card-category">${card.category || ''}</div>
             </div>
             <div class="card-details">
-                <strong>Card Number:</strong> ${cardNumber}<br>
-                <strong>Rookie Card:</strong> ${rookieText}<br>
-                <strong>Parallel:</strong> ${parallelText}<br>
-                <strong>Numbered:</strong> ${numberedText}<br>
-                <strong>Additional Notes:</strong> ${description}<br>
+                <strong>Card Number:</strong> ${card.cardNumber || ''}<br>
+                <strong>Rookie Card:</strong> ${card.rookieCard === 'Y' ? 'Yes' : 'No'}<br>
+                <strong>Parallel:</strong> ${card.parallel !== 'N' ? (card.parallel || '') : 'No'}<br>
+                <strong>Numbered:</strong> ${card.numbered !== 'N' ? (card.numbered || '') : 'No'}<br>
+                <strong>Additional Notes:</strong> ${card.description || 'None'}<br>
                 <strong>Purchase Date:</strong> ${purchaseDate}<br>
                 <strong>Purchase Cost:</strong> ${purchaseCost}<br>
-                <strong>Quantity:</strong> ${quantity}
+                <strong>Quantity:</strong> ${card.quantity || 1}
             </div>
         </div>`;
     }).join('');
@@ -555,38 +558,27 @@ function viewCard(cardId) {
     const card = cardCollection.find(c => c.id === cardId);
     if (!card) return;
     
-    const player = card.player || '';
-    const team = card.team || '';
-    const year = card.year || '';
-    const product = card.product || '';
-    const category = card.category || '';
-    const cardNumber = card.cardNumber || '';
-    const rookieText = card.rookieCard === 'Y' ? 'Yes' : 'No';
-    const parallelText = card.parallel && card.parallel !== 'N' ? card.parallel : 'No';
-    const numberedText = card.numbered && card.numbered !== 'N' ? card.numbered : 'No';
-    const description = card.description || 'None';
     const purchaseDate = card.purchaseDate === 'Unknown' || !card.purchaseDate ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString();
     const purchaseCost = card.purchaseCost ? ' + parseFloat(card.purchaseCost).toFixed(2) : 'Not available';
-    const quantity = card.quantity || 1;
     
     const modalHTML = `<div style="margin: 0; padding: 0;">
         <div class="card-header">
             <div class="card-title-section">
-                <div class="card-title">${player}</div>
-                <div class="card-subtitle">${team}</div>
-                <div class="card-product">${year} ${product}</div>
+                <div class="card-title">${card.player || ''}</div>
+                <div class="card-subtitle">${card.team || ''}</div>
+                <div class="card-product">${card.year || ''} ${card.product || ''}</div>
             </div>
-            <div class="card-category">${category}</div>
+            <div class="card-category">${card.category || ''}</div>
         </div>
         <div class="card-details" style="margin-top: 1.5rem; line-height: 2;">
-            <div><strong>Card Number:</strong> ${cardNumber}</div>
-            <div><strong>Rookie Card:</strong> ${rookieText}</div>
-            <div><strong>Parallel:</strong> ${parallelText}</div>
-            <div><strong>Numbered:</strong> ${numberedText}</div>
-            <div><strong>Additional Notes:</strong> ${description}</div>
+            <div><strong>Card Number:</strong> ${card.cardNumber || ''}</div>
+            <div><strong>Rookie Card:</strong> ${card.rookieCard === 'Y' ? 'Yes' : 'No'}</div>
+            <div><strong>Parallel:</strong> ${card.parallel && card.parallel !== 'N' ? card.parallel : 'No'}</div>
+            <div><strong>Numbered:</strong> ${card.numbered && card.numbered !== 'N' ? card.numbered : 'No'}</div>
+            <div><strong>Additional Notes:</strong> ${card.description || 'None'}</div>
             <div><strong>Purchase Date:</strong> ${purchaseDate}</div>
             <div><strong>Purchase Cost:</strong> ${purchaseCost}</div>
-            <div><strong>Quantity:</strong> ${quantity}</div>
+            <div><strong>Quantity:</strong> ${card.quantity || 1}</div>
         </div>
     </div>`;
     
@@ -615,21 +607,16 @@ function editCard(cardId) {
 
 async function deleteCard(cardId) {
     const card = cardCollection.find(c => c.id === cardId);
-    if (!card) return;
+    if (!card || !db) return;
     
-    const year = card.year || '';
-    const product = card.product || '';
-    const player = card.player || '';
-    const team = card.team || '';
-    const cardNumber = card.cardNumber || '';
-    
-    const confirmDelete = confirm(`Are you sure you want to delete this card?\n\n${year} ${product}\n${player} - ${team}\nCard #${cardNumber}`);
+    const confirmDelete = confirm(`Are you sure you want to delete this card?\n\n${card.year || ''} ${card.product || ''}\n${card.player || ''} - ${card.team || ''}\nCard #${card.cardNumber || ''}`);
     if (!confirmDelete) return;
     
     const finalConfirm = confirm('This action cannot be undone!\n\nClick OK to permanently delete this card from your collection.');
     if (!finalConfirm) return;
     
     try {
+        const { deleteDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
         await deleteDoc(doc(db, 'cards', cardId));
         cardCollection = cardCollection.filter(c => c.id !== cardId);
         displayCollection();
@@ -678,10 +665,20 @@ function exportToCSV() {
     window.URL.revokeObjectURL(url);
 }
 
-// Dashboard Page Functions
+// ===========================================
+// DASHBOARD PAGE FUNCTIONS
+// ===========================================
+
 async function loadCollectionForDashboard() {
+    if (!db) {
+        console.error('Database not initialized');
+        return;
+    }
+
     try {
         console.log('📖 Loading collection from Firebase...');
+        
+        const { getDocs, collection, query, orderBy } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
         
         const querySnapshot = await getDocs(
             query(
@@ -760,8 +757,6 @@ function updateSummaryStats() {
     const totalValue = cardCollection.reduce((sum, card) => sum + (card.purchaseCost || 0), 0);
     const rookieCards = cardCollection.filter(card => card.rookieCard === 'Y').length;
     const numberedCards = cardCollection.filter(card => card.numbered !== 'N').length;
-
-    console.log('Stats:', { totalCards, totalValue, rookieCards, numberedCards });
 
     const elements = {
         totalCards: document.getElementById('totalCards'),
@@ -898,12 +893,16 @@ function displayExpensiveCards() {
     `).join('');
 }
 
-// Event Listeners and Page Initialization
-document.addEventListener('DOMContentLoaded', function() {
-    // Determine which page we're on based on URL or page-specific elements
-    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+// ===========================================
+// INITIALIZATION
+// ===========================================
+
+document.addEventListener('DOMContentLoaded', async function() {
+    // Initialize Firebase first
+    await initFirebase();
     
-    // Common initialization
+    // Determine which page we're on
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
     console.log('🚀 Initializing page:', currentPage);
     
     // Page-specific initialization
@@ -911,17 +910,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add card page
         initializeYearDropdown();
         checkEditMode();
-        
-        // Attach form handlers
-        const cardForm = document.getElementById('cardForm');
-        if (cardForm) {
-            cardForm.addEventListener('submit', addCard);
-        }
-        
-        const csvFile = document.getElementById('csvFile');
-        if (csvFile) {
-            csvFile.addEventListener('change', handleCSVUpload);
-        }
         
     } else if (currentPage === 'collection.html' || document.getElementById('listView')) {
         // Collection page
