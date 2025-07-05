@@ -801,7 +801,7 @@ function viewCard(cardId) {
     const numberedText = card.numbered && card.numbered !== 'N' ? card.numbered : 'No';
     const description = card.description || 'None';
     const purchaseDate = card.purchaseDate === 'Unknown' || !card.purchaseDate ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString();
-    const purchaseCost = card.purchaseCost ? ' + parseFloat(card.purchaseCost).toFixed(2) : 'Not available';
+    const purchaseCost = card.purchaseCost ? '$' + parseFloat(card.purchaseCost).toFixed(2) : 'Not available';
     const quantity = card.quantity || 1;
     
     const modalHTML = `<div style="margin: 0; padding: 0;">
@@ -925,32 +925,50 @@ function toggleMobileMenu() {
 
 // Initialize everything when DOM is ready
 document.addEventListener('DOMContentLoaded', async function() {
+    console.log('DOM loaded, current pathname:', window.location.pathname);
+    
     const loadingEl = document.getElementById('loading');
     const mainContentEl = document.getElementById('mainContent');
     
-    // Initialize Firebase first
+    console.log('Loading element:', loadingEl);
+    console.log('Main content element:', mainContentEl);
+    console.log('Is add page?', isAddPage());
+    
+    // For add page, show content immediately and then initialize Firebase
+    if (isAddPage()) {
+        console.log('Detected add page');
+        
+        // Show content first
+        if (loadingEl) loadingEl.style.display = 'none';
+        if (mainContentEl) mainContentEl.style.display = 'block';
+        
+        // Initialize Firebase and then set up the form
+        const success = await initFirebase();
+        console.log('Firebase init success:', success);
+        
+        if (success) {
+            initializeYearDropdown();
+            checkEditMode();
+        } else {
+            alert('Failed to initialize Firebase. Some features may not work.');
+        }
+        return;
+    }
+    
+    // For other pages, initialize Firebase first then load data
+    console.log('Other page detected, initializing normally');
+    
+    if (!loadingEl || !mainContentEl) {
+        console.error('Required DOM elements not found!');
+        return;
+    }
+    
     const success = await initFirebase();
     
     if (success) {
-        // Handle add page specific initialization
-        if (isAddPage()) {
-            initializeYearDropdown();
-            checkEditMode();
-            
-            // Show the add page immediately after Firebase init
-            if (loadingEl) loadingEl.style.display = 'none';
-            if (mainContentEl) mainContentEl.style.display = 'block';
-        } else {
-            // Load collection data for dashboard and collection pages
-            if (!loadingEl || !mainContentEl) {
-                console.error('Required DOM elements not found!');
-                return;
-            }
-            
-            setTimeout(() => {
-                loadCollectionFromFirebase();
-            }, 1000);
-        }
+        setTimeout(() => {
+            loadCollectionFromFirebase();
+        }, 1000);
     } else {
         if (loadingEl) {
             loadingEl.innerHTML = `
