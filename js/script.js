@@ -118,7 +118,8 @@ function isDashboardPage() {
 
 function isAddPage() {
     return window.location.pathname.includes('add.html') || 
-           document.getElementById('cardForm') !== null;
+           document.getElementById('cardForm') !== null ||
+           document.querySelector('form[onsubmit*="addCard"]') !== null;
 }
 
 // ============================================================================
@@ -936,8 +937,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             initializeYearDropdown();
             checkEditMode();
             
-            // Only load collection data if not on add page or if we need it for validation
-            // For now, we'll skip loading the full collection on add page for performance
+            // Show the add page immediately after Firebase init
             if (loadingEl) loadingEl.style.display = 'none';
             if (mainContentEl) mainContentEl.style.display = 'block';
         } else {
