@@ -121,6 +121,7 @@ function isAddPage() {
            document.getElementById('cardForm') !== null ||
            document.querySelector('form[onsubmit*="addCard"]') !== null;
 }
+
 // ============================================================================
 // ADD PAGE FUNCTIONS (for add.html)
 // ============================================================================
@@ -218,7 +219,8 @@ function populateForm(card) {
             imageVariationText.value = card.imageVariation;
         }
     }
-setFieldValue('description', card.description);
+
+    setFieldValue('description', card.description);
     
     // Handle purchase date
     const purchaseDate = document.getElementById('purchaseDate');
@@ -465,6 +467,7 @@ async function handleCSVUpload(event) {
     };
     reader.readAsText(file);
 }
+
 // ============================================================================
 // DASHBOARD/INVENTORY FUNCTIONS (for index.html)
 // ============================================================================
@@ -491,7 +494,6 @@ function displayInventory() {
     displayTeamDistribution();
     displayExpensiveCards();
 }
-
 function updateSummaryStats() {
     const totalCards = cardCollection.length;
     const totalValue = cardCollection.reduce((sum, card) => {
@@ -642,6 +644,7 @@ function displayExpensiveCards() {
         `).join('');
     }
 }
+
 // ============================================================================
 // COLLECTION VIEW FUNCTIONS (for collection.html)
 // ============================================================================
@@ -806,7 +809,6 @@ function displayCollection() {
         displayGridView(filteredCards);
     }
 }
-
 function displayListView(cards) {
     const container = document.getElementById('listContainer');
     if (!container) return;
@@ -891,6 +893,7 @@ function displayGridView(cards) {
     }).join('');
     container.innerHTML = gridHTML;
 }
+
 function clearAllFilters() {
     const filters = [
         'filter-year', 'filter-product', 'filter-player', 'filter-team',
@@ -928,10 +931,20 @@ function viewCard(cardId) {
     const quantity = card.quantity || 1;
     
     // Monetary data formatting
-    const purchaseDate = card.purchaseDate === 'Unknown' || !card.purchaseDate ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString();
+    const purchaseDate = card.purchaseDate === 'Unknown' || !card.purchaseDate ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString('en-US');
     const purchaseCost = card.purchaseCost === 'Unknown' || !card.purchaseCost ? 'Unknown' : '$' + parseFloat(card.purchaseCost).toFixed(2);
     const estimatedValue = card.estimatedValue === 'Unknown' || !card.estimatedValue ? 'Unknown' : '$' + parseFloat(card.estimatedValue).toFixed(2);
-    const estimatedValueDate = card.estimatedValueDate || 'Not specified';
+    
+    // Format estimated value date to MM/DD/YYYY
+    let estimatedValueDate = 'Not specified';
+    if (card.estimatedValueDate) {
+        try {
+            const date = new Date(card.estimatedValueDate);
+            estimatedValueDate = date.toLocaleDateString('en-US'); // This will format as MM/DD/YYYY
+        } catch (e) {
+            estimatedValueDate = 'Not specified';
+        }
+    }
     
     // Format estimated value text
     let estimatedValueText = '';
@@ -988,7 +1001,6 @@ function editCard(cardId) {
     localStorage.setItem('editCardData', JSON.stringify(card));
     window.location.href = 'add.html?edit=true';
 }
-
 async function deleteCard(cardId) {
     const card = cardCollection.find(c => c.id === cardId);
     if (!card) return;
