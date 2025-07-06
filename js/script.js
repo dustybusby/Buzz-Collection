@@ -229,7 +229,16 @@ function populateForm(card) {
     setFieldValue('team', card.team);
     setFieldValue('quantity', card.quantity || 1);
     setFieldValue('rookieCard', card.rookieCard || 'N');
-    setFieldValue('grade', card.grade || '');
+    
+    // Handle grade field
+    const gradeInput = document.getElementById('grade');
+    const ungradedGrade = document.getElementById('ungradedGrade');
+    if (card.grade && card.grade !== 'Ungraded') {
+        if (gradeInput) gradeInput.value = card.grade;
+    } else {
+        if (ungradedGrade) ungradedGrade.checked = true;
+        if (gradeInput) gradeInput.disabled = true;
+    }
     
     // Handle parallel field
     if (card.parallel && card.parallel !== 'N') {
@@ -361,6 +370,15 @@ function toggleCostInput() {
     }
 }
 
+function toggleGradeInput() {
+    const checkbox = document.getElementById('ungradedGrade');
+    const gradeInput = document.getElementById('grade');
+    if (checkbox && gradeInput) {
+        gradeInput.disabled = checkbox.checked;
+        if (checkbox.checked) gradeInput.value = '';
+    }
+}
+
 async function addCard(event) {
     event.preventDefault();
     
@@ -380,7 +398,7 @@ async function addCard(event) {
         rookieCard: getFieldValue('rookieCard'),
         parallel: document.getElementById('parallelSelect')?.value === 'Y' ? getFieldValue('parallelText') : 'N',
         numbered: document.getElementById('numberedSelect')?.value === 'Y' ? getFieldValue('numberedText') : 'N',
-        grade: getFieldValue('grade') || 'Ungraded',
+        grade: document.getElementById('ungradedGrade')?.checked ? 'Ungraded' : (getFieldValue('grade') || 'Ungraded'),
         estimatedValue: document.getElementById('unknownEstimatedValue')?.checked ? 'Unknown' : (parseFloat(getFieldValue('estimatedValue')) || 0),
         estimatedValueDate: getFieldValue('estimatedValueDate'),
         imageVariation: document.getElementById('imageVariationSelect')?.value === 'Y' ? getFieldValue('imageVariationText') : 'N',
@@ -461,6 +479,7 @@ function addAnotherCard() {
         const estimatedValueDate = document.getElementById('estimatedValueDate');
         const purchaseDate = document.getElementById('purchaseDate');
         const purchaseCost = document.getElementById('purchaseCost');
+        const gradeInput = document.getElementById('grade');
         
         if (estimatedValue) estimatedValue.disabled = false;
         if (estimatedValueDate) {
@@ -469,6 +488,7 @@ function addAnotherCard() {
         }
         if (purchaseDate) purchaseDate.disabled = false;
         if (purchaseCost) purchaseCost.disabled = false;
+        if (gradeInput) gradeInput.disabled = false;
     }
 }
 
@@ -947,9 +967,9 @@ function viewCard(cardId) {
     const category = card.category || 'Unknown';
     const cardNumber = card.cardNumber || 'N/A';
     const rookieText = card.rookieCard === 'Y' ? 'Rookie Card: Yes' : 'Rookie Card: No';
-    const parallelText = card.parallel && card.parallel !== 'N' ? `Parallel: ${card.parallel}` : '';
-    const numberedText = card.numbered && card.numbered !== 'N' ? `Numbered: ${card.numbered}` : '';
-    const imageVariationText = card.imageVariation && card.imageVariation !== 'N' ? `Image Variation: ${card.imageVariation}` : '';
+    const parallelText = card.parallel && card.parallel !== 'N' ? `Parallel: ${card.parallel}` : 'Parallel: No';
+    const numberedText = card.numbered && card.numbered !== 'N' ? `Numbered: ${card.numbered}` : 'Numbered: No';
+    const imageVariationText = card.imageVariation && card.imageVariation !== 'N' ? `Image Variation: ${card.imageVariation}` : 'Image Variation: No';
     const description = card.description || 'None';
     const quantity = card.quantity || 1;
     
@@ -991,10 +1011,10 @@ function viewCard(cardId) {
         
         <div class="card-body">
             <div class="card-details">
-                ${numberedText ? `<div class="card-detail-line">${numberedText}</div>` : ''}
-                ${parallelText ? `<div class="card-detail-line">${parallelText}</div>` : ''}
+                <div class="card-detail-line">${numberedText}</div>
+                <div class="card-detail-line">${parallelText}</div>
                 <div class="card-detail-line">${rookieText}</div>
-                ${imageVariationText ? `<div class="card-detail-line">${imageVariationText}</div>` : ''}
+                <div class="card-detail-line">${imageVariationText}</div>
                 <div class="card-detail-line">Quantity: ${quantity}</div>
                 <div class="card-detail-line">Add'l Notes: ${description}</div>
             </div>
@@ -1181,6 +1201,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             const unknownCost = document.getElementById('unknownCost');
             if (unknownCost) {
                 unknownCost.addEventListener('change', toggleCostInput);
+            }
+            
+            const ungradedGrade = document.getElementById('ungradedGrade');
+            if (ungradedGrade) {
+                ungradedGrade.addEventListener('change', toggleGradeInput);
             }
             
             const csvFile = document.getElementById('csvFile');
