@@ -973,7 +973,7 @@ function viewCard(cardId) {
                 ${rookieText ? `<div class="card-detail-line">${rookieText}</div>` : ''}
                 ${imageVariationText ? `<div class="card-detail-line">${imageVariationText}</div>` : ''}
                 <div class="card-detail-line">Quantity: ${quantity}</div>
-                ${description ? `<div class="card-detail-line">Notes: ${description}</div>` : ''}
+                ${description ? `<div class="card-detail-line">Add'l Notes: ${description}</div>` : ''}
             </div>
             
             <div class="card-monetary">
