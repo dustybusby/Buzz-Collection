@@ -418,15 +418,19 @@ async function addCard(event) {
 // Success modal functions
 function showSuccessModal(message, isEdit) {
     const modal = document.getElementById('successModal');
+    if (!modal) return;
+    
     const messageEl = modal.querySelector('h3');
     const descriptionEl = modal.querySelector('p');
     
-    if (isEdit) {
-        messageEl.textContent = 'Card Updated Successfully!';
-        descriptionEl.textContent = 'Your card has been updated. What would you like to do next?';
-    } else {
-        messageEl.textContent = 'Card Added Successfully!';
-        descriptionEl.textContent = 'This card has been added to your collection. What would you like to do next?';
+    if (messageEl && descriptionEl) {
+        if (isEdit) {
+            messageEl.textContent = 'Card Updated Successfully!';
+            descriptionEl.textContent = 'Your card has been updated. What would you like to do next?';
+        } else {
+            messageEl.textContent = 'Card Added Successfully!';
+            descriptionEl.textContent = 'This card has been added to your collection. What would you like to do next?';
+        }
     }
     
     modal.style.display = 'block';
@@ -739,7 +743,8 @@ function sortBy(field) {
 }
 
 function updateSortIndicators() {
-    document.querySelectorAll('.sort-indicator').forEach(indicator => {
+    document.querySelectorAll('.sort-indicator').forEach(
+        indicator => {
         indicator.textContent = '';
     });
     
@@ -1184,16 +1189,14 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
             
             // Add success modal button listeners
-            const addAnotherBtn = document.querySelector('.btn[onclick*="addAnotherCard"]');
+            const addAnotherBtn = document.getElementById('addAnotherBtn');
             if (addAnotherBtn) {
                 addAnotherBtn.addEventListener('click', addAnotherCard);
-                addAnotherBtn.removeAttribute('onclick');
             }
             
-            const viewCollectionBtn = document.querySelector('.btn[onclick*="viewCollection"]');
+            const viewCollectionBtn = document.getElementById('viewCollectionBtn');
             if (viewCollectionBtn) {
                 viewCollectionBtn.addEventListener('click', viewCollection);
-                viewCollectionBtn.removeAttribute('onclick');
             }
         } else {
             alert('Failed to initialize Firebase. Some features may not work.');
