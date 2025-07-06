@@ -662,8 +662,7 @@ h1 {
 .btn {
     background: linear-gradient(135deg, rgba(0, 100, 150, 0.8), rgba(0, 150, 200, 0.6));
     color: #ffffff;
-    border: 1px solid #00c8ff
-    ;
+    border: 1px solid #00c8ff;
     padding: 0.8rem 1.8rem;
     border-radius: 10px;
     cursor: pointer;

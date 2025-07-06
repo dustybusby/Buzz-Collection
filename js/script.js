@@ -949,7 +949,7 @@ function viewCard(cardId) {
     const purchaseDate = card.purchaseDate === 'Unknown' || !card.purchaseDate ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString('en-US');
     const purchaseCost = card.purchaseCost === 'Unknown' || !card.purchaseCost ? 'Unknown' : '$' + parseFloat(card.purchaseCost).toFixed(2);
     const estimatedValue = card.estimatedValue === 'Unknown' || !card.estimatedValue ? 'Unknown' : '$' + parseFloat(card.estimatedValue).toFixed(2);
-    
+        
     // Format estimated value date to MM/DD/YYYY
     let estimatedValueDate = 'Not specified';
     if (card.estimatedValueDate) {
@@ -1054,10 +1054,16 @@ function exportToCSV() {
         return;
     }
     
-    const headers = ['Category', 'Year', 'Brand', 'Card Number', 'Player', 'Team', 'Quantity', 'Rookie Card', 'Parallel', 'Numbered', 'Estimated Value', 'Estimated Value As Of', 'Image Variation', 'Purchase Date', 'Purchase Cost', 'Additional Description'];
+    const headers = ['Category', 'Year', 'Brand', 'Card Number', 'Player', 'Team', 'Quantity', 'Rookie Card', 'Parallel', 'Numbered', 'Grade', 'Estimated Value', 'Estimated Value As Of', 'Image Variation', 'Purchase Date', 'Purchase Price', 'Additional Description'];
     const csvRows = [headers.join(',')];
     
     cardCollection.forEach(card => {
+        // Format numbered field to prevent date conversion - prefix with apostrophe for Excel
+        let numberedValue = card.numbered || 'N';
+        if (numberedValue !== 'N' && numberedValue !== '') {
+            numberedValue = `'${numberedValue}`;
+        }
+        
         const row = [
             card.category || '',
             card.year || '',
@@ -1068,7 +1074,8 @@ function exportToCSV() {
             card.quantity || 1,
             card.rookieCard || 'N',
             card.parallel || 'N',
-            card.numbered || 'N',
+            numberedValue,
+            'N/A', // Grade field (not currently tracked)
             card.estimatedValue || '',
             card.estimatedValueDate || '',
             card.imageVariation || 'N',
@@ -1101,7 +1108,7 @@ function toggleMobileMenu() {
     }
 }
 
-// ============================================================================
+/ ============================================================================
 // INITIALIZATION
 // ============================================================================
 
@@ -1231,6 +1238,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         menuToggle.addEventListener('click', toggleMobileMenu);
     }
 });
+
 // Modal click outside to close
 window.addEventListener('click', function(event) {
     const modal = document.getElementById('cardModal');
