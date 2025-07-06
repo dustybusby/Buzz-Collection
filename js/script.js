@@ -107,7 +107,7 @@ async function loadCollectionFromFirebase() {
 // Helper functions to determine current page
 function isCollectionPage() {
     return window.location.pathname.includes('collection.html') || 
-           document.getElementById('listView') !== null;
+           document.getElementById('listContainer') !== null;
 }
 
 function isDashboardPage() {
@@ -119,7 +119,62 @@ function isDashboardPage() {
 function isAddPage() {
     return window.location.pathname.includes('add.html') || 
            document.getElementById('cardForm') !== null ||
-           document.querySelector('form[onsubmit*="addCard"]') !== null;
+           document.querySelector('form[id="cardForm"]') !== null;
+}
+
+// Initialize collection page functionality
+function initializeCollectionPage() {
+    // Remove view toggle event listeners - always use list view
+    const listView = document.querySelector('.cards-list');
+    if (listView) {
+        listView.style.display = 'block';
+    }
+    
+    // Add event listeners for sorting
+    document.querySelectorAll('.sortable-header').forEach(header => {
+        header.addEventListener('click', function() {
+            const sortField = this.getAttribute('data-sort');
+            sortBy(sortField);
+        });
+    });
+    
+    // Add event listeners for filtering
+    document.querySelectorAll('.filter-input').forEach(input => {
+        input.addEventListener('keyup', filterCollection);
+        input.addEventListener('change', filterCollection);
+    });
+    
+    // Add event listeners for controls
+    const categoryFilter = document.getElementById('categoryFilter');
+    if (categoryFilter) {
+        categoryFilter.addEventListener('change', filterCollection);
+    }
+    
+    const clearFiltersBtn = document.querySelector('.clear-filters-btn');
+    if (clearFiltersBtn) {
+        clearFiltersBtn.addEventListener('click', clearAllFilters);
+    }
+    
+    const exportBtn = document.querySelector('.export-csv-btn');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', exportToCSV);
+    }
+    
+    // Add modal close functionality
+    const modal = document.getElementById('cardModal');
+    const closeBtn = document.querySelector('.close');
+    
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeCardModal);
+    }
+    
+    if (modal) {
+        modal.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                closeCardModal();
+            }
+        });
+    }
 }
 
 // ============================================================================
@@ -196,7 +251,6 @@ function populateForm(card) {
             numberedText.value = card.numbered;
         }
     }
-    
     // Handle estimated value field
     const estimatedValue = document.getElementById('estimatedValue');
     const unknownEstimatedValue = document.getElementById('unknownEstimatedValue');
@@ -242,6 +296,7 @@ function populateForm(card) {
         if (purchaseCost) purchaseCost.disabled = true;
     }
 }
+
 function toggleParallelInput() {
     const select = document.getElementById('parallelSelect');
     const text = document.getElementById('parallelText');
@@ -467,7 +522,6 @@ async function handleCSVUpload(event) {
     };
     reader.readAsText(file);
 }
-
 // ============================================================================
 // DASHBOARD/INVENTORY FUNCTIONS (for index.html)
 // ============================================================================
@@ -494,6 +548,7 @@ function displayInventory() {
     displayTeamDistribution();
     displayExpensiveCards();
 }
+
 function updateSummaryStats() {
     const totalCards = cardCollection.length;
     const totalValue = cardCollection.reduce((sum, card) => {
@@ -597,7 +652,8 @@ function displayTopProducts() {
 function displayTeamDistribution() {
     const teamStats = {};
     cardCollection.forEach(card => {
-        const team = card.team || 'Unknown';
+        const
+        team = card.team || 'Unknown';
         teamStats[team] = (teamStats[team] || 0) + 1;
     });
 
@@ -669,27 +725,6 @@ function updateCategoryFilter() {
     }
 }
 
-function switchView(view) {
-    currentView = view;
-    const listView = document.getElementById('listView');
-    const gridView = document.getElementById('gridView');
-    const listBtn = document.getElementById('listViewBtn');
-    const gridBtn = document.getElementById('gridViewBtn');
-    
-    if (view === 'list') {
-        listView.style.display = 'block';
-        gridView.style.display = 'none';
-        listBtn.classList.add('active');
-        gridBtn.classList.remove('active');
-    } else {
-        listView.style.display = 'none';
-        gridView.style.display = 'grid';
-        listBtn.classList.remove('active');
-        gridBtn.classList.add('active');
-    }
-    displayCollection();
-}
-
 function sortBy(field) {
     if (currentSort.field === field) {
         currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
@@ -713,6 +748,8 @@ function updateSortIndicators() {
         }
     }
 }
+
+// Updated display collection function with new column order
 function displayCollection() {
     const totalElement = document.getElementById('totalCards');
     const filteredElement = document.getElementById('filteredCount');
@@ -722,17 +759,17 @@ function displayCollection() {
     
     let filteredCards = [...cardCollection];
     
-    // Apply filters
+    // Apply filters in new order
     const categoryFilter = document.getElementById('categoryFilter')?.value || '';
     const yearFilter = document.getElementById('filter-year')?.value.toLowerCase() || '';
     const productFilter = document.getElementById('filter-product')?.value.toLowerCase() || '';
+    const cardNumberFilter = document.getElementById('filter-cardNumber')?.value.toLowerCase() || '';
     const playerFilter = document.getElementById('filter-player')?.value.toLowerCase() || '';
     const teamFilter = document.getElementById('filter-team')?.value.toLowerCase() || '';
-    const quantityFilter = document.getElementById('filter-quantity')?.value.toLowerCase() || '';
     const rookieCardFilter = document.getElementById('filter-rookieCard')?.value || '';
     const parallelFilter = document.getElementById('filter-parallel')?.value.toLowerCase() || '';
     const numberedFilter = document.getElementById('filter-numbered')?.value.toLowerCase() || '';
-    const descriptionFilter = document.getElementById('filter-description')?.value.toLowerCase() || '';
+    const quantityFilter = document.getElementById('filter-quantity')?.value.toLowerCase() || '';
     
     if (categoryFilter) {
         filteredCards = filteredCards.filter(card => card.category && card.category.toString() === categoryFilter);
@@ -743,14 +780,14 @@ function displayCollection() {
     if (productFilter) {
         filteredCards = filteredCards.filter(card => card.product && card.product.toString().toLowerCase().includes(productFilter));
     }
+    if (cardNumberFilter) {
+        filteredCards = filteredCards.filter(card => card.cardNumber && card.cardNumber.toString().toLowerCase().includes(cardNumberFilter));
+    }
     if (playerFilter) {
         filteredCards = filteredCards.filter(card => card.player && card.player.toString().toLowerCase().includes(playerFilter));
     }
     if (teamFilter) {
         filteredCards = filteredCards.filter(card => card.team && card.team.toString().toLowerCase().includes(teamFilter));
-    }
-    if (quantityFilter) {
-        filteredCards = filteredCards.filter(card => card.quantity && card.quantity.toString().toLowerCase().includes(quantityFilter));
     }
     if (rookieCardFilter) {
         filteredCards = filteredCards.filter(card => card.rookieCard === rookieCardFilter);
@@ -767,8 +804,8 @@ function displayCollection() {
             return numberedValue.includes(numberedFilter);
         });
     }
-    if (descriptionFilter) {
-        filteredCards = filteredCards.filter(card => card.description && card.description.toString().toLowerCase().includes(descriptionFilter));
+    if (quantityFilter) {
+        filteredCards = filteredCards.filter(card => card.quantity && card.quantity.toString().toLowerCase().includes(quantityFilter));
     }
     
     // Apply sorting
@@ -795,21 +832,24 @@ function displayCollection() {
     filteredElement.textContent = filteredCards.length + ' filtered';
     
     if (filteredCards.length === 0) {
-        document.getElementById('listView').style.display = 'none';
-        document.getElementById('gridView').style.display = 'none';
-        if (emptyState) emptyState.style.display = 'block';
+        document.querySelector('.cards-list').style.display = 'none';
+        if (emptyState) {
+            emptyState.style.display = 'block';
+            emptyState.classList.add('collection-empty-state');
+        }
         return;
     }
     
-    if (emptyState) emptyState.style.display = 'none';
-    
-    if (currentView === 'list') {
-        displayListView(filteredCards);
-    } else {
-        displayGridView(filteredCards);
+    if (emptyState) {
+        emptyState.style.display = 'none';
+        emptyState.classList.remove('collection-empty-state');
     }
+    
+    document.querySelector('.cards-list').style.display = 'block';
+    displayListView(filteredCards);
 }
 
+// Updated displayListView function with new column order
 function displayListView(cards) {
     const container = document.getElementById('listContainer');
     if (!container) return;
@@ -817,89 +857,64 @@ function displayListView(cards) {
     const listHTML = cards.map(card => {
         const year = card.year || '';
         const product = card.product || '';
+        const cardNumber = card.cardNumber || '';
         const player = card.player || '';
         const team = card.team || '';
-        const quantity = card.quantity || 1;
         const rookieCheck = card.rookieCard === 'Y' ? '✓' : '';
         const parallel = card.parallel !== 'N' ? (card.parallel || '') : '';
         const numbered = card.numbered !== 'N' ? (card.numbered || '') : '';
-        const description = card.description || '';
+        const quantity = card.quantity || 1;
         const cardId = card.id;
         
         return `<div class="list-item">
             <div>${year}</div>
             <div>${product}</div>
+            <div>${cardNumber}</div>
             <div class="list-item-player">${player}</div>
             <div>${team}</div>
-            <div style="text-align: center;">${quantity}</div>
-            <div>${rookieCheck}</div>
+            <div style="text-align: center;">${rookieCheck}</div>
             <div>${parallel}</div>
             <div>${numbered}</div>
-            <div class="list-item-details">${description}</div>
+            <div style="text-align: center;">${quantity}</div>
             <div class="action-buttons">
-                <button class="view-btn" onclick="viewCard('${cardId}')">View</button>
-                <button class="edit-btn" onclick="editCard('${cardId}')">Edit</button>
-                <button class="delete-btn" onclick="deleteCard('${cardId}')">Delete</button>
+                <button class="view-btn" data-card-id="${cardId}">View</button>
+                <button class="edit-btn" data-card-id="${cardId}">Edit</button>
+                <button class="delete-btn" data-card-id="${cardId}">Del</button>
             </div>
         </div>`;
     }).join('');
-    container.innerHTML = listHTML;
-}
-
-function displayGridView(cards) {
-    const container = document.getElementById('gridView');
-    if (!container) return;
     
-    const gridHTML = cards.map(card => {
-        const player = card.player || '';
-        const team = card.team || '';
-        const year = card.year || '';
-        const product = card.product || '';
-        const category = card.category || '';
-        const cardNumber = card.cardNumber || '';
-        const rookieText = card.rookieCard === 'Y' ? 'Yes' : 'No';
-        const parallelText = card.parallel !== 'N' ? (card.parallel || '') : 'No';
-        const numberedText = card.numbered !== 'N' ? (card.numbered || '') : 'No';
-        const estimatedValue = card.estimatedValue === 'Unknown' || !card.estimatedValue ? 'Unknown' : '$' + parseFloat(card.estimatedValue).toFixed(2);
-        const estimatedValueDate = card.estimatedValueDate || 'Not specified';
-        const imageVariationText = card.imageVariation !== 'N' ? (card.imageVariation || '') : 'No';
-        const description = card.description || 'None';
-        const purchaseDate = card.purchaseDate === 'Unknown' || !card.purchaseDate ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString();
-        const purchaseCost = card.purchaseCost === 'Unknown' || !card.purchaseCost ? 'Unknown' : '$' + parseFloat(card.purchaseCost).toFixed(2);
-        const quantity = card.quantity || 1;
-        
-        return `<div class="card-item">
-            <div class="card-header">
-                <div class="card-title-section">
-                    <div class="card-title">${player}</div>
-                    <div class="card-subtitle">${team}</div>
-                    <div class="card-product">${year} ${product}</div>
-                </div>
-                <div class="card-category">${category}</div>
-            </div>
-            <div class="card-details">
-                <strong>Card Number:</strong> ${cardNumber}<br>
-                <strong>Rookie Card:</strong> ${rookieText}<br>
-                <strong>Parallel:</strong> ${parallelText}<br>
-                <strong>Numbered:</strong> ${numberedText}<br>
-                <strong>Estimated Value:</strong> ${estimatedValue}<br>
-                <strong>Est. Value As Of:</strong> ${estimatedValueDate}<br>
-                <strong>Image Variation:</strong> ${imageVariationText}<br>
-                <strong>Purchase Date:</strong> ${purchaseDate}<br>
-                <strong>Purchase Cost:</strong> ${purchaseCost}<br>
-                <strong>Quantity:</strong> ${quantity}<br>
-                <strong>Additional Notes:</strong> ${description}
-            </div>
-        </div>`;
-    }).join('');
-    container.innerHTML = gridHTML;
+    container.innerHTML = listHTML;
+    
+    // Add event listeners to action buttons
+    container.querySelectorAll('.view-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const cardId = this.getAttribute('data-card-id');
+            viewCard(cardId);
+        });
+    });
+    
+    container.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const cardId = this.getAttribute('data-card-id');
+            editCard(cardId);
+        });
+    });
+    
+    container.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const cardId = this.getAttribute('data-card-id');
+            deleteCard(cardId);
+        });
+    });
 }
 
+// Updated clearAllFilters function with new filter order
 function clearAllFilters() {
     const filters = [
-        'filter-year', 'filter-product', 'filter-player', 'filter-team',
-        'filter-quantity', 'filter-rookieCard', 'filter-parallel',
-        'filter-numbered', 'filter-description', 'categoryFilter'
+        'filter-year', 'filter-product', 'filter-cardNumber', 'filter-player', 
+        'filter-team', 'filter-rookieCard', 'filter-parallel',
+        'filter-numbered', 'filter-quantity', 'categoryFilter'
     ];
     
     filters.forEach(filterId => {
@@ -990,7 +1005,10 @@ function viewCard(cardId) {
 }
 
 function closeCardModal() {
-    document.getElementById('cardModal').style.display = 'none';
+    const modal = document.getElementById('cardModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
 }
 
 function editCard(cardId) {
@@ -1078,9 +1096,11 @@ function exportToCSV() {
 function toggleMobileMenu() {
     const navLinks = document.querySelector('.nav-links');
     if (navLinks) {
-        navLinks.style.display = navLinks.style.display === 'none' ? 'flex' : 'none';
+        const isHidden = navLinks.style.display === 'none';
+        navLinks.style.display = isHidden ? 'flex' : 'none';
     }
 }
+
 // ============================================================================
 // INITIALIZATION
 // ============================================================================
@@ -1111,6 +1131,61 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (success) {
             initializeYearDropdown();
             checkEditMode();
+            
+            // Add form event listener
+            const cardForm = document.getElementById('cardForm');
+            if (cardForm) {
+                cardForm.addEventListener('submit', addCard);
+            }
+            
+            // Add toggle event listeners
+            const parallelSelect = document.getElementById('parallelSelect');
+            if (parallelSelect) {
+                parallelSelect.addEventListener('change', toggleParallelInput);
+            }
+            
+            const numberedSelect = document.getElementById('numberedSelect');
+            if (numberedSelect) {
+                numberedSelect.addEventListener('change', toggleNumberedInput);
+            }
+            
+            const unknownEstimatedValue = document.getElementById('unknownEstimatedValue');
+            if (unknownEstimatedValue) {
+                unknownEstimatedValue.addEventListener('change', toggleEstimatedValueInput);
+            }
+            
+            const imageVariationSelect = document.getElementById('imageVariationSelect');
+            if (imageVariationSelect) {
+                imageVariationSelect.addEventListener('change', toggleImageVariationInput);
+            }
+            
+            const unknownDate = document.getElementById('unknownDate');
+            if (unknownDate) {
+                unknownDate.addEventListener('change', toggleDateInput);
+            }
+            
+            const unknownCost = document.getElementById('unknownCost');
+            if (unknownCost) {
+                unknownCost.addEventListener('change', toggleCostInput);
+            }
+            
+            const csvFile = document.getElementById('csvFile');
+            if (csvFile) {
+                csvFile.addEventListener('change', handleCSVUpload);
+            }
+            
+            // Add success modal button listeners
+            const addAnotherBtn = document.querySelector('.btn[onclick*="addAnotherCard"]');
+            if (addAnotherBtn) {
+                addAnotherBtn.addEventListener('click', addAnotherCard);
+                addAnotherBtn.removeAttribute('onclick');
+            }
+            
+            const viewCollectionBtn = document.querySelector('.btn[onclick*="viewCollection"]');
+            if (viewCollectionBtn) {
+                viewCollectionBtn.addEventListener('click', viewCollection);
+                viewCollectionBtn.removeAttribute('onclick');
+            }
         } else {
             alert('Failed to initialize Firebase. Some features may not work.');
         }
@@ -1128,6 +1203,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     const success = await initFirebase();
     
     if (success) {
+        // Check if this is the collection page
+        if (isCollectionPage()) {
+            initializeCollectionPage();
+        }
+        
         setTimeout(() => {
             loadCollectionFromFirebase();
         }, 1000);
@@ -1144,41 +1224,23 @@ document.addEventListener('DOMContentLoaded', async function() {
             `;
         }
     }
+    
+    // Add menu toggle listener for all pages
+    const menuToggle = document.querySelector('.menu-toggle');
+    if (menuToggle) {
+        menuToggle.addEventListener('click', toggleMobileMenu);
+    }
 });
-
 // Modal click outside to close
-window.onclick = function(event) {
+window.addEventListener('click', function(event) {
     const modal = document.getElementById('cardModal');
     if (event.target === modal) {
         closeCardModal();
     }
-}
+});
+
 // ============================================================================
-// GLOBAL FUNCTION EXPORTS
+// GLOBAL FUNCTION EXPORTS - REMOVED (no longer needed with event listeners)
 // ============================================================================
-
-// Make functions globally available for HTML onclick handlers
-window.toggleMobileMenu = toggleMobileMenu;
-window.switchView = switchView;
-window.filterCollection = filterCollection;
-window.exportToCSV = exportToCSV;
-window.sortBy = sortBy;
-window.clearAllFilters = clearAllFilters;
-window.viewCard = viewCard;
-window.closeCardModal = closeCardModal;
-window.editCard = editCard;
-window.deleteCard = deleteCard;
-
-// Add page specific functions
-window.toggleParallelInput = toggleParallelInput;
-window.toggleNumberedInput = toggleNumberedInput;
-window.toggleEstimatedValueInput = toggleEstimatedValueInput;
-window.toggleImageVariationInput = toggleImageVariationInput;
-window.toggleDateInput = toggleDateInput;
-window.toggleCostInput = toggleCostInput;
-window.addCard = addCard;
-window.handleCSVUpload = handleCSVUpload;
-
-// Success modal functions
-window.addAnotherCard = addAnotherCard;
-window.viewCollection = viewCollection;
+// All functions are now properly attached via event listeners
+// No more inline onclick handlers needed

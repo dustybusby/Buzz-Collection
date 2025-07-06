@@ -17,7 +17,7 @@
             <a href="collection.html" class="active">Collection</a>
             <a href="add.html">Add Card</a>
         </nav>
-        <button class="menu-toggle" onclick="toggleMobileMenu()">☰</button>
+        <button class="menu-toggle">☰</button>
     </header>
 
     <div class="container">
@@ -28,7 +28,7 @@
             Loading your collection...
         </div>
 
-        <div id="mainContent" style="display: none;">
+        <div id="mainContent" class="main-content-hidden">
             <div class="collection-controls">
                 <div class="controls-row">
                     <div class="card-count">
@@ -36,86 +36,81 @@
                         <span id="filteredCount">0 filtered</span>
                     </div>
 
-                    <select id="categoryFilter" onchange="filterCollection()">
+                    <select id="categoryFilter" class="category-filter">
                         <option value="">All</option>
                         <option value="Baseball">Baseball</option>
                         <option value="Football">Football</option>
                     </select>
                     
-                    <div class="view-toggle">
-                        <button id="listViewBtn" class="active" onclick="switchView('list')">📋 List</button>
-                        <button id="gridViewBtn" onclick="switchView('grid')">🃏 Cards</button>
-                    </div>
+                    <button class="btn clear-filters-btn">Clear Filters</button>
                     
-                    <button class="btn" onclick="clearAllFilters()">Clear Filters</button>
-                    
-                    <button class="btn btn-primary export-csv-btn" onclick="exportToCSV()">Export to CSV</button>
+                    <button class="btn btn-primary export-csv-btn">Export to CSV</button>
                 </div>
             </div>
 
-            <div id="listView" class="cards-list">
+            <div class="cards-list">
                 <div class="cards-list-header">
                     <div class="column-header">
-                        <div class="sortable-header" onclick="sortBy('year')">
+                        <div class="sortable-header" data-sort="year">
                             Year <span class="sort-indicator" id="sort-year"></span>
                         </div>
-                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-year" onkeyup="filterCollection()">
+                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-year">
                     </div>
                     <div class="column-header">
-                        <div class="sortable-header" onclick="sortBy('product')">
+                        <div class="sortable-header" data-sort="product">
                             Brand <span class="sort-indicator" id="sort-product"></span>
                         </div>
-                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-product" onkeyup="filterCollection()">
+                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-product">
                     </div>
                     <div class="column-header">
-                        <div class="sortable-header" onclick="sortBy('player')">
+                        <div class="sortable-header" data-sort="cardNumber">
+                            Card # <span class="sort-indicator" id="sort-cardNumber"></span>
+                        </div>
+                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-cardNumber">
+                    </div>
+                    <div class="column-header">
+                        <div class="sortable-header" data-sort="player">
                             Player <span class="sort-indicator" id="sort-player"></span>
                         </div>
-                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-player" onkeyup="filterCollection()">
+                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-player">
                     </div>
                     <div class="column-header">
-                        <div class="sortable-header" onclick="sortBy('team')">
+                        <div class="sortable-header" data-sort="team">
                             Team <span class="sort-indicator" id="sort-team"></span>
                         </div>
-                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-team" onkeyup="filterCollection()">
+                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-team">
                     </div>
                     <div class="column-header">
-                        <div class="sortable-header" onclick="sortBy('quantity')">
-                            Qty <span class="sort-indicator" id="sort-quantity"></span>
-                        </div>
-                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-quantity" onkeyup="filterCollection()">
-                    </div>
-                    <div class="column-header">
-                        <div class="sortable-header" onclick="sortBy('rookieCard')">
+                        <div class="sortable-header" data-sort="rookieCard">
                             RC <span class="sort-indicator" id="sort-rookieCard"></span>
                         </div>
-                        <select class="filter-input" id="filter-rookieCard" onchange="filterCollection()">
+                        <select class="filter-input" id="filter-rookieCard">
                             <option value="">All</option>
                             <option value="Y">Yes</option>
                             <option value="N">No</option>
                         </select>
                     </div>
                     <div class="column-header">
-                        <div class="sortable-header" onclick="sortBy('parallel')">
+                        <div class="sortable-header" data-sort="parallel">
                             Parallel <span class="sort-indicator" id="sort-parallel"></span>
                         </div>
-                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-parallel" onkeyup="filterCollection()">
+                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-parallel">
                     </div>
                     <div class="column-header">
-                        <div class="sortable-header" onclick="sortBy('numbered')">
+                        <div class="sortable-header" data-sort="numbered">
                             Numbered <span class="sort-indicator" id="sort-numbered"></span>
                         </div>
-                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-numbered" onkeyup="filterCollection()">
+                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-numbered">
                     </div>
                     <div class="column-header">
-                        <div class="sortable-header" onclick="sortBy('description')">
-                            Notes <span class="sort-indicator" id="sort-description"></span>
+                        <div class="sortable-header" data-sort="quantity">
+                            Qty <span class="sort-indicator" id="sort-quantity"></span>
                         </div>
-                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-description" onkeyup="filterCollection()">
+                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-quantity">
                     </div>
                     <div class="column-header">
-                        <div style="height: 32px; text-align: center;">Actions</div>
-                        <div style="height: 32px;"></div>
+                        <div class="actions-header">Actions</div>
+                        <div class="actions-spacer"></div>
                     </div>
                 </div>
                 <div id="listContainer">
@@ -123,11 +118,7 @@
                 </div>
             </div>
 
-            <div id="gridView" class="cards-grid" style="display: none;">
-                <!-- Grid cards will be populated here -->
-            </div>
-
-            <div id="emptyState" class="empty-state" style="display: none;">
+            <div id="emptyState" class="empty-state collection-empty-state">
                 <h3>No Cards Found</h3>
                 <p>Your collection is empty or no cards match your current filters.</p>
                 <a href="add.html" class="btn btn-primary">Add Your First Card</a>
@@ -137,7 +128,7 @@
 
     <div id="cardModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeCardModal()">&times;</span>
+            <span class="close">&times;</span>
             <div id="modalCardContent"></div>
         </div>
     </div>

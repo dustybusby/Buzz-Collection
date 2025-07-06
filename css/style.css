@@ -170,6 +170,21 @@ h1 {
     margin-bottom: 2rem;
 }
 
+/* Loading overlay styles */
+.loading-overlay {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-size: 1.2rem;
+    color: #4a7bc8;
+}
+
+/* Main content hidden by default */
+.main-content-hidden {
+    display: none;
+}
+
 /* Dashboard specific styles */
 .stats-grid {
     display: grid;
@@ -228,7 +243,6 @@ h1 {
         inset 0 1px 0 rgba(255, 255, 255, 0.2),
         inset 0 -1px 0 rgba(0, 0, 0, 0.3);
 }
-
 .stat-number {
     font-family: 'Playfair Display', serif;
     font-size: 2.5rem;
@@ -569,7 +583,6 @@ h1 {
     color: #b8e6ff;
     font-size: 0.9rem;
 }
-
 /* Form styles (add.html) */
 .form-section {
     background: linear-gradient(135deg, rgba(5, 15, 25, 0.8), rgba(10, 20, 30, 0.7));
@@ -649,7 +662,8 @@ h1 {
 .btn {
     background: linear-gradient(135deg, rgba(0, 100, 150, 0.8), rgba(0, 150, 200, 0.6));
     color: #ffffff;
-    border: 1px solid #00c8ff;
+    border: 1px solid #00c8ff
+    ;
     padding: 0.8rem 1.8rem;
     border-radius: 10px;
     cursor: pointer;
@@ -772,34 +786,66 @@ h1 {
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-.view-toggle {
-    display: flex;
+/* Remove view toggle related styles */
+.view-toggle,
+#listViewBtn,
+#gridViewBtn,
+#gridView {
+    display: none !important;
+}
+
+/* Category filter styling */
+.category-filter {
     background: linear-gradient(135deg, rgba(10, 20, 30, 0.9), rgba(15, 25, 35, 0.8));
     border: 1px solid rgba(0, 150, 255, 0.4);
     border-radius: 6px;
-    overflow: hidden;
+    padding: 0.75rem;
+    color: #e0e0e0;
+    font-family: inherit;
+    transition: border-color 0.3s ease;
     box-shadow: 
         0 2px 4px rgba(0, 0, 0, 0.2),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-.view-toggle button {
-    background: none;
-    border: none;
-    color: #e0e0e0;
-    padding: 0.75rem 1rem;
+.category-filter:focus {
+    outline: none;
+    border-color: rgba(0, 200, 255, 0.6);
+    box-shadow: 
+        0 0 3px #00c8ff,
+        0 0 6px rgba(0, 200, 255, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.category-filter option {
+    background: rgba(20, 35, 50, 0.98);
+    color: #ffffff;
+    padding: 0.5rem;
+}
+
+/* Clear filters button */
+.clear-filters-btn {
+    background: linear-gradient(135deg, rgba(0, 100, 150, 0.8), rgba(0, 150, 200, 0.6));
+    color: #ffffff;
+    border: 1px solid #00c8ff;
+    padding: 0.8rem 1.8rem;
+    border-radius: 10px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    font-family: inherit;
+    font-weight: 600;
+    transition: all 0.4s ease;
+    box-shadow: 
+        0 4px 15px rgba(0, 150, 255, 0.3),
+        0 2px 4px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-.view-toggle button.active {
-    background: linear-gradient(135deg, rgba(0, 150, 255, 0.3), rgba(0, 200, 255, 0.2));
-    color: white;
-    box-shadow: inset 0 0 10px rgba(0, 150, 255, 0.2);
-}
-
-.view-toggle button:hover:not(.active) {
-    background: rgba(255,255,255,0.1);
+.clear-filters-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 
+        0 6px 20px rgba(0, 200, 255, 0.4),
+        inset 0 0 15px rgba(0, 150, 255, 0.2);
+    border-color: #00d4ff;
 }
 
 .card-count {
@@ -824,11 +870,12 @@ h1 {
         inset 0 -1px 0 rgba(0, 0, 0, 0.2);
 }
 
+/* Collection page specific styles - Updated grid layout */
 .cards-list-header {
     background: linear-gradient(135deg, rgba(5, 10, 20, 0.9), rgba(10, 15, 25, 0.8));
     padding: 1rem;
     display: grid;
-    grid-template-columns: 80px 2fr 2fr 1.5fr 80px 80px 1fr 80px 2fr 160px;
+    grid-template-columns: 80px 2fr 1fr 2fr 1.5fr 80px 1fr 1fr 80px 120px;
     gap: 1rem;
     font-weight: 600;
     color: #f0f0f0;
@@ -890,10 +937,11 @@ h1 {
     font-size: 0.7rem;
 }
 
+/* List item with updated grid layout */
 .list-item {
     padding: 1rem;
     display: grid;
-    grid-template-columns: 80px 2fr 2fr 1.5fr 80px 80px 1fr 80px 2fr 160px;
+    grid-template-columns: 80px 2fr 1fr 2fr 1.5fr 80px 1fr 1fr 80px 120px;
     gap: 1rem;
     align-items: center;
     border-bottom: 1px solid rgba(0, 150, 255, 0.2);
@@ -908,17 +956,45 @@ h1 {
 .list-item:hover {
     background: rgba(0, 150, 255, 0.1);
 }
+/* Actions header and spacer */
+.actions-header {
+    height: 32px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.actions-spacer {
+    height: 32px;
+}
+
+/* Updated action buttons - all same width and moved right */
+.action-buttons {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 0.5rem;
+}
 
 .view-btn, .edit-btn, .delete-btn {
     border: none;
-    padding: 0.3rem 0.5rem;
+    padding: 0.4rem 0.6rem;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 0.65rem;
-    transition: background 0.3s ease;
-    margin-right: 0.25rem;
+    font-size: 0.7rem;
+    transition: all 0.3s ease;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     color: white;
+    font-weight: 500;
+    width: 32px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    line-height: 1;
 }
 
 .view-btn {
@@ -927,6 +1003,8 @@ h1 {
 
 .view-btn:hover {
     background: #219a52;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .edit-btn {
@@ -935,6 +1013,8 @@ h1 {
 
 .edit-btn:hover {
     background: #5a8bd8;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .delete-btn {
@@ -943,13 +1023,8 @@ h1 {
 
 .delete-btn:hover {
     background: #c0392b;
-}
-
-.action-buttons {
-    display: flex;
-    gap: 0.25rem;
-    align-items: center;
-    flex-wrap: wrap;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .list-item-player {
@@ -1222,7 +1297,6 @@ h1 {
         inset 0 -2px 0 rgba(0, 0, 0, 0.3);
     transform: translateZ(0); /* Enable 3D transforms */
 }
-
 /* Add depth with pseudo-element */
 .modal-content::before {
     content: '';
@@ -1313,6 +1387,11 @@ h1 {
 .empty-state p {
     color: #b8e6ff;
     margin-bottom: 2rem;
+}
+
+/* Collection empty state specific styling */
+.collection-empty-state {
+    display: none;
 }
 
 /* Container adjustments for different pages */
@@ -1409,12 +1488,13 @@ body:has(#listView) .container {
         text-align: left;
     }
 
+    /* Mobile responsive updates for new layout */
     .cards-list-header {
-        grid-template-columns: 80px 2fr 1.5fr 80px 2fr 160px;
+        grid-template-columns: 80px 2fr 1.5fr 80px 2fr 120px;
         gap: 0.5rem;
     }
 
-    .cards-list-header .column-header:nth-child(5),
+    .cards-list-header .column-header:nth-child(3),
     .cards-list-header .column-header:nth-child(6),
     .cards-list-header .column-header:nth-child(7),
     .cards-list-header .column-header:nth-child(8) {
@@ -1422,11 +1502,11 @@ body:has(#listView) .container {
     }
 
     .list-item {
-        grid-template-columns: 80px 2fr 1.5fr 80px 2fr 160px;
+        grid-template-columns: 80px 2fr 1.5fr 80px 2fr 120px;
         gap: 0.5rem;
     }
 
-    .list-item > *:nth-child(5),
+    .list-item > *:nth-child(3),
     .list-item > *:nth-child(6),
     .list-item > *:nth-child(7),
     .list-item > *:nth-child(8) {
