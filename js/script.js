@@ -809,6 +809,7 @@ function displayCollection() {
         displayGridView(filteredCards);
     }
 }
+
 function displayListView(cards) {
     const container = document.getElementById('listContainer');
     if (!container) return;
@@ -912,7 +913,6 @@ function clearAllFilters() {
 function filterCollection() {
     displayCollection();
 }
-
 function viewCard(cardId) {
     const card = cardCollection.find(c => c.id === cardId);
     if (!card) return;
@@ -927,7 +927,7 @@ function viewCard(cardId) {
     const parallelText = card.parallel && card.parallel !== 'N' ? `Parallel: ${card.parallel}` : '';
     const numberedText = card.numbered && card.numbered !== 'N' ? `Numbered: ${card.numbered}` : '';
     const imageVariationText = card.imageVariation && card.imageVariation !== 'N' ? `Image Variation: ${card.imageVariation}` : '';
-    const description = card.description || '';
+    const description = card.description || 'None';
     const quantity = card.quantity || 1;
     
     // Monetary data formatting
@@ -940,7 +940,7 @@ function viewCard(cardId) {
     if (card.estimatedValueDate) {
         try {
             const date = new Date(card.estimatedValueDate);
-            estimatedValueDate = date.toLocaleDateString('en-US'); // This will format as MM/DD/YYYY
+            estimatedValueDate = date.toLocaleDateString('en-US');
         } catch (e) {
             estimatedValueDate = 'Not specified';
         }
@@ -973,7 +973,7 @@ function viewCard(cardId) {
                 ${rookieText ? `<div class="card-detail-line">${rookieText}</div>` : ''}
                 ${imageVariationText ? `<div class="card-detail-line">${imageVariationText}</div>` : ''}
                 <div class="card-detail-line">Quantity: ${quantity}</div>
-                ${description ? `<div class="card-detail-line">Add'l Notes: ${description}</div>` : ''}
+                <div class="card-detail-line">Add'l Notes: ${description}</div>
             </div>
             
             <div class="card-monetary">
@@ -1001,6 +1001,7 @@ function editCard(cardId) {
     localStorage.setItem('editCardData', JSON.stringify(card));
     window.location.href = 'add.html?edit=true';
 }
+
 async function deleteCard(cardId) {
     const card = cardCollection.find(c => c.id === cardId);
     if (!card) return;
@@ -1080,7 +1081,6 @@ function toggleMobileMenu() {
         navLinks.style.display = navLinks.style.display === 'none' ? 'flex' : 'none';
     }
 }
-
 // ============================================================================
 // INITIALIZATION
 // ============================================================================
