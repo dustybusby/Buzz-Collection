@@ -229,6 +229,7 @@ function populateForm(card) {
     setFieldValue('team', card.team);
     setFieldValue('quantity', card.quantity || 1);
     setFieldValue('rookieCard', card.rookieCard || 'N');
+    setFieldValue('grade', card.grade || '');
     
     // Handle parallel field
     if (card.parallel && card.parallel !== 'N') {
@@ -379,6 +380,7 @@ async function addCard(event) {
         rookieCard: getFieldValue('rookieCard'),
         parallel: document.getElementById('parallelSelect')?.value === 'Y' ? getFieldValue('parallelText') : 'N',
         numbered: document.getElementById('numberedSelect')?.value === 'Y' ? getFieldValue('numberedText') : 'N',
+        grade: getFieldValue('grade') || 'Ungraded',
         estimatedValue: document.getElementById('unknownEstimatedValue')?.checked ? 'Unknown' : (parseFloat(getFieldValue('estimatedValue')) || 0),
         estimatedValueDate: getFieldValue('estimatedValueDate'),
         imageVariation: document.getElementById('imageVariationSelect')?.value === 'Y' ? getFieldValue('imageVariationText') : 'N',
@@ -487,7 +489,7 @@ async function handleCSVUpload(event) {
         for (let i = 1; i < lines.length; i++) {
             if (lines[i].trim() === '') continue;
             
-            const values = lines[i].split(',').map(v => v.trim());
+            const values = lines[i].split(',').map(v => v.trim().replace(/^["']|["']$/g, ''));
             const card = {
                 category: values[0] || '',
                 year: parseInt(values[1]) || 0,
@@ -498,13 +500,14 @@ async function handleCSVUpload(event) {
                 quantity: parseInt(values[6]) || 1,
                 rookieCard: values[7] || 'N',
                 parallel: values[8] || 'N',
-                numbered: values[9] || 'N',
-                estimatedValue: values[10] ? (values[10].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[10]) || 0) : 0,
-                estimatedValueDate: values[11] || '',
-                imageVariation: values[12] || 'N',
-                purchaseDate: values[13] || 'Unknown',
-                purchaseCost: values[14] ? (values[14].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[14]) || 0) : 0,
-                description: values[15] || '',
+                numbered: values[9] ? values[9].replace(/^'/, '') : 'N', // Remove leading apostrophe if present
+                grade: values[10] || 'Ungraded',
+                estimatedValue: values[11] ? (values[11].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[11]) || 0) : 0,
+                estimatedValueDate: values[12] || '',
+                imageVariation: values[13] || 'N',
+                purchaseDate: values[14] || 'Unknown',
+                purchaseCost: values[15] ? (values[15].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[15]) || 0) : 0,
+                description: values[16] || '',
                 dateAdded: new Date()
             };
             
@@ -652,8 +655,7 @@ function displayTopProducts() {
 function displayTeamDistribution() {
     const teamStats = {};
     cardCollection.forEach(card => {
-        const
-        team = card.team || 'Unknown';
+        const team = card.team || 'Unknown';
         teamStats[team] = (teamStats[team] || 0) + 1;
     });
 
@@ -928,6 +930,7 @@ function clearAllFilters() {
 function filterCollection() {
     displayCollection();
 }
+
 function viewCard(cardId) {
     const card = cardCollection.find(c => c.id === cardId);
     if (!card) return;
@@ -949,7 +952,7 @@ function viewCard(cardId) {
     const purchaseDate = card.purchaseDate === 'Unknown' || !card.purchaseDate ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString('en-US');
     const purchaseCost = card.purchaseCost === 'Unknown' || !card.purchaseCost ? 'Unknown' : '$' + parseFloat(card.purchaseCost).toFixed(2);
     const estimatedValue = card.estimatedValue === 'Unknown' || !card.estimatedValue ? 'Unknown' : '$' + parseFloat(card.estimatedValue).toFixed(2);
-        
+    
     // Format estimated value date to MM/DD/YYYY
     let estimatedValueDate = 'Not specified';
     if (card.estimatedValueDate) {
@@ -992,7 +995,7 @@ function viewCard(cardId) {
             </div>
             
             <div class="card-monetary">
-                <div class="monetary-field">Grade: N/A</div>
+                <div class="monetary-field">Grade: ${card.grade || 'Ungraded'}</div>
                 <div class="monetary-field">Purchase Date: ${purchaseDate}</div>
                 <div class="monetary-field">Purchase Price: ${purchaseCost}</div>
                 <div class="monetary-field estimated-value">${estimatedValueText}</div>
@@ -1003,7 +1006,6 @@ function viewCard(cardId) {
     document.getElementById('modalCardContent').innerHTML = modalHTML;
     document.getElementById('cardModal').style.display = 'block';
 }
-
 function closeCardModal() {
     const modal = document.getElementById('cardModal');
     if (modal) {
@@ -1054,7 +1056,7 @@ function exportToCSV() {
         return;
     }
     
-    const headers = ['Category', 'Year', 'Brand', 'Card Number', 'Player', 'Team', 'Quantity', 'Rookie Card', 'Parallel', 'Numbered', 'Grade', 'Estimated Value', 'Estimated Value As Of', 'Image Variation', 'Purchase Date', 'Purchase Price', 'Additional Description'];
+    const headers = ['Category', 'Year', 'Brand', 'Card Number', 'Player', 'Team', 'Quantity', 'Rookie Card', 'Parallel', 'Numbered', 'Grade', 'Estimated Value', 'Estimated Value As Of', 'Image Variation', 'Purchase Date', 'Purchase Price', "Add'l Notes"];
     const csvRows = [headers.join(',')];
     
     cardCollection.forEach(card => {
@@ -1075,7 +1077,7 @@ function exportToCSV() {
             card.rookieCard || 'N',
             card.parallel || 'N',
             numberedValue,
-            'N/A', // Grade field (not currently tracked)
+            card.grade || 'Ungraded', // Use actual grade from database
             card.estimatedValue || '',
             card.estimatedValueDate || '',
             card.imageVariation || 'N',

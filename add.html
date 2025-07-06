@@ -10,11 +10,11 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div id="loading" style="display: flex; justify-content: center; align-items: center; height: 100vh; font-size: 1.2rem; color: #4a7bc8;">
+    <div id="loading" class="loading-overlay">
         Loading...
     </div>
 
-    <div id="mainContent" style="display: none;">
+    <div id="mainContent" class="main-content-hidden">
         <header class="header">
             <div class="logo">The Buzz Collection</div>
             <nav class="nav-links">
@@ -22,7 +22,7 @@
                 <a href="collection.html">Collection</a>
                 <a href="add.html" class="active">Add Card</a>
             </nav>
-            <button class="menu-toggle" onclick="toggleMobileMenu()">☰</button>
+            <button class="menu-toggle">☰</button>
         </header>
 
         <div class="container">
@@ -30,7 +30,7 @@
 
             <div class="form-section">
                 <h2>Manual Entry</h2>
-                <form id="cardForm" onsubmit="addCard(event)">
+                <form id="cardForm">
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="category">Category</label>
@@ -83,63 +83,73 @@
 
                         <div class="form-group">
                             <label for="parallel">Parallel</label>
-                            <select id="parallelSelect" onchange="toggleParallelInput()">
+                            <select id="parallelSelect">
                                 <option value="N">No</option>
                                 <option value="Y">Yes</option>
                             </select>
-                            <input type="text" id="parallelText" placeholder="Enter parallel type" style="display:none; margin-top: 0.5rem;">
+                            <input type="text" id="parallelText" placeholder="Enter parallel type" class="conditional-input">
                         </div>
 
                         <div class="form-group">
                             <label for="numbered">Numbered</label>
-                            <select id="numberedSelect" onchange="toggleNumberedInput()">
+                            <select id="numberedSelect">
                                 <option value="N">No</option>
                                 <option value="Y">Yes</option>
                             </select>
-                            <input type="text" id="numberedText" placeholder="Enter numbering (e.g., 25/100)" style="display:none; margin-top: 0.5rem;">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="estimatedValue">Estimated Value ($)</label>
-                            <input type="number" id="estimatedValue" step="0.01" min="0">
-                            <label style="margin-top: 0.5rem;">
-                                <input type="checkbox" id="unknownEstimatedValue" onchange="toggleEstimatedValueInput()"> Unknown
-                            </label>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="estimatedValueDate">Estimated Value As Of</label>
-                            <input type="date" id="estimatedValueDate">
+                            <input type="text" id="numberedText" placeholder="Enter numbering (e.g., 25/100)" class="conditional-input">
                         </div>
 
                         <div class="form-group">
                             <label for="imageVariation">Image Variation</label>
-                            <select id="imageVariationSelect" onchange="toggleImageVariationInput()">
+                            <select id="imageVariationSelect">
                                 <option value="N">No</option>
                                 <option value="Y">Yes</option>
                             </select>
-                            <input type="text" id="imageVariationText" placeholder="Enter image variation description" style="display:none; margin-top: 0.5rem;">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="purchaseDate">Purchase Date</label>
-                            <input type="date" id="purchaseDate">
-                            <label style="margin-top: 0.5rem;">
-                                <input type="checkbox" id="unknownDate" onchange="toggleDateInput()"> Unknown
-                            </label>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="purchaseCost">Purchase Cost ($)</label>
-                            <input type="number" id="purchaseCost" step="0.01" min="0">
-                            <label style="margin-top: 0.5rem;">
-                                <input type="checkbox" id="unknownCost" onchange="toggleCostInput()"> Unknown
-                            </label>
+                            <input type="text" id="imageVariationText" placeholder="Enter image variation description" class="conditional-input">
                         </div>
 
                         <div class="form-group">
                             <label for="description">Additional Notes</label>
                             <textarea id="description" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="monetary-section">
+                        <h3>Grading & Financial Information</h3>
+                        <div class="monetary-grid">
+                            <div class="form-group">
+                                <label for="grade">Grade</label>
+                                <input type="text" id="grade" placeholder="e.g., PSA 10, BGS 9.5, etc.">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="purchaseDate">Purchase Date</label>
+                                <input type="date" id="purchaseDate">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="unknownDate"> Unknown
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="purchaseCost">Purchase Price ($)</label>
+                                <input type="number" id="purchaseCost" step="0.01" min="0">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="unknownCost"> Unknown
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="estimatedValue">Estimated Value ($)</label>
+                                <input type="number" id="estimatedValue" step="0.01" min="0">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="unknownEstimatedValue"> Unknown
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="estimatedValueDate">Estimated Value As Of</label>
+                                <input type="date" id="estimatedValueDate">
+                            </div>
                         </div>
                     </div>
 
@@ -151,9 +161,9 @@
                 <h2>Import from CSV</h2>
                 <div class="csv-upload">
                     <p>Drop a CSV file here or click to select</p>
-                    <input type="file" id="csvFile" accept=".csv" onchange="handleCSVUpload(event)">
+                    <input type="file" id="csvFile" accept=".csv">
                     <p class="help-text">
-                        CSV should include: Category, Year, Brand, Card #, Player, Team, Quantity, Rookie Card, Parallel, Numbered, Estimated Value, Estimated Value As Of, Image Variation, Purchase Date, Purchase Cost, Add'l Description
+                        CSV should include: Category, Year, Brand, Card #, Player, Team, Quantity, Rookie Card, Parallel, Numbered, Grade, Estimated Value, Estimated Value As Of, Image Variation, Purchase Date, Purchase Price, Add'l Notes
                     </p>
                 </div>
             </div>
@@ -161,13 +171,13 @@
     </div>
 
     <!-- Success Modal -->
-    <div id="successModal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 400px; text-align: center;">
-            <h3 style="color: #00d4ff; margin-bottom: 1rem;">Card Added Successfully!</h3>
-            <p style="margin-bottom: 2rem; color: #e0f4ff;">This card has been added to your collection. What would you like to do next?</p>
-            <div style="display: flex; gap: 1rem; justify-content: center;">
-                <button class="btn btn-primary" onclick="addAnotherCard()">Add Another Card</button>
-                <button class="btn" onclick="viewCollection()">View Collection</button>
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <h3>Card Added Successfully!</h3>
+            <p>This card has been added to your collection. What would you like to do next?</p>
+            <div>
+                <button class="btn btn-primary add-another-btn">Add Another Card</button>
+                <button class="btn view-collection-btn">View Collection</button>
             </div>
         </div>
     </div>
