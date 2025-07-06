@@ -1061,7 +1061,7 @@ function exportToCSV() {
         // Format numbered field to prevent date conversion - prefix with apostrophe for Excel
         let numberedValue = card.numbered || 'N';
         if (numberedValue !== 'N' && numberedValue !== '') {
-            numberedValue = `'${numberedValue}`;
+            numberedValue = "'" + numberedValue;
         }
         
         const row = [
@@ -1108,7 +1108,7 @@ function toggleMobileMenu() {
     }
 }
 
-/ ============================================================================
+// ============================================================================
 // INITIALIZATION
 // ============================================================================
 
