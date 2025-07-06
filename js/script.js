@@ -923,14 +923,14 @@ function viewCard(cardId) {
     const product = card.product || '';
     const category = card.category || 'Unknown';
     const cardNumber = card.cardNumber || 'N/A';
-    const rookieText = card.rookieCard === 'Y' ? 'Rookie Card' : '';
+    const rookieText = card.rookieCard === 'Y' ? 'Rookie Card: Yes' : 'Rookie Card: No';
     const parallelText = card.parallel && card.parallel !== 'N' ? `Parallel: ${card.parallel}` : '';
     const numberedText = card.numbered && card.numbered !== 'N' ? `Numbered: ${card.numbered}` : '';
     const imageVariationText = card.imageVariation && card.imageVariation !== 'N' ? `Image Variation: ${card.imageVariation}` : '';
     const description = card.description || 'None';
     const quantity = card.quantity || 1;
     
-    // Monetary data formatting
+    // Monetary data formatting - FIXED STRING CONCATENATION
     const purchaseDate = card.purchaseDate === 'Unknown' || !card.purchaseDate ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString('en-US');
     const purchaseCost = card.purchaseCost === 'Unknown' || !card.purchaseCost ? 'Unknown' : '$' + parseFloat(card.purchaseCost).toFixed(2);
     const estimatedValue = card.estimatedValue === 'Unknown' || !card.estimatedValue ? 'Unknown' : '$' + parseFloat(card.estimatedValue).toFixed(2);
@@ -970,7 +970,7 @@ function viewCard(cardId) {
             <div class="card-details">
                 ${numberedText ? `<div class="card-detail-line">${numberedText}</div>` : ''}
                 ${parallelText ? `<div class="card-detail-line">${parallelText}</div>` : ''}
-                ${rookieText ? `<div class="card-detail-line">${rookieText}</div>` : ''}
+                <div class="card-detail-line">${rookieText}</div>
                 ${imageVariationText ? `<div class="card-detail-line">${imageVariationText}</div>` : ''}
                 <div class="card-detail-line">Quantity: ${quantity}</div>
                 <div class="card-detail-line">Add'l Notes: ${description}</div>
