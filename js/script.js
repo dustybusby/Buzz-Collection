@@ -716,7 +716,7 @@ function displayExpensiveCards() {
             <div class="mini-card">
                 <div class="mini-card-header">
                     <div class="mini-card-player">${card.player || 'Unknown Player'}</div>
-                    <div class="mini-card-price">${parseFloat(card.estimatedValue).toFixed(2)}</div>
+                    <div class="mini-card-price">&#36;${parseFloat(card.estimatedValue).toFixed(2)}</div>
                 </div>
                 <div class="mini-card-details">
                     ${card.year || 'Unknown'} ${card.product || 'Unknown'} #${card.cardNumber || 'N/A'}<br>
