@@ -214,7 +214,6 @@ function checkEditMode() {
         localStorage.removeItem('editCardId');
     }
 }
-
 function populateForm(card) {
     const setFieldValue = (id, value) => {
         const element = document.getElementById(id);
@@ -432,7 +431,6 @@ async function addCard(event) {
         alert('Error saving card: ' + error.message);
     }
 }
-
 // Success modal functions
 function showSuccessModal(message, isEdit) {
     const modal = document.getElementById('successModal');
@@ -549,8 +547,9 @@ async function handleCSVUpload(event) {
     };
     reader.readAsText(file);
 }
+
 // ============================================================================
-// DASHBOARD/INVENTORY FUNCTIONS (for index.html)
+// DASHBOARD/INVENTORY FUNCTIONS (for index.html) - FIXED TO USE ESTIMATED VALUE
 // ============================================================================
 
 function displayInventory() {
@@ -578,10 +577,11 @@ function displayInventory() {
 
 function updateSummaryStats() {
     const totalCards = cardCollection.length;
+    // FIXED: Use estimatedValue instead of purchaseCost for total value
     const totalValue = cardCollection.reduce((sum, card) => {
-        const cost = card.purchaseCost;
-        if (cost === 'Unknown' || !cost) return sum;
-        return sum + parseFloat(cost);
+        const value = card.estimatedValue;
+        if (value === 'Unknown' || !value) return sum;
+        return sum + parseFloat(value);
     }, 0);
     const rookieCards = cardCollection.filter(card => card.rookieCard === 'Y').length;
     const numberedCards = cardCollection.filter(card => card.numbered !== 'N').length;
@@ -605,9 +605,10 @@ function displayCategoryBreakdown() {
             categoryStats[category] = { count: 0, value: 0 };
         }
         categoryStats[category].count++;
-        const cost = card.purchaseCost;
-        if (cost !== 'Unknown' && cost) {
-            categoryStats[category].value += parseFloat(cost);
+        // FIXED: Use estimatedValue instead of purchaseCost
+        const value = card.estimatedValue;
+        if (value !== 'Unknown' && value) {
+            categoryStats[category].value += parseFloat(value);
         }
     });
 
@@ -622,7 +623,6 @@ function displayCategoryBreakdown() {
         `).join('');
     }
 }
-
 function displayYearDistribution() {
     const yearStats = {};
     cardCollection.forEach(card => {
@@ -699,15 +699,16 @@ function displayTeamDistribution() {
 }
 
 function displayExpensiveCards() {
+    // FIXED: Use estimatedValue instead of purchaseCost for expensive cards
     const expensiveCards = [...cardCollection]
-        .filter(card => card.purchaseCost !== 'Unknown' && card.purchaseCost > 0)
-        .sort((a, b) => parseFloat(b.purchaseCost) - parseFloat(a.purchaseCost))
+        .filter(card => card.estimatedValue !== 'Unknown' && card.estimatedValue > 0)
+        .sort((a, b) => parseFloat(b.estimatedValue) - parseFloat(a.estimatedValue))
         .slice(0, 6);
 
     const container = document.getElementById('expensiveCards');
     if (container) {
         if (expensiveCards.length === 0) {
-            container.innerHTML = '<p style="color: #888; text-align: center; padding: 2rem;">No cards with cost data yet.</p>';
+            container.innerHTML = '<p style="color: #888; text-align: center; padding: 2rem;">No cards with estimated value data yet.</p>';
             return;
         }
 
@@ -715,7 +716,7 @@ function displayExpensiveCards() {
             <div class="mini-card">
                 <div class="mini-card-header">
                     <div class="mini-card-player">${card.player || 'Unknown Player'}</div>
-                    <div class="mini-card-price">$${parseFloat(card.purchaseCost).toFixed(2)}</div>
+                    <div class="mini-card-price">${parseFloat(card.estimatedValue).toFixed(2)}</div>
                 </div>
                 <div class="mini-card-details">
                     ${card.year || 'Unknown'} ${card.product || 'Unknown'} #${card.cardNumber || 'N/A'}<br>
@@ -726,7 +727,6 @@ function displayExpensiveCards() {
         `).join('');
     }
 }
-
 // ============================================================================
 // COLLECTION VIEW FUNCTIONS (for collection.html)
 // ============================================================================
@@ -935,7 +935,6 @@ function displayListView(cards) {
         });
     });
 }
-
 // Updated clearAllFilters function with new filter order
 function clearAllFilters() {
     const filters = [
@@ -1031,6 +1030,7 @@ function viewCard(cardId) {
     document.getElementById('modalCardContent').innerHTML = modalHTML;
     document.getElementById('cardModal').style.display = 'block';
 }
+
 function closeCardModal() {
     const modal = document.getElementById('cardModal');
     if (modal) {
@@ -1122,7 +1122,6 @@ function exportToCSV() {
     a.click();
     window.URL.revokeObjectURL(url);
 }
-
 // ============================================================================
 // SHARED UTILITY FUNCTIONS
 // ============================================================================
