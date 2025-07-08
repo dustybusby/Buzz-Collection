@@ -482,20 +482,46 @@ function showSuccessModal(message, isEdit) {
     const modal = document.getElementById('successModal');
     if (!modal) return;
     
-    const modalContent = modal.querySelector('.modal-content');
-    const messageEl = modal.querySelector('h3');
-    const descriptionEl = modal.querySelector('p');
-    const buttonContainer = modal.querySelector('div:last-child');
+    // More robust element selection
+    let modalContent = modal.querySelector('.modal-content');
+    let messageEl = modal.querySelector('.modal-content h3');
+    let descriptionEl = modal.querySelector('.modal-content p');
+    let buttonContainer = modal.querySelector('.modal-content > div:last-child');
+    
+    // If elements don't exist, create them
+    if (!modalContent) {
+        modalContent = document.createElement('div');
+        modalContent.className = 'modal-content';
+        modal.appendChild(modalContent);
+    }
+    
+    if (!messageEl) {
+        messageEl = document.createElement('h3');
+        modalContent.appendChild(messageEl);
+    }
+    
+    if (!descriptionEl) {
+        descriptionEl = document.createElement('p');
+        modalContent.appendChild(descriptionEl);
+    }
+    
+    if (!buttonContainer) {
+        buttonContainer = document.createElement('div');
+        modalContent.appendChild(buttonContainer);
+    }
     
     if (messageEl && buttonContainer && modalContent) {
         if (isEdit) {
             // Add edit mode class for styling
             modalContent.classList.add('edit-mode');
             
+            // Set the message text
             messageEl.textContent = 'Card Updated Successfully!';
+            messageEl.style.display = 'block';
             
             // Hide description paragraph for edit mode
             if (descriptionEl) {
+                descriptionEl.textContent = '';
                 descriptionEl.style.display = 'none';
             }
             
@@ -513,7 +539,9 @@ function showSuccessModal(message, isEdit) {
             // Remove edit mode class if it exists
             modalContent.classList.remove('edit-mode');
             
+            // Set the message text
             messageEl.textContent = 'Card Added Successfully!';
+            messageEl.style.display = 'block';
             
             // Show description paragraph for add mode
             if (descriptionEl) {
