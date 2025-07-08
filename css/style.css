@@ -1048,6 +1048,14 @@ default */
     font-size: 0.7rem;
 }
 
+/* No filter spacer for quantity column */
+.no-filter-spacer {
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 /* List item with updated grid layout to include Insert column */
 .list-item {
     padding: 1rem;
@@ -1402,7 +1410,6 @@ default */
     position: relative;
     box-shadow: 
         0 25px 80px rgba(0,0,0,0.6),
-        0 15px 35px rgba(0,),
         0 15px 35px rgba(0, 0, 0, 0.7),
         0 5px 15px rgba(0, 0, 0, 0.5),
         inset 0 2px 0 rgba(255, 255, 255, 0.15),

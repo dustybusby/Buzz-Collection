@@ -376,7 +376,8 @@ function toggleParallelInput() {
 function toggleNumberedInput() {
     const select = document.getElementById('numberedSelect');
     const text = document.getElementById('numberedText');
-    if (select && text) {text.style.display = select.value === 'Y' ? 'block' : 'none';
+    if (select && text) {
+        text.style.display = select.value === 'Y' ? 'block' : 'none';
         if (select.value === 'N') text.value = '';
     }
 }
@@ -389,7 +390,6 @@ function toggleInsertInput() {
         if (select.value === 'N') text.value = '';
     }
 }
-
 function toggleEstimatedValueInput() {
     const checkbox = document.getElementById('unknownEstimatedValue');
     const valueInput = document.getElementById('estimatedValue');
@@ -673,9 +673,9 @@ async function handleCSVUpload(event) {
                 team: values[5] || '',
                 quantity: parseInt(values[6]) || 1,
                 rookieCard: values[7] || 'N',
-                parallel: values[8] || 'N',
-                numbered: values[9] ? values[9].replace(/^'/, '') : 'N', // Remove leading apostrophe if present
-                insert: values[10] || 'N', // New insert field
+                insert: values[8] || 'N', // Insert is now 9th column (before parallel)
+                parallel: values[9] || 'N',
+                numbered: values[10] ? values[10].replace(/^'/, '') : 'N', // Remove leading apostrophe if present
                 grade: values[11] || 'Ungraded',
                 estimatedValue: values[12] ? (values[12].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[12]) || 0) : 0,
                 estimatedValueDate: values[13] || '',
@@ -776,6 +776,7 @@ function displayCategoryBreakdown() {
         `).join('');
     }
 }
+
 function displayYearDistribution() {
     const yearStats = {};
     cardCollection.forEach(card => {
@@ -930,7 +931,7 @@ function updateSortIndicators() {
     }
 }
 
-// Updated display collection function with new column order
+// Updated display collection function with new column order - removed quantity filter
 function displayCollection() {
     const totalElement = document.getElementById('totalCards');
     const filteredElement = document.getElementById('filteredCount');
@@ -940,7 +941,7 @@ function displayCollection() {
     
     let filteredCards = [...cardCollection];
     
-    // Apply filters in new order
+    // Apply filters in new order (removed quantity filter)
     const categoryFilter = document.getElementById('categoryFilter')?.value || '';
     const yearFilter = document.getElementById('filter-year')?.value.toLowerCase() || '';
     const productFilter = document.getElementById('filter-product')?.value.toLowerCase() || '';
@@ -951,7 +952,6 @@ function displayCollection() {
     const parallelFilter = document.getElementById('filter-parallel')?.value.toLowerCase() || '';
     const numberedFilter = document.getElementById('filter-numbered')?.value.toLowerCase() || '';
     const insertFilter = document.getElementById('filter-insert')?.value.toLowerCase() || '';
-    const quantityFilter = document.getElementById('filter-quantity')?.value.toLowerCase() || '';
     
     if (categoryFilter) {
         filteredCards = filteredCards.filter(card => card.category && card.category.toString() === categoryFilter);
@@ -992,9 +992,7 @@ function displayCollection() {
             return insertValue.includes(insertFilter);
         });
     }
-    if (quantityFilter) {
-        filteredCards = filteredCards.filter(card => card.quantity && card.quantity.toString().toLowerCase().includes(quantityFilter));
-    }
+
 // Apply sorting
     if (currentSort.field) {
         filteredCards.sort((a, b) => {
@@ -1098,12 +1096,12 @@ function displayListView(cards) {
     });
 }
 
-// Updated clearAllFilters function with new filter order
+// Updated clearAllFilters function - removed quantity filter
 function clearAllFilters() {
     const filters = [
         'filter-year', 'filter-product', 'filter-cardNumber', 'filter-player', 
         'filter-team', 'filter-rookieCard', 'filter-parallel',
-        'filter-numbered', 'filter-insert', 'filter-quantity', 'categoryFilter'
+        'filter-numbered', 'filter-insert', 'categoryFilter'
     ];
     
     filters.forEach(filterId => {
@@ -1174,9 +1172,9 @@ function viewCard(cardId) {
         
         <div class="card-body">
             <div class="card-details">
-                <div class="card-detail-line">${numberedText}</div>
-                <div class="card-detail-line">${parallelText}</div>
                 <div class="card-detail-line">${insertText}</div>
+                <div class="card-detail-line">${parallelText}</div>
+                <div class="card-detail-line">${numberedText}</div>
                 <div class="card-detail-line">${rookieText}</div>
                 <div class="card-detail-line">${imageVariationText}</div>
                 <div class="card-detail-line">Quantity: ${quantity}</div>
@@ -1239,13 +1237,14 @@ async function deleteCard(cardId) {
         alert('Error deleting card: ' + error.message);
     }
 }
+
 function exportToCSV() {
     if (cardCollection.length === 0) {
         alert('No cards to export!');
         return;
     }
     
-    const headers = ['Category', 'Year', 'Brand', 'Card Number', 'Player', 'Team', 'Quantity', 'Rookie Card', 'Parallel', 'Numbered', 'Insert', 'Grade', 'Estimated Value', 'Estimated Value As Of', 'Image Variation', 'Purchase Date', 'Purchase Price', "Add'l Notes"];
+    const headers = ['Category', 'Year', 'Brand', 'Card Number', 'Player', 'Team', 'Quantity', 'Rookie Card', 'Insert', 'Parallel', 'Numbered', 'Grade', 'Estimated Value', 'Estimated Value As Of', 'Image Variation', 'Purchase Date', 'Purchase Price', "Add'l Notes"];
     const csvRows = [headers.join(',')];
     
     cardCollection.forEach(card => {
@@ -1264,9 +1263,9 @@ function exportToCSV() {
             card.team || '',
             card.quantity || 1,
             card.rookieCard || 'N',
+            card.insert || 'N', // Insert is now 9th column (before parallel)
             card.parallel || 'N',
             numberedValue,
-            card.insert || 'N', // New insert field
             card.grade || 'Ungraded', // Use actual grade from database
             card.estimatedValue || '',
             card.estimatedValueDate || '',
