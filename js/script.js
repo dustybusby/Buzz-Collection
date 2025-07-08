@@ -195,7 +195,6 @@ function initializeYearDropdown() {
         yearSelect.appendChild(option);
     }
 }
-
 function checkEditMode() {
     const urlParams = new URLSearchParams(window.location.search);
     const editMode = urlParams.get('edit');
@@ -260,6 +259,7 @@ function cancelEdit() {
     // Navigate back to collection page
     window.location.href = 'collection.html';
 }
+
 function populateForm(card) {
     const setFieldValue = (id, value) => {
         const element = document.getElementById(id);
@@ -306,6 +306,18 @@ function populateForm(card) {
             numberedText.value = card.numbered;
         }
     }
+
+    // Handle insert field
+    if (card.insert && card.insert !== 'N') {
+        const insertSelect = document.getElementById('insertSelect');
+        const insertText = document.getElementById('insertText');
+        if (insertSelect && insertText) {
+            insertSelect.value = 'Y';
+            insertText.style.display = 'block';
+            insertText.value = card.insert;
+        }
+    }
+
     // Handle estimated value field
     const estimatedValue = document.getElementById('estimatedValue');
     const unknownEstimatedValue = document.getElementById('unknownEstimatedValue');
@@ -364,6 +376,14 @@ function toggleParallelInput() {
 function toggleNumberedInput() {
     const select = document.getElementById('numberedSelect');
     const text = document.getElementById('numberedText');
+    if (select && text) {text.style.display = select.value === 'Y' ? 'block' : 'none';
+        if (select.value === 'N') text.value = '';
+    }
+}
+
+function toggleInsertInput() {
+    const select = document.getElementById('insertSelect');
+    const text = document.getElementById('insertText');
     if (select && text) {
         text.style.display = select.value === 'Y' ? 'block' : 'none';
         if (select.value === 'N') text.value = '';
@@ -443,6 +463,7 @@ async function addCard(event) {
         rookieCard: getFieldValue('rookieCard'),
         parallel: document.getElementById('parallelSelect')?.value === 'Y' ? getFieldValue('parallelText') : 'N',
         numbered: document.getElementById('numberedSelect')?.value === 'Y' ? getFieldValue('numberedText') : 'N',
+        insert: document.getElementById('insertSelect')?.value === 'Y' ? getFieldValue('insertText') : 'N',
         grade: document.getElementById('ungradedGrade')?.checked ? 'Ungraded' : (getFieldValue('grade') || 'Ungraded'),
         estimatedValue: document.getElementById('unknownEstimatedValue')?.checked ? 'Unknown' : (parseFloat(getFieldValue('estimatedValue')) || 0),
         estimatedValueDate: getFieldValue('estimatedValueDate'),
@@ -477,6 +498,7 @@ async function addCard(event) {
         alert('Error saving card: ' + error.message);
     }
 }
+
 // Updated Success modal functions - Fixed to show text properly
 function showSuccessModal(message, isEdit) {
     const modal = document.getElementById('successModal');
@@ -571,7 +593,6 @@ function showSuccessModal(message, isEdit) {
     
     modal.style.display = 'block';
 }
-
 // New function to return to collection page
 function returnToCollection() {
     const modal = document.getElementById('successModal');
@@ -593,11 +614,13 @@ function addAnotherCard() {
         // Reset conditional fields
         const parallelText = document.getElementById('parallelText');
         const numberedText = document.getElementById('numberedText');
+        const insertText = document.getElementById('insertText');
         const imageVariationText = document.getElementById('imageVariationText');
         const quantity = document.getElementById('quantity');
         
         if (parallelText) parallelText.style.display = 'none';
         if (numberedText) numberedText.style.display = 'none';
+        if (insertText) insertText.style.display = 'none';
         if (imageVariationText) imageVariationText.style.display = 'none';
         if (quantity) quantity.value = 1;
         
@@ -652,13 +675,14 @@ async function handleCSVUpload(event) {
                 rookieCard: values[7] || 'N',
                 parallel: values[8] || 'N',
                 numbered: values[9] ? values[9].replace(/^'/, '') : 'N', // Remove leading apostrophe if present
-                grade: values[10] || 'Ungraded',
-                estimatedValue: values[11] ? (values[11].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[11]) || 0) : 0,
-                estimatedValueDate: values[12] || '',
-                imageVariation: values[13] || 'N',
-                purchaseDate: values[14] || 'Unknown',
-                purchaseCost: values[15] ? (values[15].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[15]) || 0) : 0,
-                description: values[16] || '',
+                insert: values[10] || 'N', // New insert field
+                grade: values[11] || 'Ungraded',
+                estimatedValue: values[12] ? (values[12].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[12]) || 0) : 0,
+                estimatedValueDate: values[13] || '',
+                imageVariation: values[14] || 'N',
+                purchaseDate: values[15] || 'Unknown',
+                purchaseCost: values[16] ? (values[16].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[16]) || 0) : 0,
+                description: values[17] || '',
                 dateAdded: new Date()
             };
             
@@ -926,6 +950,7 @@ function displayCollection() {
     const rookieCardFilter = document.getElementById('filter-rookieCard')?.value || '';
     const parallelFilter = document.getElementById('filter-parallel')?.value.toLowerCase() || '';
     const numberedFilter = document.getElementById('filter-numbered')?.value.toLowerCase() || '';
+    const insertFilter = document.getElementById('filter-insert')?.value.toLowerCase() || '';
     const quantityFilter = document.getElementById('filter-quantity')?.value.toLowerCase() || '';
     
     if (categoryFilter) {
@@ -961,11 +986,16 @@ function displayCollection() {
             return numberedValue.includes(numberedFilter);
         });
     }
+    if (insertFilter) {
+        filteredCards = filteredCards.filter(card => {
+            const insertValue = card.insert === 'N' ? '' : (card.insert || '').toString().toLowerCase();
+            return insertValue.includes(insertFilter);
+        });
+    }
     if (quantityFilter) {
         filteredCards = filteredCards.filter(card => card.quantity && card.quantity.toString().toLowerCase().includes(quantityFilter));
     }
-    
-    // Apply sorting
+// Apply sorting
     if (currentSort.field) {
         filteredCards.sort((a, b) => {
             let aVal = a[currentSort.field];
@@ -1020,6 +1050,7 @@ function displayListView(cards) {
         const rookieCheck = card.rookieCard === 'Y' ? '✓' : '';
         const parallel = card.parallel !== 'N' ? (card.parallel || '') : '';
         const numbered = card.numbered !== 'N' ? (card.numbered || '') : '';
+        const insert = card.insert !== 'N' ? (card.insert || '') : '';
         const quantity = card.quantity || 1;
         const cardId = card.id;
         
@@ -1032,6 +1063,7 @@ function displayListView(cards) {
             <div style="text-align: center;">${rookieCheck}</div>
             <div>${parallel}</div>
             <div>${numbered}</div>
+            <div>${insert}</div>
             <div style="text-align: center;">${quantity}</div>
             <div class="action-buttons">
                 <button class="view-btn" data-card-id="${cardId}">View</button>
@@ -1065,12 +1097,13 @@ function displayListView(cards) {
         });
     });
 }
+
 // Updated clearAllFilters function with new filter order
 function clearAllFilters() {
     const filters = [
         'filter-year', 'filter-product', 'filter-cardNumber', 'filter-player', 
         'filter-team', 'filter-rookieCard', 'filter-parallel',
-        'filter-numbered', 'filter-quantity', 'categoryFilter'
+        'filter-numbered', 'filter-insert', 'filter-quantity', 'categoryFilter'
     ];
     
     filters.forEach(filterId => {
@@ -1098,6 +1131,7 @@ function viewCard(cardId) {
     const rookieText = card.rookieCard === 'Y' ? 'Rookie Card: Yes' : 'Rookie Card: No';
     const parallelText = card.parallel && card.parallel !== 'N' ? `Parallel: ${card.parallel}` : 'Parallel: No';
     const numberedText = card.numbered && card.numbered !== 'N' ? `Numbered: ${card.numbered}` : 'Numbered: No';
+    const insertText = card.insert && card.insert !== 'N' ? `Insert: ${card.insert}` : 'Insert: No';
     const imageVariationText = card.imageVariation && card.imageVariation !== 'N' ? `Image Variation: ${card.imageVariation}` : 'Image Variation: No';
     const description = card.description || 'None';
     const quantity = card.quantity || 1;
@@ -1142,6 +1176,7 @@ function viewCard(cardId) {
             <div class="card-details">
                 <div class="card-detail-line">${numberedText}</div>
                 <div class="card-detail-line">${parallelText}</div>
+                <div class="card-detail-line">${insertText}</div>
                 <div class="card-detail-line">${rookieText}</div>
                 <div class="card-detail-line">${imageVariationText}</div>
                 <div class="card-detail-line">Quantity: ${quantity}</div>
@@ -1204,14 +1239,13 @@ async function deleteCard(cardId) {
         alert('Error deleting card: ' + error.message);
     }
 }
-
 function exportToCSV() {
     if (cardCollection.length === 0) {
         alert('No cards to export!');
         return;
     }
     
-    const headers = ['Category', 'Year', 'Brand', 'Card Number', 'Player', 'Team', 'Quantity', 'Rookie Card', 'Parallel', 'Numbered', 'Grade', 'Estimated Value', 'Estimated Value As Of', 'Image Variation', 'Purchase Date', 'Purchase Price', "Add'l Notes"];
+    const headers = ['Category', 'Year', 'Brand', 'Card Number', 'Player', 'Team', 'Quantity', 'Rookie Card', 'Parallel', 'Numbered', 'Insert', 'Grade', 'Estimated Value', 'Estimated Value As Of', 'Image Variation', 'Purchase Date', 'Purchase Price', "Add'l Notes"];
     const csvRows = [headers.join(',')];
     
     cardCollection.forEach(card => {
@@ -1232,6 +1266,7 @@ function exportToCSV() {
             card.rookieCard || 'N',
             card.parallel || 'N',
             numberedValue,
+            card.insert || 'N', // New insert field
             card.grade || 'Ungraded', // Use actual grade from database
             card.estimatedValue || '',
             card.estimatedValueDate || '',
@@ -1264,6 +1299,7 @@ function toggleMobileMenu() {
         navLinks.style.display = isHidden ? 'flex' : 'none';
     }
 }
+
 // ============================================================================
 // INITIALIZATION
 // ============================================================================
@@ -1310,6 +1346,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             const numberedSelect = document.getElementById('numberedSelect');
             if (numberedSelect) {
                 numberedSelect.addEventListener('change', toggleNumberedInput);
+            }
+            
+            const insertSelect = document.getElementById('insertSelect');
+            if (insertSelect) {
+                insertSelect.addEventListener('change', toggleInsertInput);
             }
             
             const unknownEstimatedValue = document.getElementById('unknownEstimatedValue');

@@ -69,11 +69,6 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="quantity">Quantity</label>
-                            <input type="number" id="quantity" min="1" value="1" required>
-                        </div>
-
-                        <div class="form-group">
                             <label for="rookieCard">Rookie Card</label>
                             <select id="rookieCard">
                                 <option value="N">No</option>
@@ -100,12 +95,26 @@
                         </div>
 
                         <div class="form-group">
+                            <label for="insert">Insert</label>
+                            <select id="insertSelect">
+                                <option value="N">No</option>
+                                <option value="Y">Yes</option>
+                            </select>
+                            <input type="text" id="insertText" placeholder="Enter insert type" class="conditional-input">
+                        </div>
+
+                        <div class="form-group">
                             <label for="imageVariation">Image Variation</label>
                             <select id="imageVariationSelect">
                                 <option value="N">No</option>
                                 <option value="Y">Yes</option>
                             </select>
                             <input type="text" id="imageVariationText" placeholder="Enter image variation description" class="conditional-input">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="quantity">Quantity</label>
+                            <input type="number" id="quantity" min="1" value="1" required>
                         </div>
 
                         <div class="form-group">
@@ -166,7 +175,7 @@
                     <p>Drop a CSV file here or click to select</p>
                     <input type="file" id="csvFile" accept=".csv">
                     <p class="help-text">
-                        CSV should include: Category, Year, Brand, Card #, Player, Team, Quantity, Rookie Card, Parallel, Numbered, Grade, Estimated Value, Estimated Value As Of, Image Variation, Purchase Date, Purchase Price, Add'l Notes
+                        CSV should include: Category, Year, Brand, Card #, Player, Team, Quantity, Rookie Card, Parallel, Numbered, Insert, Grade, Estimated Value, Estimated Value As Of, Image Variation, Purchase Date, Purchase Price, Add'l Notes
                     </p>
                 </div>
             </div>
