@@ -221,19 +221,33 @@ function checkEditMode() {
     }
 }
 
-// New function to add Cancel button in edit mode
+// Updated function to add Cancel button in edit mode with proper alignment
 function addCancelButton() {
     const submitBtn = document.querySelector('.btn-primary');
     if (submitBtn && !document.getElementById('cancelBtn')) {
+        // Add class to submit button for styling
+        submitBtn.classList.add('with-cancel');
+        
+        // Create button container
+        const buttonContainer = document.createElement('div');
+        buttonContainer.className = 'button-container';
+        
+        // Create cancel button
         const cancelBtn = document.createElement('button');
         cancelBtn.type = 'button';
         cancelBtn.className = 'btn';
         cancelBtn.id = 'cancelBtn';
         cancelBtn.textContent = 'Cancel';
-        cancelBtn.style.marginLeft = '1rem';
         cancelBtn.addEventListener('click', cancelEdit);
         
-        submitBtn.parentNode.insertBefore(cancelBtn, submitBtn.nextSibling);
+        // Replace the submit button with the container
+        const parent = submitBtn.parentNode;
+        parent.insertBefore(buttonContainer, submitBtn);
+        parent.removeChild(submitBtn);
+        
+        // Add both buttons to container
+        buttonContainer.appendChild(cancelBtn);
+        buttonContainer.appendChild(submitBtn);
     }
 }
 
@@ -468,14 +482,19 @@ function showSuccessModal(message, isEdit) {
     const modal = document.getElementById('successModal');
     if (!modal) return;
     
+    const modalContent = modal.querySelector('.modal-content');
     const messageEl = modal.querySelector('h3');
     const descriptionEl = modal.querySelector('p');
     const buttonContainer = modal.querySelector('div:last-child');
     
-    if (messageEl && descriptionEl && buttonContainer) {
+    if (messageEl && descriptionEl && buttonContainer && modalContent) {
         if (isEdit) {
+            // Add edit mode class for styling
+            modalContent.classList.add('edit-mode');
+            
             messageEl.textContent = 'Card Updated Successfully!';
             descriptionEl.textContent = '';
+            descriptionEl.style.display = 'none'; // Hide the description paragraph
             
             // Replace buttons with just Continue button for edit mode
             buttonContainer.innerHTML = `
@@ -488,8 +507,12 @@ function showSuccessModal(message, isEdit) {
                 continueBtn.addEventListener('click', returnToCollection);
             }
         } else {
+            // Remove edit mode class if it exists
+            modalContent.classList.remove('edit-mode');
+            
             messageEl.textContent = 'Card Added Successfully!';
             descriptionEl.textContent = 'This card has been added to your collection. What would you like to do next?';
+            descriptionEl.style.display = 'block'; // Show the description paragraph
             
             // Keep original buttons for add mode
             buttonContainer.innerHTML = `
