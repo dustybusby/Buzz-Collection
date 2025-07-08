@@ -7,6 +7,9 @@ let currentSort = { field: null, direction: 'asc' };
 let isEditMode = false;
 let editCardId = null;
 
+// Add new variables to track collection page state
+let collectionPageState = null;
+
 // Initialize Firebase with dynamic imports
 async function initFirebase() {
     try {
@@ -208,11 +211,40 @@ function checkEditMode() {
         if (titleEl) titleEl.textContent = 'Edit Card';
         if (submitBtn) submitBtn.textContent = 'Update Card';
         
+        // Add Cancel button for edit mode
+        addCancelButton();
+        
         populateForm(cardData);
         
         localStorage.removeItem('editCardData');
         localStorage.removeItem('editCardId');
     }
+}
+
+// New function to add Cancel button in edit mode
+function addCancelButton() {
+    const submitBtn = document.querySelector('.btn-primary');
+    if (submitBtn && !document.getElementById('cancelBtn')) {
+        const cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.className = 'btn';
+        cancelBtn.id = 'cancelBtn';
+        cancelBtn.textContent = 'Cancel';
+        cancelBtn.style.marginLeft = '1rem';
+        cancelBtn.addEventListener('click', cancelEdit);
+        
+        submitBtn.parentNode.insertBefore(cancelBtn, submitBtn.nextSibling);
+    }
+}
+
+// New function to handle cancel edit
+function cancelEdit() {
+    // Reset edit mode
+    isEditMode = false;
+    editCardId = null;
+    
+    // Navigate back to collection page
+    window.location.href = 'collection.html';
 }
 function populateForm(card) {
     const setFieldValue = (id, value) => {
@@ -431,25 +463,64 @@ async function addCard(event) {
         alert('Error saving card: ' + error.message);
     }
 }
-// Success modal functions
+// Updated Success modal functions
 function showSuccessModal(message, isEdit) {
     const modal = document.getElementById('successModal');
     if (!modal) return;
     
     const messageEl = modal.querySelector('h3');
     const descriptionEl = modal.querySelector('p');
+    const buttonContainer = modal.querySelector('div:last-child');
     
-    if (messageEl && descriptionEl) {
+    if (messageEl && descriptionEl && buttonContainer) {
         if (isEdit) {
             messageEl.textContent = 'Card Updated Successfully!';
-            descriptionEl.textContent = 'Your card has been updated. What would you like to do next?';
+            descriptionEl.textContent = '';
+            
+            // Replace buttons with just Continue button for edit mode
+            buttonContainer.innerHTML = `
+                <button class="btn btn-primary" id="continueBtn">Continue</button>
+            `;
+            
+            // Add event listener for Continue button
+            const continueBtn = document.getElementById('continueBtn');
+            if (continueBtn) {
+                continueBtn.addEventListener('click', returnToCollection);
+            }
         } else {
             messageEl.textContent = 'Card Added Successfully!';
             descriptionEl.textContent = 'This card has been added to your collection. What would you like to do next?';
+            
+            // Keep original buttons for add mode
+            buttonContainer.innerHTML = `
+                <button class="btn btn-primary" id="addAnotherBtn">Add Another Card</button>
+                <button class="btn" id="viewCollectionBtn">View Collection</button>
+            `;
+            
+            // Add event listeners for original buttons
+            const addAnotherBtn = document.getElementById('addAnotherBtn');
+            const viewCollectionBtn = document.getElementById('viewCollectionBtn');
+            
+            if (addAnotherBtn) {
+                addAnotherBtn.addEventListener('click', addAnotherCard);
+            }
+            
+            if (viewCollectionBtn) {
+                viewCollectionBtn.addEventListener('click', viewCollection);
+            }
         }
     }
     
     modal.style.display = 'block';
+}
+
+// New function to return to collection page
+function returnToCollection() {
+    const modal = document.getElementById('successModal');
+    modal.style.display = 'none';
+    
+    // Navigate back to collection page
+    window.location.href = 'collection.html';
 }
 
 function addAnotherCard() {
@@ -727,6 +798,7 @@ function displayExpensiveCards() {
         `).join('');
     }
 }
+
 // ============================================================================
 // COLLECTION VIEW FUNCTIONS (for collection.html)
 // ============================================================================
@@ -1122,6 +1194,7 @@ function exportToCSV() {
     a.click();
     window.URL.revokeObjectURL(url);
 }
+
 // ============================================================================
 // SHARED UTILITY FUNCTIONS
 // ============================================================================
@@ -1133,7 +1206,6 @@ function toggleMobileMenu() {
         navLinks.style.display = isHidden ? 'flex' : 'none';
     }
 }
-
 // ============================================================================
 // INITIALIZATION
 // ============================================================================
@@ -1212,16 +1284,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 csvFile.addEventListener('change', handleCSVUpload);
             }
             
-            // Add success modal button listeners
-            const addAnotherBtn = document.getElementById('addAnotherBtn');
-            if (addAnotherBtn) {
-                addAnotherBtn.addEventListener('click', addAnotherCard);
-            }
-            
-            const viewCollectionBtn = document.getElementById('viewCollectionBtn');
-            if (viewCollectionBtn) {
-                viewCollectionBtn.addEventListener('click', viewCollection);
-            }
+            // Note: Success modal button listeners are now added dynamically in showSuccessModal
         } else {
             alert('Failed to initialize Firebase. Some features may not work.');
         }
