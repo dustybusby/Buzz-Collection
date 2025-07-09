@@ -10,6 +10,11 @@ let editCardId = null;
 // Add new variables to track collection page state
 let collectionPageState = null;
 
+// Pagination variables
+let currentPage = 1;
+let recordsPerPage = 50;
+let filteredCards = [];
+
 // Initialize Firebase with dynamic imports
 async function initFirebase() {
     try {
@@ -676,9 +681,13 @@ function viewCollection() {
     window.location.href = 'collection.html';
 }
 
+// Updated CSV import function with dialog progress tracking
 async function handleCSVUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
+    
+    // Show import dialog
+    showImportDialog();
     
     const reader = new FileReader();
     reader.onload = async function(e) {
@@ -687,54 +696,214 @@ async function handleCSVUpload(event) {
         
         let successCount = 0;
         let errorCount = 0;
+        let totalLines = lines.length - 1; // Subtract header row
+        let importLog = [];
         
         const { addDoc, collection } = window.firebaseRefs;
+        
+        // Update progress with total count
+        updateImportProgress(0, totalLines, 0, 0);
         
         for (let i = 1; i < lines.length; i++) {
             if (lines[i].trim() === '') continue;
             
-            const values = lines[i].split(',').map(v => v.trim().replace(/^["']|["']$/g, ''));
-            // Updated CSV mapping for new column order
-            const card = {
-                category: values[0] || '',
-                year: parseInt(values[1]) || 0,
-                product: values[2] || '',
-                cardNumber: values[3] || '',
-                baseSet: values[4] || 'N',
-                player: values[5] || '',
-                team: values[6] || '',
-                insert: values[7] || 'N',
-                parallel: values[8] || 'N',
-                numbered: values[9] ? values[9].replace(/^'/, '') : 'N',
-                rookieCard: values[10] || 'N',
-                imageVariation: values[11] || 'N',
-                quantity: parseInt(values[12]) || 1,
-                grade: values[13] || 'Ungraded',
-                purchaseDate: values[14] || 'Unknown',
-                purchaseCost: values[15] ? (values[15].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[15]) || 0) : 0,
-                estimatedValue: values[16] ? (values[16].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[16]) || 0) : 0,
-                estimatedValueDate: values[17] || '',
-                description: values[18] || '',
-                dateAdded: new Date()
-            };
+            const lineNumber = i;
             
             try {
+                const values = lines[i].split(',').map(v => v.trim().replace(/^["']|["']$/g, ''));
+                // Updated CSV mapping for new column order
+                const card = {
+                    category: values[0] || '',
+                    year: parseInt(values[1]) || 0,
+                    product: values[2] || '',
+                    cardNumber: values[3] || '',
+                    baseSet: values[4] || 'N',
+                    player: values[5] || '',
+                    team: values[6] || '',
+                    insert: values[7] || 'N',
+                    parallel: values[8] || 'N',
+                    numbered: values[9] ? values[9].replace(/^'/, '') : 'N',
+                    rookieCard: values[10] || 'N',
+                    imageVariation: values[11] || 'N',
+                    quantity: parseInt(values[12]) || 1,
+                    grade: values[13] || 'Ungraded',
+                    purchaseDate: values[14] || 'Unknown',
+                    purchaseCost: values[15] ? (values[15].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[15]) || 0) : 0,
+                    estimatedValue: values[16] ? (values[16].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[16]) || 0) : 0,
+                    estimatedValueDate: values[17] || '',
+                    description: values[18] || '',
+                    dateAdded: new Date()
+                };
+                
                 await addDoc(collection(db, 'cards'), card);
                 successCount++;
+                importLog.push({
+                    line: lineNumber,
+                    status: 'Success',
+                    player: card.player,
+                    details: `${card.year} ${card.product} #${card.cardNumber}`
+                });
+                
             } catch (error) {
-                console.error('Error adding card:', error);
+                console.error('Error adding card on line', lineNumber, ':', error);
                 errorCount++;
+                importLog.push({
+                    line: lineNumber,
+                    status: 'Failed',
+                    player: values[5] || 'Unknown',
+                    details: `Error: ${error.message}`,
+                    rawData: lines[i]
+                });
             }
+            
+            // Update progress
+            updateImportProgress(i, totalLines, successCount, errorCount);
+            
+            // Small delay to allow UI updates
+            await new Promise(resolve => setTimeout(resolve, 10));
         }
         
-        alert(`Import complete! ${successCount} cards added successfully.${errorCount > 0 ? ` ${errorCount} errors.` : ''}`);
+        // Show completion
+        showImportCompletion(successCount, errorCount, importLog);
+        
+        // Reset file input
         event.target.value = '';
     };
     reader.readAsText(file);
 }
 
+// Show import dialog
+function showImportDialog() {
+    // Create import modal if it doesn't exist
+    let importModal = document.getElementById('importModal');
+    if (!importModal) {
+        importModal = document.createElement('div');
+        importModal.id = 'importModal';
+        importModal.className = 'modal';
+        importModal.innerHTML = `
+            <div class="modal-content import-modal-content">
+                <h3>Import Status</h3>
+                <div class="import-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">Preparing import...</div>
+                </div>
+                <div class="import-stats" id="importStats">
+                    <div class="stat-item">
+                        <span class="stat-label">Processed:</span>
+                        <span class="stat-value" id="processedCount">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Successful:</span>
+                        <span class="stat-value success" id="successCount">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Failed:</span>
+                        <span class="stat-value error" id="errorCount">0</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(importModal);
+    }
+    
+    importModal.style.display = 'block';
+}
+
+// Update import progress
+function updateImportProgress(current, total, successCount, errorCount) {
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    const processedCountEl = document.getElementById('processedCount');
+    const successCountEl = document.getElementById('successCount');
+    const errorCountEl = document.getElementById('errorCount');
+    
+    if (progressFill && progressText && processedCountEl && successCountEl && errorCountEl) {
+        const percentage = total > 0 ? (current / total) * 100 : 0;
+        progressFill.style.width = percentage + '%';
+        progressText.textContent = `Processing record ${current} of ${total}...`;
+        processedCountEl.textContent = current;
+        successCountEl.textContent = successCount;
+        errorCountEl.textContent = errorCount;
+    }
+}
+
+// Show import completion
+function showImportCompletion(successCount, errorCount, importLog) {
+    const importModal = document.getElementById('importModal');
+    if (!importModal) return;
+    
+    const modalContent = importModal.querySelector('.modal-content');
+    modalContent.innerHTML = `
+        <h3>Import Completed!</h3>
+        <div class="completion-stats">
+            <div class="completion-stat success">
+                <div class="stat-number">${successCount}</div>
+                <div class="stat-label">Records Completed Successfully</div>
+            </div>
+            <div class="completion-stat error">
+                <div class="stat-number">${errorCount}</div>
+                <div class="stat-label">Records Not Completed Successfully</div>
+            </div>
+        </div>
+        <div class="import-log">
+            <h4>Import Log</h4>
+            <div class="log-container" id="logContainer">
+                ${importLog.map(entry => `
+                    <div class="log-entry ${entry.status.toLowerCase()}">
+                        <span class="log-line">Line ${entry.line}:</span>
+                        <span class="log-status">${entry.status}</span>
+                        <span class="log-player">${entry.player}</span>
+                        <span class="log-details">${entry.details}</span>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+        <div class="import-actions">
+            <button class="btn" id="downloadLogBtn">Download Log</button>
+            <button class="btn btn-primary" id="closeImportBtn">Close</button>
+        </div>
+    `;
+    
+    // Add event listeners
+    const downloadLogBtn = document.getElementById('downloadLogBtn');
+    const closeImportBtn = document.getElementById('closeImportBtn');
+    
+    if (downloadLogBtn) {
+        downloadLogBtn.addEventListener('click', () => downloadImportLog(importLog));
+    }
+    
+    if (closeImportBtn) {
+        closeImportBtn.addEventListener('click', () => {
+            importModal.style.display = 'none';
+            // Reload collection if we're on collection page
+            if (isCollectionPage()) {
+                loadCollectionFromFirebase();
+            }
+        });
+    }
+}
+
+// Download import log
+function downloadImportLog(importLog) {
+    const csvContent = [
+        'Line,Status,Player,Details',
+        ...importLog.map(entry => 
+            `${entry.line},"${entry.status}","${entry.player}","${entry.details}"`
+        )
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'import_log_' + new Date().toISOString().split('T')[0] + '.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
 // ============================================================================
-// DASHBOARD/INVENTORY FUNCTIONS (for index.html) - FIXED TO USE ESTIMATED VALUE
+// DASHBOARD/INVENTORY FUNCTIONS (for index.html) - UPDATED WITH CATEGORY FIELD
 // ============================================================================
 
 function displayInventory() {
@@ -840,11 +1009,14 @@ function displayYearDistribution() {
     }
 }
 
+// Updated function to include category after product name
 function displayTopProducts() {
     const productStats = {};
     cardCollection.forEach(card => {
         const productKey = `${card.year || 'Unknown'} ${card.product || 'Unknown'}`;
-        productStats[productKey] = (productStats[productKey] || 0) + 1;
+        const category = card.category || 'Unknown';
+        const fullKey = `${productKey} - ${category}`;
+        productStats[fullKey] = (productStats[fullKey] || 0) + 1;
     });
 
     const topProducts = Object.entries(productStats)
@@ -884,12 +1056,13 @@ function displayTeamDistribution() {
     }
 }
 
+// Updated function to show top 8 cards and move category after product name
 function displayExpensiveCards() {
     // FIXED: Use estimatedValue instead of purchaseCost for expensive cards
     const expensiveCards = [...cardCollection]
         .filter(card => card.estimatedValue !== 'Unknown' && card.estimatedValue > 0)
         .sort((a, b) => parseFloat(b.estimatedValue) - parseFloat(a.estimatedValue))
-        .slice(0, 6);
+        .slice(0, 8); // Changed from 6 to 8
 
     const container = document.getElementById('expensiveCards');
     if (container) {
@@ -905,9 +1078,8 @@ function displayExpensiveCards() {
                     <div class="mini-card-price">&#36;${parseFloat(card.estimatedValue).toFixed(2)}</div>
                 </div>
                 <div class="mini-card-details">
-                    ${card.year || 'Unknown'} ${card.product || 'Unknown'} #${card.cardNumber || 'N/A'}<br>
-                    ${card.team || 'Unknown'} | ${card.category || 'Unknown'}
-                    ${card.rookieCard === 'Y' ? ' | RC' : ''}
+                    ${card.year || 'Unknown'} ${card.product || 'Unknown'} - ${card.category || 'Unknown'} #${card.cardNumber || 'N/A'}<br>
+                    ${card.team || 'Unknown'}${card.rookieCard === 'Y' ? ' | RC' : ''}
                 </div>
             </div>
         `).join('');
@@ -915,7 +1087,7 @@ function displayExpensiveCards() {
 }
 
 // ============================================================================
-// COLLECTION VIEW FUNCTIONS (for collection.html)
+// COLLECTION VIEW FUNCTIONS (for collection.html) - UPDATED WITH PAGINATION
 // ============================================================================
 
 function updateCategoryFilter() {
@@ -946,6 +1118,7 @@ function sortBy(field) {
         currentSort.direction = 'asc';
     }
     updateSortIndicators();
+    currentPage = 1; // Reset to first page when sorting
     displayCollection();
 }
 
@@ -962,8 +1135,7 @@ function updateSortIndicators() {
         }
     }
 }
-
-// Updated display collection function with Base Set column and improved empty state with filter fix
+// Updated display collection function with pagination
 function displayCollection() {
     const totalElement = document.getElementById('totalCards');
     const filteredElement = document.getElementById('filteredCount');
@@ -973,7 +1145,7 @@ function displayCollection() {
     
     if (!totalElement || !filteredElement) return;
     
-    let filteredCards = [...cardCollection];
+    filteredCards = [...cardCollection];
     
     // Apply filters
     const categoryFilter = document.getElementById('categoryFilter')?.value || '';
@@ -1064,6 +1236,12 @@ function displayCollection() {
             listContainer.style.display = 'none';
         }
         
+        // Hide pagination controls
+        const paginationControls = document.getElementById('paginationControls');
+        if (paginationControls) {
+            paginationControls.style.display = 'none';
+        }
+        
         if (emptyState) {
             emptyState.style.display = 'block';
             emptyState.classList.add('collection-empty-state');
@@ -1106,9 +1284,121 @@ function displayCollection() {
         listContainer.style.display = 'block';
     }
     
-    displayListView(filteredCards);
+    // Display paginated results
+    displayPaginatedList();
 }
 
+// New function to handle pagination
+function displayPaginatedList() {
+    const totalPages = Math.ceil(filteredCards.length / recordsPerPage);
+    const startIndex = (currentPage - 1) * recordsPerPage;
+    const endIndex = startIndex + recordsPerPage;
+    const pageCards = filteredCards.slice(startIndex, endIndex);
+    
+    // Update pagination controls
+    updatePaginationControls(totalPages);
+    
+    // Display the current page of cards
+    displayListView(pageCards);
+}
+
+// New function to create/update pagination controls
+function updatePaginationControls(totalPages) {
+    let paginationControls = document.getElementById('paginationControls');
+    
+    // Create pagination controls if they don't exist
+    if (!paginationControls) {
+        paginationControls = document.createElement('div');
+        paginationControls.id = 'paginationControls';
+        paginationControls.className = 'pagination-controls';
+        
+        // Insert after the cards list
+        const cardsList = document.querySelector('.cards-list');
+        if (cardsList) {
+            cardsList.parentNode.insertBefore(paginationControls, cardsList.nextSibling);
+        }
+    }
+    
+    if (totalPages <= 1) {
+        paginationControls.style.display = 'none';
+        return;
+    }
+    
+    paginationControls.style.display = 'flex';
+    
+    let paginationHTML = '';
+    
+    // Previous button
+    paginationHTML += `
+        <button class="pagination-btn ${currentPage === 1 ? 'disabled' : ''}" 
+                onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+            ← Previous
+        </button>
+    `;
+    
+    // Page numbers
+    const startPage = Math.max(1, currentPage - 2);
+    const endPage = Math.min(totalPages, currentPage + 2);
+    
+    if (startPage > 1) {
+        paginationHTML += `<button class="pagination-btn" onclick="changePage(1)">1</button>`;
+        if (startPage > 2) {
+            paginationHTML += `<span class="pagination-ellipsis">...</span>`;
+        }
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+        paginationHTML += `
+            <button class="pagination-btn ${i === currentPage ? 'active' : ''}" 
+                    onclick="changePage(${i})">
+                ${i}
+            </button>
+        `;
+    }
+    
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            paginationHTML += `<span class="pagination-ellipsis">...</span>`;
+        }
+        paginationHTML += `<button class="pagination-btn" onclick="changePage(${totalPages})">${totalPages}</button>`;
+    }
+    
+    // Next button
+    paginationHTML += `
+        <button class="pagination-btn ${currentPage === totalPages ? 'disabled' : ''}" 
+                onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+            Next →
+        </button>
+    `;
+    
+    // Page info
+    const startRecord = ((currentPage - 1) * recordsPerPage) + 1;
+    const endRecord = Math.min(currentPage * recordsPerPage, filteredCards.length);
+    
+    paginationHTML += `
+        <div class="pagination-info">
+            Showing ${startRecord}-${endRecord} of ${filteredCards.length} records
+        </div>
+    `;
+    
+    paginationControls.innerHTML = paginationHTML;
+}
+
+// New function to change page
+function changePage(newPage) {
+    const totalPages = Math.ceil(filteredCards.length / recordsPerPage);
+    
+    if (newPage < 1 || newPage > totalPages) return;
+    
+    currentPage = newPage;
+    displayPaginatedList();
+    
+    // Scroll to top of list
+    const cardsList = document.querySelector('.cards-list');
+    if (cardsList) {
+        cardsList.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
 // Updated displayListView function with Base Set column and removed quantity column
 function displayListView(cards) {
     const container = document.getElementById('listContainer');
@@ -1171,7 +1461,7 @@ function displayListView(cards) {
     });
 }
 
-// Updated clearAllFilters function - added base set filter
+// Updated clearAllFilters function - added base set filter and reset pagination
 function clearAllFilters() {
     const filters = [
         'filter-year', 'filter-product', 'filter-cardNumber', 'filter-baseSet', 'filter-player', 
@@ -1184,10 +1474,12 @@ function clearAllFilters() {
         if (element) element.value = '';
     });
     
+    currentPage = 1; // Reset to first page
     filterCollection();
 }
 
 function filterCollection() {
+    currentPage = 1; // Reset to first page when filtering
     displayCollection();
 }
 
@@ -1519,7 +1811,16 @@ window.addEventListener('click', function(event) {
     if (event.target === modal) {
         closeCardModal();
     }
+    
+    // Close import modal when clicking outside
+    const importModal = document.getElementById('importModal');
+    if (event.target === importModal) {
+        importModal.style.display = 'none';
+    }
 });
+
+// Make changePage function globally accessible
+window.changePage = changePage;
 
 // ============================================================================
 // GLOBAL FUNCTION EXPORTS - REMOVED (no longer needed with event listeners)
