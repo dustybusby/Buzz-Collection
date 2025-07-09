@@ -260,6 +260,7 @@ function cancelEdit() {
     // Navigate back to collection page
     window.location.href = 'collection.html';
 }
+
 function populateForm(card) {
     const setFieldValue = (id, value) => {
         const element = document.getElementById(id);
@@ -731,6 +732,7 @@ async function handleCSVUpload(event) {
     };
     reader.readAsText(file);
 }
+
 // ============================================================================
 // DASHBOARD/INVENTORY FUNCTIONS (for index.html) - FIXED TO USE ESTIMATED VALUE
 // ============================================================================
@@ -801,7 +803,7 @@ function displayCategoryBreakdown() {
             <div class="category-item">
                 <div class="category-name">${category}</div>
                 <div class="category-count">${stats.count}</div>
-                <div class="category-value">$${stats.value.toFixed(2)}</div>
+                <div class="category-value">${stats.value.toFixed(2)}</div>
             </div>
         `).join('');
     }
@@ -961,7 +963,7 @@ function updateSortIndicators() {
     }
 }
 
-// Updated display collection function with Base Set column and improved empty state
+// Updated display collection function with Base Set column and improved empty state with filter fix
 function displayCollection() {
     const totalElement = document.getElementById('totalCards');
     const filteredElement = document.getElementById('filteredCount');
@@ -1056,7 +1058,12 @@ function displayCollection() {
     filteredElement.textContent = filteredCards.length + ' filtered';
     
     if (filteredCards.length === 0) {
-        document.querySelector('.cards-list').style.display = 'none';
+        // Hide only the list container, keep the header with filters visible
+        const listContainer = document.getElementById('listContainer');
+        if (listContainer) {
+            listContainer.style.display = 'none';
+        }
+        
         if (emptyState) {
             emptyState.style.display = 'block';
             emptyState.classList.add('collection-empty-state');
@@ -1067,11 +1074,13 @@ function displayCollection() {
                                    parallelFilter || numberedFilter || insertFilter;
             
             if (cardCollection.length === 0) {
-                // Truly empty collection
+                // Truly empty collection - hide the entire cards-list including headers
+                document.querySelector('.cards-list').style.display = 'none';
                 if (emptyStateMessage) emptyStateMessage.textContent = 'Your collection is empty.';
                 if (emptyStateButton) emptyStateButton.textContent = 'Add Your First Card';
             } else if (hasActiveFilters) {
-                // Filtered result with no matches
+                // Filtered result with no matches - keep cards-list visible to show headers/filters
+                document.querySelector('.cards-list').style.display = 'block';
                 if (emptyStateMessage) emptyStateMessage.textContent = 'No records meet the current filter criteria.';
                 if (emptyStateButton) {
                     emptyStateButton.textContent = 'Clear Filters';
@@ -1088,7 +1097,15 @@ function displayCollection() {
         emptyState.classList.remove('collection-empty-state');
     }
     
+    // Always show the cards-list container to display headers and filters
     document.querySelector('.cards-list').style.display = 'block';
+    
+    // Show the list container for actual results
+    const listContainer = document.getElementById('listContainer');
+    if (listContainer) {
+        listContainer.style.display = 'block';
+    }
+    
     displayListView(filteredCards);
 }
 
