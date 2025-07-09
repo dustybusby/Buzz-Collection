@@ -180,8 +180,7 @@ h1 {
     color: #4a7bc8;
 }
 
-/* Main content hidden by
-default */
+/* Main content hidden by default */
 .main-content-hidden {
     display: none;
 }
@@ -472,6 +471,7 @@ default */
     font-weight: 600;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
+
 .team-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -806,7 +806,6 @@ default */
 .btn-primary:hover {
     background: linear-gradient(135deg, #00d4ff, #00c8ff);
 }
-
 .csv-upload {
     border: 2px dashed rgba(0, 150, 255, 0.4);
     border-radius: 8px;
@@ -981,12 +980,12 @@ default */
         inset 0 -1px 0 rgba(0, 0, 0, 0.2);
 }
 
-/* Collection page specific styles - Updated grid layout to include Insert column */
+/* Collection page specific styles - Updated grid layout without quantity column */
 .cards-list-header {
     background: linear-gradient(135deg, rgba(5, 10, 20, 0.9), rgba(10, 15, 25, 0.8));
     padding: 1rem;
     display: grid;
-    grid-template-columns: 80px 2fr 1fr 2fr 1.5fr 80px 1fr 1fr 1fr 80px 120px;
+    grid-template-columns: 80px 2fr 1fr 1fr 2fr 1.5fr 80px 1fr 1fr 1fr 120px;
     gap: 1rem;
     font-weight: 600;
     color: #f0f0f0;
@@ -1048,19 +1047,24 @@ default */
     font-size: 0.7rem;
 }
 
-/* No filter spacer for quantity column */
-.no-filter-spacer {
+/* Actions header and spacer */
+.actions-header {
     height: 32px;
+    text-align: center;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-/* List item with updated grid layout to include Insert column */
+.actions-spacer {
+    height: 32px;
+}
+
+/* List item with updated grid layout without quantity column */
 .list-item {
     padding: 1rem;
     display: grid;
-    grid-template-columns: 80px 2fr 1fr 2fr 1.5fr 80px 1fr 1fr 1fr 80px 120px;
+    grid-template-columns: 80px 2fr 1fr 1fr 2fr 1.5fr 80px 1fr 1fr 1fr 120px;
     gap: 1rem;
     align-items: center;
     border-bottom: 1px solid rgba(0, 150, 255, 0.2);
@@ -1074,19 +1078,6 @@ default */
 
 .list-item:hover {
     background: rgba(0, 150, 255, 0.1);
-}
-
-/* Actions header and spacer */
-.actions-header {
-    height: 32px;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.actions-spacer {
-    height: 32px;
 }
 
 /* Updated action buttons - all same width and moved right */
@@ -1191,6 +1182,7 @@ default */
         inset 0 1px 0 rgba(255, 255, 255, 0.15),
         inset 0 -1px 0 rgba(0, 0, 0, 0.3);
 }
+
 .card-header {
     display: flex;
     justify-content: space-between;
@@ -1608,17 +1600,18 @@ body:has(#listView) .container {
         text-align: left;
     }
 
-    /* Mobile responsive updates for new layout with Insert column */
+    /* Mobile responsive updates for new layout without quantity column */
     .cards-list-header {
         grid-template-columns: 80px 2fr 1.5fr 80px 2fr 120px;
         gap: 0.5rem;
     }
 
     .cards-list-header .column-header:nth-child(3),
-    .cards-list-header .column-header:nth-child(6),
+    .cards-list-header .column-header:nth-child(4),
     .cards-list-header .column-header:nth-child(7),
     .cards-list-header .column-header:nth-child(8),
-    .cards-list-header .column-header:nth-child(9) {
+    .cards-list-header .column-header:nth-child(9),
+    .cards-list-header .column-header:nth-child(10) {
         display: none;
     }
 
@@ -1628,10 +1621,11 @@ body:has(#listView) .container {
     }
 
     .list-item > *:nth-child(3),
-    .list-item > *:nth-child(6),
+    .list-item > *:nth-child(4),
     .list-item > *:nth-child(7),
     .list-item > *:nth-child(8),
-    .list-item > *:nth-child(9) {
+    .list-item > *:nth-child(9),
+    .list-item > *:nth-child(10) {
         display: none;
     }
 

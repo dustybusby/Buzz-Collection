@@ -195,6 +195,7 @@ function initializeYearDropdown() {
         yearSelect.appendChild(option);
     }
 }
+
 function checkEditMode() {
     const urlParams = new URLSearchParams(window.location.search);
     const editMode = urlParams.get('edit');
@@ -259,7 +260,6 @@ function cancelEdit() {
     // Navigate back to collection page
     window.location.href = 'collection.html';
 }
-
 function populateForm(card) {
     const setFieldValue = (id, value) => {
         const element = document.getElementById(id);
@@ -283,6 +283,17 @@ function populateForm(card) {
     } else {
         if (ungradedGrade) ungradedGrade.checked = true;
         if (gradeInput) gradeInput.disabled = true;
+    }
+    
+    // Handle base set field
+    if (card.baseSet && card.baseSet !== 'N') {
+        const baseSetSelect = document.getElementById('baseSetSelect');
+        const baseSetText = document.getElementById('baseSetText');
+        if (baseSetSelect && baseSetText) {
+            baseSetSelect.value = 'Y';
+            baseSetText.style.display = 'block';
+            baseSetText.value = card.baseSet;
+        }
     }
     
     // Handle parallel field
@@ -364,6 +375,19 @@ function populateForm(card) {
     }
 }
 
+function toggleBaseSetInput() {
+    const select = document.getElementById('baseSetSelect');
+    const text = document.getElementById('baseSetText');
+    if (select && text) {
+        text.style.display = select.value === 'Y' ? 'block' : 'none';
+        if (select.value === 'Y') {
+            text.value = 'Base Set';
+        } else {
+            text.value = '';
+        }
+    }
+}
+
 function toggleParallelInput() {
     const select = document.getElementById('parallelSelect');
     const text = document.getElementById('parallelText');
@@ -390,6 +414,7 @@ function toggleInsertInput() {
         if (select.value === 'N') text.value = '';
     }
 }
+
 function toggleEstimatedValueInput() {
     const checkbox = document.getElementById('unknownEstimatedValue');
     const valueInput = document.getElementById('estimatedValue');
@@ -457,6 +482,7 @@ async function addCard(event) {
         year: parseInt(getFieldValue('year')) || 0,
         product: getFieldValue('product'),
         cardNumber: getFieldValue('cardNumber'),
+        baseSet: document.getElementById('baseSetSelect')?.value === 'Y' ? getFieldValue('baseSetText') : 'N',
         player: getFieldValue('player'),
         team: getFieldValue('team'),
         quantity: parseInt(getFieldValue('quantity')) || 1,
@@ -593,6 +619,7 @@ function showSuccessModal(message, isEdit) {
     
     modal.style.display = 'block';
 }
+
 // New function to return to collection page
 function returnToCollection() {
     const modal = document.getElementById('successModal');
@@ -612,12 +639,14 @@ function addAnotherCard() {
         form.reset();
         
         // Reset conditional fields
+        const baseSetText = document.getElementById('baseSetText');
         const parallelText = document.getElementById('parallelText');
         const numberedText = document.getElementById('numberedText');
         const insertText = document.getElementById('insertText');
         const imageVariationText = document.getElementById('imageVariationText');
         const quantity = document.getElementById('quantity');
         
+        if (baseSetText) baseSetText.style.display = 'none';
         if (parallelText) parallelText.style.display = 'none';
         if (numberedText) numberedText.style.display = 'none';
         if (insertText) insertText.style.display = 'none';
@@ -664,25 +693,27 @@ async function handleCSVUpload(event) {
             if (lines[i].trim() === '') continue;
             
             const values = lines[i].split(',').map(v => v.trim().replace(/^["']|["']$/g, ''));
+            // Updated CSV mapping for new column order
             const card = {
                 category: values[0] || '',
                 year: parseInt(values[1]) || 0,
                 product: values[2] || '',
                 cardNumber: values[3] || '',
-                player: values[4] || '',
-                team: values[5] || '',
-                quantity: parseInt(values[6]) || 1,
-                rookieCard: values[7] || 'N',
-                insert: values[8] || 'N', // Insert is now 9th column (before parallel)
-                parallel: values[9] || 'N',
-                numbered: values[10] ? values[10].replace(/^'/, '') : 'N', // Remove leading apostrophe if present
-                grade: values[11] || 'Ungraded',
-                estimatedValue: values[12] ? (values[12].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[12]) || 0) : 0,
-                estimatedValueDate: values[13] || '',
-                imageVariation: values[14] || 'N',
-                purchaseDate: values[15] || 'Unknown',
-                purchaseCost: values[16] ? (values[16].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[16]) || 0) : 0,
-                description: values[17] || '',
+                baseSet: values[4] || 'N',
+                player: values[5] || '',
+                team: values[6] || '',
+                insert: values[7] || 'N',
+                parallel: values[8] || 'N',
+                numbered: values[9] ? values[9].replace(/^'/, '') : 'N',
+                rookieCard: values[10] || 'N',
+                imageVariation: values[11] || 'N',
+                quantity: parseInt(values[12]) || 1,
+                grade: values[13] || 'Ungraded',
+                purchaseDate: values[14] || 'Unknown',
+                purchaseCost: values[15] ? (values[15].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[15]) || 0) : 0,
+                estimatedValue: values[16] ? (values[16].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[16]) || 0) : 0,
+                estimatedValueDate: values[17] || '',
+                description: values[18] || '',
                 dateAdded: new Date()
             };
             
@@ -700,7 +731,6 @@ async function handleCSVUpload(event) {
     };
     reader.readAsText(file);
 }
-
 // ============================================================================
 // DASHBOARD/INVENTORY FUNCTIONS (for index.html) - FIXED TO USE ESTIMATED VALUE
 // ============================================================================
@@ -931,21 +961,24 @@ function updateSortIndicators() {
     }
 }
 
-// Updated display collection function with new column order - removed quantity filter
+// Updated display collection function with Base Set column and improved empty state
 function displayCollection() {
     const totalElement = document.getElementById('totalCards');
     const filteredElement = document.getElementById('filteredCount');
     const emptyState = document.getElementById('emptyState');
+    const emptyStateMessage = document.getElementById('emptyStateMessage');
+    const emptyStateButton = document.getElementById('emptyStateButton');
     
     if (!totalElement || !filteredElement) return;
     
     let filteredCards = [...cardCollection];
     
-    // Apply filters in new order (removed quantity filter)
+    // Apply filters
     const categoryFilter = document.getElementById('categoryFilter')?.value || '';
     const yearFilter = document.getElementById('filter-year')?.value.toLowerCase() || '';
     const productFilter = document.getElementById('filter-product')?.value.toLowerCase() || '';
     const cardNumberFilter = document.getElementById('filter-cardNumber')?.value.toLowerCase() || '';
+    const baseSetFilter = document.getElementById('filter-baseSet')?.value.toLowerCase() || '';
     const playerFilter = document.getElementById('filter-player')?.value.toLowerCase() || '';
     const teamFilter = document.getElementById('filter-team')?.value.toLowerCase() || '';
     const rookieCardFilter = document.getElementById('filter-rookieCard')?.value || '';
@@ -964,6 +997,12 @@ function displayCollection() {
     }
     if (cardNumberFilter) {
         filteredCards = filteredCards.filter(card => card.cardNumber && card.cardNumber.toString().toLowerCase().includes(cardNumberFilter));
+    }
+    if (baseSetFilter) {
+        filteredCards = filteredCards.filter(card => {
+            const baseSetValue = card.baseSet === 'N' ? '' : (card.baseSet || '').toString().toLowerCase();
+            return baseSetValue.includes(baseSetFilter);
+        });
     }
     if (playerFilter) {
         filteredCards = filteredCards.filter(card => card.player && card.player.toString().toLowerCase().includes(playerFilter));
@@ -993,13 +1032,13 @@ function displayCollection() {
         });
     }
 
-// Apply sorting
+    // Apply sorting
     if (currentSort.field) {
         filteredCards.sort((a, b) => {
             let aVal = a[currentSort.field];
             let bVal = b[currentSort.field];
             
-            if (currentSort.field === 'year' || currentSort.field === 'quantity') {
+            if (currentSort.field === 'year') {
                 aVal = parseInt(aVal) || 0;
                 bVal = parseInt(bVal) || 0;
             } else if (typeof aVal === 'string' && typeof bVal === 'string') {
@@ -1021,6 +1060,25 @@ function displayCollection() {
         if (emptyState) {
             emptyState.style.display = 'block';
             emptyState.classList.add('collection-empty-state');
+            
+            // Check if this is an empty collection or filtered result
+            const hasActiveFilters = categoryFilter || yearFilter || productFilter || cardNumberFilter || 
+                                   baseSetFilter || playerFilter || teamFilter || rookieCardFilter || 
+                                   parallelFilter || numberedFilter || insertFilter;
+            
+            if (cardCollection.length === 0) {
+                // Truly empty collection
+                if (emptyStateMessage) emptyStateMessage.textContent = 'Your collection is empty.';
+                if (emptyStateButton) emptyStateButton.textContent = 'Add Your First Card';
+            } else if (hasActiveFilters) {
+                // Filtered result with no matches
+                if (emptyStateMessage) emptyStateMessage.textContent = 'No records meet the current filter criteria.';
+                if (emptyStateButton) {
+                    emptyStateButton.textContent = 'Clear Filters';
+                    emptyStateButton.onclick = clearAllFilters;
+                    emptyStateButton.href = '#';
+                }
+            }
         }
         return;
     }
@@ -1034,7 +1092,7 @@ function displayCollection() {
     displayListView(filteredCards);
 }
 
-// Updated displayListView function with new column order
+// Updated displayListView function with Base Set column and removed quantity column
 function displayListView(cards) {
     const container = document.getElementById('listContainer');
     if (!container) return;
@@ -1043,26 +1101,26 @@ function displayListView(cards) {
         const year = card.year || '';
         const product = card.product || '';
         const cardNumber = card.cardNumber || '';
+        const baseSet = card.baseSet !== 'N' ? (card.baseSet || '') : '';
         const player = card.player || '';
         const team = card.team || '';
         const rookieCheck = card.rookieCard === 'Y' ? '✓' : '';
         const parallel = card.parallel !== 'N' ? (card.parallel || '') : '';
         const numbered = card.numbered !== 'N' ? (card.numbered || '') : '';
         const insert = card.insert !== 'N' ? (card.insert || '') : '';
-        const quantity = card.quantity || 1;
         const cardId = card.id;
         
         return `<div class="list-item">
             <div>${year}</div>
             <div>${product}</div>
             <div>${cardNumber}</div>
+            <div>${baseSet}</div>
             <div class="list-item-player">${player}</div>
             <div>${team}</div>
             <div style="text-align: center;">${rookieCheck}</div>
             <div>${parallel}</div>
             <div>${numbered}</div>
             <div>${insert}</div>
-            <div style="text-align: center;">${quantity}</div>
             <div class="action-buttons">
                 <button class="view-btn" data-card-id="${cardId}">View</button>
                 <button class="edit-btn" data-card-id="${cardId}">Edit</button>
@@ -1096,10 +1154,10 @@ function displayListView(cards) {
     });
 }
 
-// Updated clearAllFilters function - removed quantity filter
+// Updated clearAllFilters function - added base set filter
 function clearAllFilters() {
     const filters = [
-        'filter-year', 'filter-product', 'filter-cardNumber', 'filter-player', 
+        'filter-year', 'filter-product', 'filter-cardNumber', 'filter-baseSet', 'filter-player', 
         'filter-team', 'filter-rookieCard', 'filter-parallel',
         'filter-numbered', 'filter-insert', 'categoryFilter'
     ];
@@ -1127,6 +1185,7 @@ function viewCard(cardId) {
     const category = card.category || 'Unknown';
     const cardNumber = card.cardNumber || 'N/A';
     const rookieText = card.rookieCard === 'Y' ? 'Rookie Card: Yes' : 'Rookie Card: No';
+    const baseSetText = card.baseSet && card.baseSet !== 'N' ? `Base Set: ${card.baseSet}` : 'Base Set: No';
     const parallelText = card.parallel && card.parallel !== 'N' ? `Parallel: ${card.parallel}` : 'Parallel: No';
     const numberedText = card.numbered && card.numbered !== 'N' ? `Numbered: ${card.numbered}` : 'Numbered: No';
     const insertText = card.insert && card.insert !== 'N' ? `Insert: ${card.insert}` : 'Insert: No';
@@ -1172,6 +1231,7 @@ function viewCard(cardId) {
         
         <div class="card-body">
             <div class="card-details">
+                <div class="card-detail-line">${baseSetText}</div>
                 <div class="card-detail-line">${insertText}</div>
                 <div class="card-detail-line">${parallelText}</div>
                 <div class="card-detail-line">${numberedText}</div>
@@ -1244,7 +1304,8 @@ function exportToCSV() {
         return;
     }
     
-    const headers = ['Category', 'Year', 'Brand', 'Card Number', 'Player', 'Team', 'Quantity', 'Rookie Card', 'Insert', 'Parallel', 'Numbered', 'Grade', 'Estimated Value', 'Estimated Value As Of', 'Image Variation', 'Purchase Date', 'Purchase Price', "Add'l Notes"];
+    // Updated headers for new column order
+    const headers = ['Category', 'Year', 'Brand', 'Card #', 'Base Set', 'Player', 'Team', 'Insert', 'Parallel', 'Numbered', 'Rookie Card', 'Image Variation', 'Quantity', 'Grade', 'Purchase Date', 'Purchase Price', 'Estimated Value', 'Estimated Value As Of', "Add'l Notes"];
     const csvRows = [headers.join(',')];
     
     cardCollection.forEach(card => {
@@ -1259,19 +1320,20 @@ function exportToCSV() {
             card.year || '',
             card.product || '',
             card.cardNumber || '',
+            card.baseSet || 'N',
             card.player || '',
             card.team || '',
-            card.quantity || 1,
-            card.rookieCard || 'N',
-            card.insert || 'N', // Insert is now 9th column (before parallel)
+            card.insert || 'N',
             card.parallel || 'N',
             numberedValue,
-            card.grade || 'Ungraded', // Use actual grade from database
-            card.estimatedValue || '',
-            card.estimatedValueDate || '',
+            card.rookieCard || 'N',
             card.imageVariation || 'N',
+            card.quantity || 1,
+            card.grade || 'Ungraded',
             card.purchaseDate || 'Unknown',
             card.purchaseCost || '',
+            card.estimatedValue || '',
+            card.estimatedValueDate || '',
             '"' + (card.description || '') + '"'
         ];
         csvRows.push(row.join(','));
@@ -1337,6 +1399,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
             
             // Add toggle event listeners
+            const baseSetSelect = document.getElementById('baseSetSelect');
+            if (baseSetSelect) {
+                baseSetSelect.addEventListener('change', toggleBaseSetInput);
+            }
+            
             const parallelSelect = document.getElementById('parallelSelect');
             if (parallelSelect) {
                 parallelSelect.addEventListener('change', toggleParallelInput);
