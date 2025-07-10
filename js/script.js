@@ -741,7 +741,7 @@ async function handleCSVUpload(event) {
                     line: lineNumber,
                     status: 'Success',
                     player: card.player,
-                    details: `${card.year} ${card.product} #${card.cardNumber}`
+                    details: `${card.cardNumber} | ${card.parallel !== 'N' ? card.parallel : ''} | ${card.numbered !== 'N' ? card.numbered : ''}`.replace(/\|\s*\|/g, '|').replace(/^\s*\|\s*/, '').replace(/\s*\|\s*$/, '')
                 });
                 
             } catch (error) {
@@ -756,8 +756,8 @@ async function handleCSVUpload(event) {
                 });
             }
             
-            // Update progress
-            updateImportProgress(i, totalLines, successCount, errorCount);
+            // Update progress (subtract 1 from i to not count header row)
+            updateImportProgress(i - 1, totalLines, successCount, errorCount);
             
             // Small delay to allow UI updates
             await new Promise(resolve => setTimeout(resolve, 10));
@@ -840,11 +840,11 @@ function showImportCompletion(successCount, errorCount, importLog) {
         <div class="completion-stats">
             <div class="completion-stat success">
                 <div class="stat-number">${successCount}</div>
-                <div class="stat-label">Records Completed Successfully</div>
+                <div class="stat-label">Records Imported Successfully</div>
             </div>
             <div class="completion-stat error">
                 <div class="stat-number">${errorCount}</div>
-                <div class="stat-label">Records Not Completed Successfully</div>
+                <div class="stat-label">Records Not Imported Successfully</div>
             </div>
         </div>
         <div class="import-log">
@@ -861,7 +861,7 @@ function showImportCompletion(successCount, errorCount, importLog) {
             </div>
         </div>
         <div class="import-actions">
-            <button class="btn" id="downloadLogBtn">Download Log</button>
+            <button class="btn" id="downloadLogBtn">Download Log File</button>
             <button class="btn btn-primary" id="closeImportBtn">Close</button>
         </div>
     `;
@@ -902,6 +902,7 @@ function downloadImportLog(importLog) {
     a.click();
     window.URL.revokeObjectURL(url);
 }
+
 // ============================================================================
 // DASHBOARD/INVENTORY FUNCTIONS (for index.html) - UPDATED WITH CATEGORY FIELD
 // ============================================================================
@@ -1009,13 +1010,13 @@ function displayYearDistribution() {
     }
 }
 
-// Updated function to include category after product name
+// Updated function to remove hyphen between product name and category
 function displayTopProducts() {
     const productStats = {};
     cardCollection.forEach(card => {
         const productKey = `${card.year || 'Unknown'} ${card.product || 'Unknown'}`;
         const category = card.category || 'Unknown';
-        const fullKey = `${productKey} - ${category}`;
+        const fullKey = `${productKey} ${category}`;
         productStats[fullKey] = (productStats[fullKey] || 0) + 1;
     });
 
@@ -1056,7 +1057,7 @@ function displayTeamDistribution() {
     }
 }
 
-// Updated function to show top 8 cards and move category after product name
+// Updated function to show top 8 cards and remove hyphen between product name and category
 function displayExpensiveCards() {
     // FIXED: Use estimatedValue instead of purchaseCost for expensive cards
     const expensiveCards = [...cardCollection]
@@ -1078,7 +1079,7 @@ function displayExpensiveCards() {
                     <div class="mini-card-price">&#36;${parseFloat(card.estimatedValue).toFixed(2)}</div>
                 </div>
                 <div class="mini-card-details">
-                    ${card.year || 'Unknown'} ${card.product || 'Unknown'} - ${card.category || 'Unknown'} #${card.cardNumber || 'N/A'}<br>
+                    ${card.year || 'Unknown'} ${card.product || 'Unknown'} ${card.category || 'Unknown'} #${card.cardNumber || 'N/A'}<br>
                     ${card.team || 'Unknown'}${card.rookieCard === 'Y' ? ' | RC' : ''}
                 </div>
             </div>
@@ -1399,6 +1400,7 @@ function changePage(newPage) {
         cardsList.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 }
+
 // Updated displayListView function with Base Set column and removed quantity column
 function displayListView(cards) {
     const container = document.getElementById('listContainer');

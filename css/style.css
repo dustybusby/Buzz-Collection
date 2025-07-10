@@ -585,10 +585,11 @@ h1 {
     font-size: 0.9rem;
 }
 
-/* Import Dialog Styles */
+/* Import Dialog Styles - Updated with larger dimensions and better button styling */
 .import-modal-content {
-    min-width: 500px;
-    max-width: 700px;
+    min-width: 700px;
+    max-width: 800px;
+    min-height: 500px;
     padding: 2rem;
 }
 
@@ -683,13 +684,13 @@ h1 {
 .completion-stats {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 2rem;
+    gap: 1.5rem;
     margin-bottom: 2rem;
 }
 
 .completion-stat {
     text-align: center;
-    padding: 1.5rem;
+    padding: 1rem;
     border-radius: 12px;
     border: 2px solid;
     background: linear-gradient(135deg, rgba(10, 20, 30, 0.9), rgba(15, 25, 35, 0.8));
@@ -715,7 +716,7 @@ h1 {
 }
 
 .completion-stat .stat-number {
-    font-size: 3rem;
+    font-size: 2rem;
     margin-bottom: 0.5rem;
 }
 
@@ -735,11 +736,12 @@ h1 {
 
 .completion-stat .stat-label {
     color: #e0f4ff;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: 600;
 }
+
 .import-log {
     margin-bottom: 2rem;
 }
@@ -818,6 +820,11 @@ h1 {
     display: flex;
     gap: 1rem;
     justify-content: center;
+}
+
+.import-actions .btn {
+    min-width: 150px;
+    padding: 0.8rem 1.5rem;
 }
 
 /* Pagination Styles */
@@ -1989,6 +1996,7 @@ body:has(#listView) .container {
         min-width: auto;
         max-width: 95%;
         padding: 1.5rem;
+        min-height: 400px;
     }
 
     .import-stats {
@@ -2016,6 +2024,11 @@ body:has(#listView) .container {
     .import-actions {
         flex-direction: column;
         gap: 0.5rem;
+    }
+
+    .import-actions .btn {
+        min-width: auto;
+        width: 100%;
     }
 }
 
