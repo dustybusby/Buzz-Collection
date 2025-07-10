@@ -681,7 +681,7 @@ function viewCollection() {
     window.location.href = 'collection.html';
 }
 
-// Updated CSV import function with dialog progress tracking
+// Updated CSV import function with corrected progress tracking and card details formatting
 async function handleCSVUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -696,18 +696,19 @@ async function handleCSVUpload(event) {
         
         let successCount = 0;
         let errorCount = 0;
-        let totalLines = lines.length - 1; // Subtract header row
+        let totalDataLines = lines.length - 1; // Subtract header row
         let importLog = [];
         
         const { addDoc, collection } = window.firebaseRefs;
         
-        // Update progress with total count
-        updateImportProgress(0, totalLines, 0, 0);
+        // Update progress with correct total count (excluding header)
+        updateImportProgress(0, totalDataLines, 0, 0);
         
         for (let i = 1; i < lines.length; i++) {
             if (lines[i].trim() === '') continue;
             
-            const lineNumber = i;
+            const dataLineNumber = i; // Keep original line number for reference
+            const processedCount = i - 1; // Subtract 1 for header row in progress
             
             try {
                 const values = lines[i].split(',').map(v => v.trim().replace(/^["']|["']$/g, ''));
@@ -737,27 +738,56 @@ async function handleCSVUpload(event) {
                 
                 await addDoc(collection(db, 'cards'), card);
                 successCount++;
+                
+                // Format card details for the log
+                let cardDetails = card.cardNumber || 'N/A';
+                if (card.parallel && card.parallel !== 'N') {
+                    cardDetails += ` | ${card.parallel}`;
+                } else {
+                    cardDetails += ' | N';
+                }
+                if (card.numbered && card.numbered !== 'N') {
+                    cardDetails += ` | ${card.numbered}`;
+                } else {
+                    cardDetails += ' | N';
+                }
+                
                 importLog.push({
-                    line: lineNumber,
+                    line: dataLineNumber,
                     status: 'Success',
                     player: card.player,
-                    details: `${card.cardNumber} | ${card.parallel !== 'N' ? card.parallel : ''} | ${card.numbered !== 'N' ? card.numbered : ''}`.replace(/\|\s*\|/g, '|').replace(/^\s*\|\s*/, '').replace(/\s*\|\s*$/, '')
+                    details: cardDetails
                 });
                 
             } catch (error) {
-                console.error('Error adding card on line', lineNumber, ':', error);
+                console.error('Error adding card on line', dataLineNumber, ':', error);
                 errorCount++;
+                
+                // Format error card details
+                let cardDetails = values[3] || 'N/A';
+                if (values[8] && values[8] !== 'N') {
+                    cardDetails += ` | ${values[8]}`;
+                } else {
+                    cardDetails += ' | N';
+                }
+                if (values[9] && values[9] !== 'N') {
+                    cardDetails += ` | ${values[9]}`;
+                } else {
+                    cardDetails += ' | N';
+                }
+                
                 importLog.push({
-                    line: lineNumber,
+                    line: dataLineNumber,
                     status: 'Failed',
                     player: values[5] || 'Unknown',
-                    details: `Error: ${error.message}`,
+                    details: cardDetails,
+                    error: error.message,
                     rawData: lines[i]
                 });
             }
             
-            // Update progress (subtract 1 from i to not count header row)
-            updateImportProgress(i - 1, totalLines, successCount, errorCount);
+            // Update progress (use processedCount for correct progress display)
+            updateImportProgress(processedCount, totalDataLines, successCount, errorCount);
             
             // Small delay to allow UI updates
             await new Promise(resolve => setTimeout(resolve, 10));
@@ -772,7 +802,7 @@ async function handleCSVUpload(event) {
     reader.readAsText(file);
 }
 
-// Show import dialog
+// Show import dialog with larger size
 function showImportDialog() {
     // Create import modal if it doesn't exist
     let importModal = document.getElementById('importModal');
@@ -829,7 +859,7 @@ function updateImportProgress(current, total, successCount, errorCount) {
     }
 }
 
-// Show import completion
+// Show import completion with updated headers and formatting
 function showImportCompletion(successCount, errorCount, importLog) {
     const importModal = document.getElementById('importModal');
     if (!importModal) return;
@@ -849,10 +879,16 @@ function showImportCompletion(successCount, errorCount, importLog) {
         </div>
         <div class="import-log">
             <h4>Import Log</h4>
+            <div class="log-header">
+                <span class="log-header-line">Line</span>
+                <span class="log-header-status">Status</span>
+                <span class="log-header-player">Player</span>
+                <span class="log-header-details">Card Details (Card # | Parallel | Numbered)</span>
+            </div>
             <div class="log-container" id="logContainer">
                 ${importLog.map(entry => `
                     <div class="log-entry ${entry.status.toLowerCase()}">
-                        <span class="log-line">Line ${entry.line}:</span>
+                        <span class="log-line">${entry.line}:</span>
                         <span class="log-status">${entry.status}</span>
                         <span class="log-player">${entry.player}</span>
                         <span class="log-details">${entry.details}</span>
@@ -885,10 +921,10 @@ function showImportCompletion(successCount, errorCount, importLog) {
     }
 }
 
-// Download import log
+// Download import log with updated header
 function downloadImportLog(importLog) {
     const csvContent = [
-        'Line,Status,Player,Details',
+        'Line,Status,Player,"Card Details (Card # | Parallel | Numbered)"',
         ...importLog.map(entry => 
             `${entry.line},"${entry.status}","${entry.player}","${entry.details}"`
         )
@@ -1459,7 +1495,7 @@ function displayListView(cards) {
         btn.addEventListener('click', function() {
             const cardId = this.getAttribute('data-card-id');
             deleteCard(cardId);
-        });
+            });
     });
 }
 
@@ -1766,7 +1802,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
         return;
     }
-    
+
     // For other pages, initialize Firebase first then load data
     console.log('Other page detected, initializing normally');
     
