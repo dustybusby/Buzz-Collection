@@ -1574,8 +1574,8 @@ function viewCard(cardId) {
     
     // Monetary data formatting - FIXED STRING CONCATENATION
     const purchaseDate = card.purchaseDate === 'Unknown' || !card.purchaseDate ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString('en-US');
-    const purchaseCost = card.purchaseCost === 'Unknown' || !card.purchaseCost ? 'Unknown' : ' + parseFloat(card.purchaseCost).toFixed(2);
-    const estimatedValue = card.estimatedValue === 'Unknown' || !card.estimatedValue ? 'Unknown' : ' + parseFloat(card.estimatedValue).toFixed(2);
+    const purchaseCost = card.purchaseCost === 'Unknown' || !card.purchaseCost ? 'Unknown' : '$' + parseFloat(card.purchaseCost).toFixed(2);
+    const estimatedValue = card.estimatedValue === 'Unknown' || !card.estimatedValue ? 'Unknown' : '$' + parseFloat(card.estimatedValue).toFixed(2);
     
     // Format estimated value date to MM/DD/YYYY
     let estimatedValueDate = 'Not specified';
