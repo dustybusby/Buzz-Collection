@@ -311,26 +311,26 @@ h1 {
     padding-bottom: 0.5rem;
 }
 
-/* Import Status Dialog Styles - Height cut in half - FIXED */
+/* Import Status Dialog Styles - DOUBLED HEIGHT */
 .modal-content.import-status-modal-content {
     min-width: 500px;
     max-width: 550px;
-    min-height: 75px;
-    max-height: 100px;
-    padding: 1rem;
+    min-height: 150px;
+    max-height: 200px;
+    padding: 1.5rem;
     margin: 15% auto;
 }
 
 .modal-content.import-status-modal-content h3 {
     color: #00d4ff;
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
     font-family: 'Playfair Display', serif;
     text-align: center;
-    font-size: 1rem;
+    font-size: 1.1rem;
 }
 
 .modal-content.import-status-modal-content .import-progress {
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
     padding: 0 0.5rem;
 }
 
@@ -359,13 +359,13 @@ h1 {
     color: #e0f4ff;
     font-size: 0.85rem;
     text-align: center;
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
 }
 
 .import-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
+    gap: 0.75rem;
     margin-bottom: 1rem;
     padding: 0 0.5rem;
 }
@@ -374,7 +374,7 @@ h1 {
     background: linear-gradient(135deg, rgba(10, 20, 30, 0.9), rgba(15, 25, 35, 0.8));
     border: 1px solid rgba(0, 150, 255, 0.4);
     border-radius: 8px;
-    padding: 0.5rem 0.25rem;
+    padding: 0.75rem 0.5rem;
     text-align: center;
     box-shadow: 
         0 4px 8px rgba(0, 0, 0, 0.3),
@@ -384,15 +384,15 @@ h1 {
 
 .stat-label {
     color: #b8e6ff;
-    font-size: 0.7rem;
-    margin-bottom: 0.3rem;
+    font-size: 0.75rem;
+    margin-bottom: 0.5rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .stat-value {
     color: #ffffff;
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 700;
     text-shadow: 
         0 0 2px #00d4ff,
@@ -413,100 +413,100 @@ h1 {
         0 0 4px rgba(255, 107, 107, 0.3);
 }
 
-/* Import Completion Dialog Styles - Better viewport handling and button visibility - FIXED */
+/* Import Completion Dialog Styles - OPTIMIZED LAYOUT */
 .modal-content.import-completion-modal-content {
     min-width: 900px;
     max-width: 950px;
     min-height: 500px;
-    max-height: 60vh;
-    padding: 1.5rem;
-    margin: 1% auto;
-    overflow-y: auto;
+    max-height: 75vh;
+    padding: 1rem 1.5rem 1.5rem 1.5rem;
+    margin: 2% auto;
+    overflow: hidden;
 }
 
 .modal-content.import-completion-modal-content h3 {
     color: #00d4ff;
-    margin-bottom: 1.5rem;
-    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+    margin-top: 0.25rem;
     font-family: 'Playfair Display', serif;
     text-align: center;
-    font-size: 1.8rem;
+    font-size: 1.6rem;
 }
 
 .modal-content.import-completion-modal-content .completion-stats {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
-    padding: 0 1rem;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 0 2rem;
     justify-items: center;
 }
 
 .completion-stat {
     text-align: center;
-    padding: 1.5rem;
-    border-radius: 12px;
+    padding: 1rem;
+    border-radius: 10px;
     border: 2px solid;
     background: linear-gradient(135deg, rgba(10, 20, 30, 0.9), rgba(15, 25, 35, 0.8));
     box-shadow: 
-        0 8px 16px rgba(0, 0, 0, 0.4),
+        0 6px 12px rgba(0, 0, 0, 0.4),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    max-width: 300px;
+    max-width: 220px;
     width: 100%;
 }
 
 .completion-stat.success {
     border-color: #00ff88;
     box-shadow: 
-        0 8px 16px rgba(0, 0, 0, 0.4),
-        0 0 8px rgba(0, 255, 136, 0.2),
+        0 6px 12px rgba(0, 0, 0, 0.4),
+        0 0 6px rgba(0, 255, 136, 0.2),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .completion-stat.error {
     border-color: #ff6b6b;
     box-shadow: 
-        0 8px 16px rgba(0, 0, 0, 0.4),
-        0 0 8px rgba(255, 107, 107, 0.2),
+        0 6px 12px rgba(0, 0, 0, 0.4),
+        0 0 6px rgba(255, 107, 107, 0.2),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .completion-stat .stat-number {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.6rem;
+    margin-bottom: 0.4rem;
 }
 
 .completion-stat.success .stat-number {
     color: #00ff88;
     text-shadow: 
-        0 0 4px #00ff88,
-        0 0 8px rgba(0, 255, 136, 0.4);
+        0 0 3px #00ff88,
+        0 0 6px rgba(0, 255, 136, 0.4);
 }
 
 .completion-stat.error .stat-number {
     color: #ff6b6b;
     text-shadow: 
-        0 0 4px #ff6b6b,
-        0 0 8px rgba(255, 107, 107, 0.4);
+        0 0 3px #ff6b6b,
+        0 0 6px rgba(255, 107, 107, 0.4);
 }
 
 .completion-stat .stat-label {
     color: #e0f4ff;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: 600;
 }
 
 .modal-content.import-completion-modal-content .import-log {
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
     padding: 0 0.5rem;
 }
 
 .import-log h4 {
     color: #e0f4ff;
-    margin-bottom: 1rem;
-    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
     text-shadow: 
         0 0 2px #00d4ff,
         0 0 4px rgba(0, 200, 255, 0.3);
@@ -553,7 +553,7 @@ h1 {
     border: 1px solid rgba(0, 150, 255, 0.3);
     border-top: none;
     border-radius: 0 0 8px 8px;
-    max-height: 250px;
+    max-height: 280px;
     overflow-y: auto;
     box-shadow: 
         inset 0 2px 4px rgba(0, 0, 0, 0.3),
@@ -615,7 +615,7 @@ h1 {
     display: flex;
     gap: 1rem;
     justify-content: center;
-    margin-top: 0.25rem;
+    margin-top: 0.75rem;
     margin-bottom: 0.5rem;
     padding-bottom: 0.25rem;
 }
@@ -1849,13 +1849,13 @@ body:has(#listView) .container {
         text-align: left;
     }
 
-    /* Mobile import modal adjustments - FIXED */
+    /* Mobile import modal adjustments - UPDATED FOR NEW HEIGHTS */
     .modal-content.import-status-modal-content {
         min-width: auto;
         max-width: 95%;
-        padding: 0.5rem;
-        min-height: 38px;
-        max-height: 50px;
+        padding: 1rem;
+        min-height: 120px;
+        max-height: 160px;
     }
 
     .modal-content.import-completion-modal-content {
@@ -2070,4 +2070,132 @@ body:has(#listView) .container {
     margin-top: 1rem;
     display: flex;
     justify-content: center;
+}
+
+.year-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+    height: 200px;
+    padding: 1rem;
+    overflow-x: auto;
+    justify-content: flex-start;
+}
+
+.year-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 40px;
+    flex-shrink: 0;
+}
+
+.year-bar-fill {
+    background: linear-gradient(135deg, #00c8ff, #0096ff);
+    border-radius: 4px 4px 0 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.25rem;
+    min-height: 20px;
+    box-shadow: 
+        0 4px 8px rgba(0, 150, 255, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.year-bar:hover .year-bar-fill {
+    background: linear-gradient(135deg, #00d4ff, #00c8ff);
+    transform: translateY(-2px);
+    box-shadow: 
+        0 6px 12px rgba(0, 200, 255, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.year-label {
+    color: #b8e6ff;
+    font-size: 0.7rem;
+    margin-top: 0.5rem;
+    text-align: center;
+    font-weight: 500;
+}
+
+.product-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.product-item {
+    background: linear-gradient(135deg, rgba(10, 20, 30, 0.9), rgba(15, 25, 35, 0.8));
+    border: 1px solid rgba(0, 150, 255, 0.4);
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+    box-shadow: 
+        0 4px 8px rgba(0, 0, 0, 0.3),
+        0 2px 4px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.product-item:hover {
+    transform: translateY(-2px);
+    border-color: rgba(0, 200, 255, 0.8);
+    box-shadow: 
+        0 6px 12px rgba(0, 0, 0, 0.4),
+        0 0 4px rgba(0, 200, 255, 0.3),
+        0 0 8px rgba(0, 150, 255, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+
+.category-name {
+    color: #ffffff;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    text-shadow: 
+        0 0 2px #00d4ff,
+        0 0 4px rgba(0, 200, 255, 0.3),
+        0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.category-count {
+    color: #b8e6ff;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.category-value {
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-shadow: 
+        0 0 2px #00d4ff,
+        0 0 4px #00c8ff,
+        0 0 6px rgba(0, 200, 255, 0.4),
+        0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.category-value::before {
+    content: '$';
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.category-item:hover {
+    transform: translateY(-2px);
+    border-color: rgba(0, 200, 255, 0.8);
+    box-shadow: 
+        0 8px 16px rgba(0, 0, 0, 0.4),
+        0 0 4px rgba(0, 200, 255, 0.3),
+        0 0 8px rgba(0, 150, 255, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.3);
 }
