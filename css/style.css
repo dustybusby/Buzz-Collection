@@ -311,16 +311,16 @@ h1 {
     padding-bottom: 0.5rem;
 }
 
-/* Import Dialog Styles - Updated with larger dimensions and better spacing */
-.import-modal-content {
-    min-width: 900px;
-    max-width: 950px;
-    min-height: 600px;
-    padding: 2.5rem;
-    padding-bottom: 3rem;
+/* Import Status Dialog Styles - Smaller compact dialog */
+.import-status-modal-content {
+    min-width: 500px;
+    max-width: 550px;
+    min-height: 300px;
+    padding: 2rem;
+    margin: 10% auto;
 }
 
-.import-modal-content h3 {
+.import-status-modal-content h3 {
     color: #00d4ff;
     margin-bottom: 1.5rem;
     font-family: 'Playfair Display', serif;
@@ -329,6 +329,7 @@ h1 {
 
 .import-progress {
     margin-bottom: 2rem;
+    padding: 0 1rem; /* Add padding to prevent touching borders */
 }
 
 .progress-bar {
@@ -362,32 +363,34 @@ h1 {
 .import-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
+    gap: 0.75rem;
     margin-bottom: 1.5rem;
+    padding: 0 0.5rem; /* Add padding to prevent touching borders */
 }
 
 .stat-item {
     background: linear-gradient(135deg, rgba(10, 20, 30, 0.9), rgba(15, 25, 35, 0.8));
     border: 1px solid rgba(0, 150, 255, 0.4);
     border-radius: 8px;
-    padding: 1rem;
+    padding: 0.75rem 0.5rem; /* Reduced horizontal padding */
     text-align: center;
     box-shadow: 
         0 4px 8px rgba(0, 0, 0, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    min-width: 0; /* Allow items to shrink */
 }
 
 .stat-label {
     color: #b8e6ff;
-    font-size: 0.8rem;
-    margin-bottom: 0.5rem;
+    font-size: 0.75rem; /* Slightly smaller */
+    margin-bottom: 0.4rem;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
 }
 
 .stat-value {
     color: #ffffff;
-    font-size: 1.2rem;
+    font-size: 1.1rem; /* Slightly smaller */
     font-weight: 700;
     text-shadow: 
         0 0 2px #00d4ff,
@@ -408,22 +411,42 @@ h1 {
         0 0 4px rgba(255, 107, 107, 0.3);
 }
 
+/* Import Completion Dialog Styles - Larger dialog with better spacing */
+.import-completion-modal-content {
+    min-width: 900px;
+    max-width: 950px;
+    min-height: 600px;
+    padding: 3rem; /* Increased padding for better spacing */
+    margin: 2% auto;
+}
+
+.import-completion-modal-content h3 {
+    color: #00d4ff;
+    margin-bottom: 2rem;
+    font-family: 'Playfair Display', serif;
+    text-align: center;
+}
+
 .completion-stats {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+    padding: 0 2rem; /* Add horizontal padding */
+    justify-items: center; /* Center the stat boxes */
 }
 
 .completion-stat {
     text-align: center;
-    padding: 1rem;
+    padding: 1.5rem;
     border-radius: 12px;
     border: 2px solid;
     background: linear-gradient(135deg, rgba(10, 20, 30, 0.9), rgba(15, 25, 35, 0.8));
     box-shadow: 
         0 8px 16px rgba(0, 0, 0, 0.4),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    max-width: 300px; /* Limit width to make boxes more compact */
+    width: 100%;
 }
 
 .completion-stat.success {
@@ -471,6 +494,7 @@ h1 {
 
 .import-log {
     margin-bottom: 2.5rem;
+    padding: 0 1rem; /* Add horizontal padding */
 }
 
 .import-log h4 {
@@ -480,6 +504,7 @@ h1 {
     text-shadow: 
         0 0 2px #00d4ff,
         0 0 4px rgba(0, 200, 255, 0.3);
+    text-align: center; /* Center the Import Log title */
 }
 
 /* Log header styling */
@@ -584,7 +609,8 @@ h1 {
     display: flex;
     gap: 1rem;
     justify-content: center;
-    margin-top: 1.5rem;
+    margin-top: 2rem;
+    margin-bottom: 2rem; /* Add bottom margin to ensure buttons are visible */
 }
 
 .import-actions .btn {
@@ -1899,40 +1925,6 @@ body:has(#listView) .container {
     overflow-x: auto;
 }
 
-/* Responsive adjustments for virtual card */
-@media (max-width: 768px) {
-    .modal-content {
-        max-width: 95%;
-        min-height: 400px;
-    }
-    
-    .modal-content .card-title {
-        font-size: 1.5rem;
-    }
-    
-    .modal-content .card-subtitle {
-        font-size: 1.1rem;
-    }
-    
-    .card-monetary {
-        position: static;
-        margin-top: 1.5rem;
-        min-width: auto;
-        max-width: none;
-        transform: none;
-    }
-    
-    .modal-content .card-details {
-        margin-right: 0; /* Remove right margin on mobile */
-    }
-    
-    .card-body {
-        gap: 1rem;
-        padding: 1.5rem;
-        min-height: auto;
-    }
-}
-
 /* Mobile responsive styles */
 @media (max-width: 768px) {
     .header {
@@ -1972,69 +1964,18 @@ body:has(#listView) .container {
         text-align: left;
     }
 
-    /* Mobile responsive updates for new layout without quantity column */
-    .cards-list-header {
-        grid-template-columns: 80px 2fr 1.5fr 80px 2fr 120px;
-        gap: 0.5rem;
-    }
-
-    .cards-list-header .column-header:nth-child(3),
-    .cards-list-header .column-header:nth-child(4),
-    .cards-list-header .column-header:nth-child(7),
-    .cards-list-header .column-header:nth-child(8),
-    .cards-list-header .column-header:nth-child(9),
-    .cards-list-header .column-header:nth-child(10) {
-        display: none;
-    }
-
-    .list-item {
-        grid-template-columns: 80px 2fr 1.5fr 80px 2fr 120px;
-        gap: 0.5rem;
-    }
-
-    .list-item > *:nth-child(3),
-    .list-item > *:nth-child(4),
-    .list-item > *:nth-child(7),
-    .list-item > *:nth-child(8),
-    .list-item > *:nth-child(9),
-    .list-item > *:nth-child(10) {
-        display: none;
-    }
-
-    .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .year-chart {
-        justify-content: center;
-    }
-
-    /* Mobile pagination adjustments */
-    .pagination-controls {
-        flex-wrap: wrap;
-        gap: 0.25rem;
-        padding: 1rem;
-    }
-
-    .pagination-btn {
-        padding: 0.5rem 0.8rem;
-        font-size: 0.8rem;
-        min-width: 36px;
-    }
-
-    .pagination-info {
-        margin-left: 0;
-        margin-top: 0.5rem;
-        width: 100%;
-        text-align: center;
-        font-size: 0.8rem;
-    }
-
     /* Mobile import modal adjustments */
-    .import-modal-content {
+    .import-status-modal-content {
         min-width: auto;
         max-width: 95%;
         padding: 1.5rem;
+        min-height: 250px;
+    }
+
+    .import-completion-modal-content {
+        min-width: auto;
+        max-width: 95%;
+        padding: 2rem;
         min-height: 400px;
     }
 
@@ -2046,6 +1987,7 @@ body:has(#listView) .container {
     .completion-stats {
         grid-template-columns: 1fr;
         gap: 1rem;
+        padding: 0;
     }
 
     .log-header {
@@ -2080,6 +2022,96 @@ body:has(#listView) .container {
     .import-actions .btn {
         min-width: auto;
         width: 100%;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .year-chart {
+        justify-content: center;
+    }
+
+    /* Mobile responsive updates for new layout without quantity column */
+    .cards-list-header {
+        grid-template-columns: 80px 2fr 1.5fr 80px 2fr 120px;
+        gap: 0.5rem;
+    }
+
+    .cards-list-header .column-header:nth-child(3),
+    .cards-list-header .column-header:nth-child(4),
+    .cards-list-header .column-header:nth-child(7),
+    .cards-list-header .column-header:nth-child(8),
+    .cards-list-header .column-header:nth-child(9),
+    .cards-list-header .column-header:nth-child(10) {
+        display: none;
+    }
+
+    .list-item {
+        grid-template-columns: 80px 2fr 1.5fr 80px 2fr 120px;
+        gap: 0.5rem;
+    }
+
+    .list-item > *:nth-child(3),
+    .list-item > *:nth-child(4),
+    .list-item > *:nth-child(7),
+    .list-item > *:nth-child(8),
+    .list-item > *:nth-child(9),
+    .list-item > *:nth-child(10) {
+        display: none;
+    }
+
+    /* Mobile pagination adjustments */
+    .pagination-controls {
+        flex-wrap: wrap;
+        gap: 0.25rem;
+        padding: 1rem;
+    }
+
+    .pagination-btn {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.8rem;
+        min-width: 36px;
+    }
+
+    .pagination-info {
+        margin-left: 0;
+        margin-top: 0.5rem;
+        width: 100%;
+        text-align: center;
+        font-size: 0.8rem;
+    }
+
+    /* Responsive adjustments for virtual card */
+    .modal-content {
+        max-width: 95%;
+        min-height: 400px;
+    }
+    
+    .modal-content .card-title {
+        font-size: 1.5rem;
+    }
+    
+    .modal-content .card-subtitle {
+        font-size: 1.1rem;
+    }
+    
+    .card-monetary {
+        position: static;
+        margin-top: 1.5rem;
+        min-width: auto;
+        max-width: none;
+        transform: none;
+    }
+    
+    .modal-content .card-details {
+        margin-right: 0; /* Remove right margin on mobile */
+    }
+    
+    .card-body {
+        gap: 1rem;
+        padding: 1.5rem;
+        min-height: auto;
     }
 }
 
