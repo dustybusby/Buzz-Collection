@@ -162,7 +162,7 @@ function initializeCollectionPage() {
     if (clearFiltersBtn) {
         clearFiltersBtn.addEventListener('click', clearAllFilters);
     }
-    
+
     const exportBtn = document.querySelector('.export-csv-btn');
     if (exportBtn) {
         exportBtn.addEventListener('click', exportToCSV);
@@ -681,7 +681,7 @@ function viewCollection() {
     window.location.href = 'collection.html';
 }
 
-// Updated CSV import function with corrected progress tracking and card details formatting
+// Updated CSV import function with corrected progress tracking - fixed to exclude header row
 async function handleCSVUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -696,7 +696,15 @@ async function handleCSVUpload(event) {
         
         let successCount = 0;
         let errorCount = 0;
-        let totalDataLines = lines.length - 1; // Subtract header row
+        // Calculate total data lines (excluding header row)
+        let totalDataLines = lines.length - 1;
+        // Remove empty lines from count
+        let actualDataLines = 0;
+        for (let i = 1; i < lines.length; i++) {
+            if (lines[i].trim() !== '') actualDataLines++;
+        }
+        totalDataLines = actualDataLines;
+        
         let importLog = [];
         
         const { addDoc, collection } = window.firebaseRefs;
@@ -704,11 +712,13 @@ async function handleCSVUpload(event) {
         // Update progress with correct total count (excluding header)
         updateImportProgress(0, totalDataLines, 0, 0);
         
+        let processedCount = 0;
+        
         for (let i = 1; i < lines.length; i++) {
             if (lines[i].trim() === '') continue;
             
             const dataLineNumber = i; // Keep original line number for reference
-            const processedCount = i - 1; // Subtract 1 for header row in progress
+            processedCount++; // Increment only for actual data rows
             
             try {
                 const values = lines[i].split(',').map(v => v.trim().replace(/^["']|["']$/g, ''));
@@ -859,7 +869,7 @@ function updateImportProgress(current, total, successCount, errorCount) {
     }
 }
 
-// Show import completion with updated headers and formatting - separate larger dialog
+// Show import completion with updated headers and formatting - separate larger dialog with disabled outside click
 function showImportCompletion(successCount, errorCount, importLog) {
     // Hide the status modal first
     const statusModal = document.getElementById('importModal');
@@ -932,6 +942,12 @@ function showImportCompletion(successCount, errorCount, importLog) {
             }
         });
     }
+    
+    // Remove outside click listener to prevent closing
+    completionModal.onclick = function(event) {
+        // Do nothing - prevents closing when clicking outside
+        event.stopPropagation();
+    };
     
     completionModal.style.display = 'block';
 }
@@ -1187,6 +1203,7 @@ function updateSortIndicators() {
         }
     }
 }
+
 // Updated display collection function with pagination
 function displayCollection() {
     const totalElement = document.getElementById('totalCards');
@@ -1858,7 +1875,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 });
 
-// Modal click outside to close
+// Modal click outside to close - Updated to prevent import completion modal from closing
 window.addEventListener('click', function(event) {
     const modal = document.getElementById('cardModal');
     if (event.target === modal) {
@@ -1871,11 +1888,11 @@ window.addEventListener('click', function(event) {
         importModal.style.display = 'none';
     }
     
-    // Close import completion modal when clicking outside
-    const completionModal = document.getElementById('completionModal');
-    if (event.target === completionModal) {
-        completionModal.style.display = 'none';
-    }
+    // DO NOT close import completion modal when clicking outside - removed this functionality
+    // const completionModal = document.getElementById('completionModal');
+    // if (event.target === completionModal) {
+    //     completionModal.style.display = 'none';
+    // }
 });
 
 // Make changePage function globally accessible
