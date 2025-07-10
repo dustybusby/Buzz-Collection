@@ -311,12 +311,12 @@ h1 {
     padding-bottom: 0.5rem;
 }
 
-/* Import Status Dialog Styles - Smaller compact dialog with height cut in half */
+/* Import Status Dialog Styles - Height cut in half */
 .import-status-modal-content {
     min-width: 500px;
     max-width: 550px;
-    min-height: 150px;
-    max-height: 200px;
+    min-height: 75px;
+    max-height: 100px;
     padding: 1.5rem;
     margin: 15% auto;
 }
@@ -413,14 +413,14 @@ h1 {
         0 0 4px rgba(255, 107, 107, 0.3);
 }
 
-/* Import Completion Dialog Styles - Larger dialog with better spacing and increased height */
+/* Import Completion Dialog Styles - Better viewport handling */
 .import-completion-modal-content {
     min-width: 900px;
     max-width: 950px;
-    min-height: 700px;
-    max-height: 85vh;
-    padding: 3rem;
-    margin: 2% auto;
+    min-height: 600px;
+    max-height: 75vh;
+    padding: 2rem;
+    margin: 5% auto;
     overflow-y: auto;
 }
 
@@ -499,7 +499,7 @@ h1 {
 }
 
 .import-log {
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
     padding: 0 1rem;
 }
 
@@ -615,9 +615,9 @@ h1 {
     display: flex;
     gap: 1rem;
     justify-content: center;
-    margin-top: 2rem;
-    margin-bottom: 3rem;
-    padding-bottom: 2rem;
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
 }
 
 .import-actions .btn {
@@ -1854,8 +1854,8 @@ body:has(#listView) .container {
         min-width: auto;
         max-width: 95%;
         padding: 1rem;
-        min-height: 120px;
-        max-height: 150px;
+        min-height: 60px;
+        max-height: 75px;
     }
 
     .import-completion-modal-content {
