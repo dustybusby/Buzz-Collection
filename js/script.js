@@ -802,16 +802,16 @@ async function handleCSVUpload(event) {
     reader.readAsText(file);
 }
 
-// Show import dialog with larger size
+// Show import dialog - smaller for status tracking
 function showImportDialog() {
-    // Create import modal if it doesn't exist
+    // Create import status modal if it doesn't exist
     let importModal = document.getElementById('importModal');
     if (!importModal) {
         importModal = document.createElement('div');
         importModal.id = 'importModal';
         importModal.className = 'modal';
         importModal.innerHTML = `
-            <div class="modal-content import-modal-content">
+            <div class="modal-content import-status-modal-content">
                 <h3>Import Status</h3>
                 <div class="import-progress">
                     <div class="progress-bar">
@@ -859,66 +859,81 @@ function updateImportProgress(current, total, successCount, errorCount) {
     }
 }
 
-// Show import completion with updated headers and formatting
+// Show import completion with updated headers and formatting - separate larger dialog
 function showImportCompletion(successCount, errorCount, importLog) {
-    const importModal = document.getElementById('importModal');
-    if (!importModal) return;
+    // Hide the status modal first
+    const statusModal = document.getElementById('importModal');
+    if (statusModal) {
+        statusModal.style.display = 'none';
+    }
     
-    const modalContent = importModal.querySelector('.modal-content');
-    modalContent.innerHTML = `
-        <h3>Import Completed!</h3>
-        <div class="completion-stats">
-            <div class="completion-stat success">
-                <div class="stat-number">${successCount}</div>
-                <div class="stat-label">Records Imported Successfully</div>
+    // Create or get completion modal
+    let completionModal = document.getElementById('completionModal');
+    if (!completionModal) {
+        completionModal = document.createElement('div');
+        completionModal.id = 'completionModal';
+        completionModal.className = 'modal';
+        document.body.appendChild(completionModal);
+    }
+    
+    completionModal.innerHTML = `
+        <div class="modal-content import-completion-modal-content">
+            <h3>Import Completed!</h3>
+            <div class="completion-stats">
+                <div class="completion-stat success">
+                    <div class="stat-number">${successCount}</div>
+                    <div class="stat-label">Records Imported Successfully</div>
+                </div>
+                <div class="completion-stat error">
+                    <div class="stat-number">${errorCount}</div>
+                    <div class="stat-label">Records Not Imported Successfully</div>
+                </div>
             </div>
-            <div class="completion-stat error">
-                <div class="stat-number">${errorCount}</div>
-                <div class="stat-label">Records Not Imported Successfully</div>
+            <div class="import-log">
+                <h4>Import Log</h4>
+                <div class="log-header">
+                    <span class="log-header-line">Line</span>
+                    <span class="log-header-status">Status</span>
+                    <span class="log-header-player">Player</span>
+                    <span class="log-header-details">Card Details (Card # | Parallel | Numbered)</span>
+                </div>
+                <div class="log-container" id="logContainer">
+                    ${importLog.map(entry => `
+                        <div class="log-entry ${entry.status.toLowerCase()}">
+                            <span class="log-line">${entry.line}:</span>
+                            <span class="log-status">${entry.status}</span>
+                            <span class="log-player">${entry.player}</span>
+                            <span class="log-details">${entry.details}</span>
+                        </div>
+                    `).join('')}
+                </div>
             </div>
-        </div>
-        <div class="import-log">
-            <h4>Import Log</h4>
-            <div class="log-header">
-                <span class="log-header-line">Line</span>
-                <span class="log-header-status">Status</span>
-                <span class="log-header-player">Player</span>
-                <span class="log-header-details">Card Details (Card # | Parallel | Numbered)</span>
+            <div class="import-actions">
+                <button class="btn" id="downloadLogBtn">Download Log File</button>
+                <button class="btn btn-primary" id="closeCompletionBtn">Close</button>
             </div>
-            <div class="log-container" id="logContainer">
-                ${importLog.map(entry => `
-                    <div class="log-entry ${entry.status.toLowerCase()}">
-                        <span class="log-line">${entry.line}:</span>
-                        <span class="log-status">${entry.status}</span>
-                        <span class="log-player">${entry.player}</span>
-                        <span class="log-details">${entry.details}</span>
-                    </div>
-                `).join('')}
-            </div>
-        </div>
-        <div class="import-actions">
-            <button class="btn" id="downloadLogBtn">Download Log File</button>
-            <button class="btn btn-primary" id="closeImportBtn">Close</button>
         </div>
     `;
     
     // Add event listeners
     const downloadLogBtn = document.getElementById('downloadLogBtn');
-    const closeImportBtn = document.getElementById('closeImportBtn');
+    const closeCompletionBtn = document.getElementById('closeCompletionBtn');
     
     if (downloadLogBtn) {
         downloadLogBtn.addEventListener('click', () => downloadImportLog(importLog));
     }
     
-    if (closeImportBtn) {
-        closeImportBtn.addEventListener('click', () => {
-            importModal.style.display = 'none';
+    if (closeCompletionBtn) {
+        closeCompletionBtn.addEventListener('click', () => {
+            completionModal.style.display = 'none';
             // Reload collection if we're on collection page
             if (isCollectionPage()) {
                 loadCollectionFromFirebase();
             }
         });
     }
+    
+    completionModal.style.display = 'block';
 }
 
 // Download import log with updated header
@@ -1476,7 +1491,7 @@ function displayListView(cards) {
     
     container.innerHTML = listHTML;
     
-    // Add event listeners to action buttons
+// Add event listeners to action buttons
     container.querySelectorAll('.view-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const cardId = this.getAttribute('data-card-id');
@@ -1495,7 +1510,7 @@ function displayListView(cards) {
         btn.addEventListener('click', function() {
             const cardId = this.getAttribute('data-card-id');
             deleteCard(cardId);
-            });
+        });
     });
 }
 
@@ -1802,7 +1817,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
         return;
     }
-
+    
     // For other pages, initialize Firebase first then load data
     console.log('Other page detected, initializing normally');
     
@@ -1850,10 +1865,16 @@ window.addEventListener('click', function(event) {
         closeCardModal();
     }
     
-    // Close import modal when clicking outside
+    // Close import status modal when clicking outside
     const importModal = document.getElementById('importModal');
     if (event.target === importModal) {
         importModal.style.display = 'none';
+    }
+    
+    // Close import completion modal when clicking outside
+    const completionModal = document.getElementById('completionModal');
+    if (event.target === completionModal) {
+        completionModal.style.display = 'none';
     }
 });
 
