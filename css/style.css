@@ -311,8 +311,8 @@ h1 {
     padding-bottom: 0.5rem;
 }
 
-/* Import Status Dialog Styles - Height cut in half */
-.import-status-modal-content {
+/* Import Status Dialog Styles - Height cut in half - FIXED */
+.modal-content.import-status-modal-content {
     min-width: 500px;
     max-width: 550px;
     min-height: 75px;
@@ -321,17 +321,17 @@ h1 {
     margin: 15% auto;
 }
 
-.import-status-modal-content h3 {
+.modal-content.import-status-modal-content h3 {
     color: #00d4ff;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     font-family: 'Playfair Display', serif;
     text-align: center;
-    font-size: 1.2rem;
+    font-size: 1rem;
 }
 
-.import-progress {
-    margin-bottom: 1.5rem;
-    padding: 0 1rem;
+.modal-content.import-status-modal-content .import-progress {
+    margin-bottom: 0.5rem;
+    padding: 0 0.5rem;
 }
 
 .progress-bar {
@@ -413,32 +413,32 @@ h1 {
         0 0 4px rgba(255, 107, 107, 0.3);
 }
 
-/* Import Completion Dialog Styles - Better viewport handling and button visibility */
-.import-completion-modal-content {
+/* Import Completion Dialog Styles - Better viewport handling and button visibility - FIXED */
+.modal-content.import-completion-modal-content {
     min-width: 900px;
     max-width: 950px;
     min-height: 500px;
-    max-height: 65vh;
+    max-height: 60vh;
     padding: 1.5rem;
-    margin: 2% auto;
+    margin: 1% auto;
     overflow-y: auto;
 }
 
-.import-completion-modal-content h3 {
+.modal-content.import-completion-modal-content h3 {
     color: #00d4ff;
-    margin-bottom: 2rem;
-    margin-top: 1rem;
+    margin-bottom: 1.5rem;
+    margin-top: 0.5rem;
     font-family: 'Playfair Display', serif;
     text-align: center;
     font-size: 1.8rem;
 }
 
-.completion-stats {
+.modal-content.import-completion-modal-content .completion-stats {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 2rem;
-    margin-bottom: 2.5rem;
-    padding: 0 2rem;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding: 0 1rem;
     justify-items: center;
 }
 
@@ -498,9 +498,9 @@ h1 {
     font-weight: 600;
 }
 
-.import-log {
-    margin-bottom: 1rem;
-    padding: 0 1rem;
+.modal-content.import-completion-modal-content .import-log {
+    margin-bottom: 0.5rem;
+    padding: 0 0.5rem;
 }
 
 .import-log h4 {
@@ -611,13 +611,13 @@ h1 {
     font-size: 0.75rem;
 }
 
-.import-actions {
+.modal-content.import-completion-modal-content .import-actions {
     display: flex;
     gap: 1rem;
     justify-content: center;
-    margin-top: 0.5rem;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
+    margin-top: 0.25rem;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.25rem;
 }
 
 .import-actions .btn {
@@ -1849,8 +1849,8 @@ body:has(#listView) .container {
         text-align: left;
     }
 
-    /* Mobile import modal adjustments */
-    .import-status-modal-content {
+    /* Mobile import modal adjustments - FIXED */
+    .modal-content.import-status-modal-content {
         min-width: auto;
         max-width: 95%;
         padding: 0.5rem;
@@ -1858,12 +1858,12 @@ body:has(#listView) .container {
         max-height: 50px;
     }
 
-    .import-completion-modal-content {
+    .modal-content.import-completion-modal-content {
         min-width: auto;
         max-width: 95%;
-        padding: 2rem;
-        min-height: 500px;
-        max-height: 90vh;
+        padding: 1rem;
+        min-height: 400px;
+        max-height: 85vh;
     }
 
     .import-stats {
