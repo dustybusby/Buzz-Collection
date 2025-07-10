@@ -741,7 +741,7 @@ async function handleCSVUpload(event) {
                     line: lineNumber,
                     status: 'Success',
                     player: card.player,
-                    details: `${card.cardNumber || 'N/A'} | ${card.parallel} | ${card.numbered}`
+                    details: `${card.cardNumber} | ${card.parallel !== 'N' ? card.parallel : ''} | ${card.numbered !== 'N' ? card.numbered : ''}`.replace(/\|\s*\|/g, '|').replace(/^\s*\|\s*/, '').replace(/\s*\|\s*$/, '')
                 });
                 
             } catch (error) {
@@ -756,7 +756,7 @@ async function handleCSVUpload(event) {
                 });
             }
             
-            // Update progress - correctly count actual data rows processed
+            // Update progress (subtract 1 from i to not count header row)
             updateImportProgress(i - 1, totalLines, successCount, errorCount);
             
             // Small delay to allow UI updates
@@ -850,15 +850,9 @@ function showImportCompletion(successCount, errorCount, importLog) {
         <div class="import-log">
             <h4>Import Log</h4>
             <div class="log-container" id="logContainer">
-                <div class="log-header">
-                    <span class="log-line-header">Line</span>
-                    <span class="log-status-header">Status</span>
-                    <span class="log-player-header">Player</span>
-                    <span class="log-details-header">Card Details (Card # | Parallel | Numbered)</span>
-                </div>
                 ${importLog.map(entry => `
                     <div class="log-entry ${entry.status.toLowerCase()}">
-                        <span class="log-line">${entry.line}:</span>
+                        <span class="log-line">Line ${entry.line}:</span>
                         <span class="log-status">${entry.status}</span>
                         <span class="log-player">${entry.player}</span>
                         <span class="log-details">${entry.details}</span>
@@ -894,7 +888,7 @@ function showImportCompletion(successCount, errorCount, importLog) {
 // Download import log
 function downloadImportLog(importLog) {
     const csvContent = [
-        'Line,Status,Player,"Card Details (Card # | Parallel | Numbered)"',
+        'Line,Status,Player,Details',
         ...importLog.map(entry => 
             `${entry.line},"${entry.status}","${entry.player}","${entry.details}"`
         )
