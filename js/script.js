@@ -291,14 +291,13 @@ function populateForm(card) {
         if (gradeInput) gradeInput.disabled = true;
     }
     
-    // Handle base set field
-    if (card.baseSet && card.baseSet !== 'N') {
-        const baseSetSelect = document.getElementById('baseSetSelect');
-        const baseSetText = document.getElementById('baseSetText');
-        if (baseSetSelect && baseSetText) {
+    // Handle base set field - Updated to use Y/N values only
+    const baseSetSelect = document.getElementById('baseSet');
+    if (baseSetSelect) {
+        if (card.baseSet && card.baseSet !== 'N') {
             baseSetSelect.value = 'Y';
-            baseSetText.style.display = 'block';
-            baseSetText.value = card.baseSet;
+        } else {
+            baseSetSelect.value = 'N';
         }
     }
     
@@ -381,18 +380,7 @@ function populateForm(card) {
     }
 }
 
-function toggleBaseSetInput() {
-    const select = document.getElementById('baseSetSelect');
-    const text = document.getElementById('baseSetText');
-    if (select && text) {
-        text.style.display = select.value === 'Y' ? 'block' : 'none';
-        if (select.value === 'Y') {
-            text.value = 'Base Set';
-        } else {
-            text.value = '';
-        }
-    }
-}
+// Remove the toggleBaseSetInput function since we no longer need it
 
 function toggleParallelInput() {
     const select = document.getElementById('parallelSelect');
@@ -488,7 +476,7 @@ async function addCard(event) {
         year: parseInt(getFieldValue('year')) || 0,
         product: getFieldValue('product'),
         cardNumber: getFieldValue('cardNumber'),
-        baseSet: document.getElementById('baseSetSelect')?.value === 'Y' ? getFieldValue('baseSetText') : 'N',
+        baseSet: getFieldValue('baseSet') || 'N', // Updated to use direct Y/N value
         player: getFieldValue('player'),
         team: getFieldValue('team'),
         quantity: parseInt(getFieldValue('quantity')) || 1,
@@ -645,14 +633,12 @@ function addAnotherCard() {
         form.reset();
         
         // Reset conditional fields
-        const baseSetText = document.getElementById('baseSetText');
         const parallelText = document.getElementById('parallelText');
         const numberedText = document.getElementById('numberedText');
         const insertText = document.getElementById('insertText');
         const imageVariationText = document.getElementById('imageVariationText');
         const quantity = document.getElementById('quantity');
         
-        if (baseSetText) baseSetText.style.display = 'none';
         if (parallelText) parallelText.style.display = 'none';
         if (numberedText) numberedText.style.display = 'none';
         if (insertText) insertText.style.display = 'none';
@@ -728,7 +714,7 @@ async function handleCSVUpload(event) {
                     year: parseInt(values[1]) || 0,
                     product: values[2] || '',
                     cardNumber: values[3] || '',
-                    baseSet: values[4] || 'N',
+                    baseSet: values[4] || 'N', // Updated to use Y/N value directly
                     player: values[5] || '',
                     team: values[6] || '',
                     insert: values[7] || 'N',
@@ -1243,7 +1229,8 @@ function displayCollection() {
     }
     if (baseSetFilter) {
         filteredCards = filteredCards.filter(card => {
-            const baseSetValue = card.baseSet === 'N' ? '' : (card.baseSet || '').toString().toLowerCase();
+            // Updated to handle Y/N filtering properly
+            const baseSetValue = card.baseSet === 'Y' ? 'y' : 'n';
             return baseSetValue.includes(baseSetFilter);
         });
     }
@@ -1478,7 +1465,7 @@ function displayListView(cards) {
         const year = card.year || '';
         const product = card.product || '';
         const cardNumber = card.cardNumber || '';
-        const baseSet = card.baseSet !== 'N' ? (card.baseSet || '') : '';
+        const baseSet = card.baseSet === 'Y' ? '✓' : ''; // Updated to show checkmark for Y, empty for N
         const player = card.player || '';
         const team = card.team || '';
         const rookieCheck = card.rookieCard === 'Y' ? '✓' : '';
@@ -1491,7 +1478,7 @@ function displayListView(cards) {
             <div>${year}</div>
             <div>${product}</div>
             <div>${cardNumber}</div>
-            <div>${baseSet}</div>
+            <div style="text-align: center;">${baseSet}</div>
             <div class="list-item-player">${player}</div>
             <div>${team}</div>
             <div style="text-align: center;">${rookieCheck}</div>
@@ -1564,7 +1551,7 @@ function viewCard(cardId) {
     const category = card.category || 'Unknown';
     const cardNumber = card.cardNumber || 'N/A';
     const rookieText = card.rookieCard === 'Y' ? 'Rookie Card: Yes' : 'Rookie Card: No';
-    const baseSetText = card.baseSet && card.baseSet !== 'N' ? `Base Set: ${card.baseSet}` : 'Base Set: No';
+    const baseSetText = card.baseSet === 'Y' ? 'Base Set: Yes' : 'Base Set: No'; // Updated to show Yes/No
     const parallelText = card.parallel && card.parallel !== 'N' ? `Parallel: ${card.parallel}` : 'Parallel: No';
     const numberedText = card.numbered && card.numbered !== 'N' ? `Numbered: ${card.numbered}` : 'Numbered: No';
     const insertText = card.insert && card.insert !== 'N' ? `Insert: ${card.insert}` : 'Insert: No';
@@ -1699,7 +1686,7 @@ function exportToCSV() {
             card.year || '',
             card.product || '',
             card.cardNumber || '',
-            card.baseSet || 'N',
+            card.baseSet || 'N', // Updated to use Y/N value directly
             card.player || '',
             card.team || '',
             card.insert || 'N',
@@ -1777,12 +1764,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 cardForm.addEventListener('submit', addCard);
             }
             
-            // Add toggle event listeners
-            const baseSetSelect = document.getElementById('baseSetSelect');
-            if (baseSetSelect) {
-                baseSetSelect.addEventListener('change', toggleBaseSetInput);
-            }
-            
+            // Add toggle event listeners - removed baseSetSelect listener since it's no longer needed
             const parallelSelect = document.getElementById('parallelSelect');
             if (parallelSelect) {
                 parallelSelect.addEventListener('change', toggleParallelInput);
@@ -1898,8 +1880,3 @@ window.addEventListener('click', function(event) {
 // Make changePage function globally accessible
 window.changePage = changePage;
 
-// ============================================================================
-// GLOBAL FUNCTION EXPORTS - REMOVED (no longer needed with event listeners)
-// ============================================================================
-// All functions are now properly attached via event listeners
-// No more inline onclick handlers needed

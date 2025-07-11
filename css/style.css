@@ -414,7 +414,7 @@ h1 {
         0 0 4px rgba(255, 107, 107, 0.3);
 }
 
-/* Import Completion Dialog Styles - PERFECTED LAYOUT */
+/* Import Completion Dialog Styles - UPDATED WITH CENTERED BUTTONS */
 .modal-content.import-completion-modal-content {
     min-width: 900px;
     max-width: 950px;
@@ -423,6 +423,8 @@ h1 {
     padding: 0.75rem 1.5rem 1.5rem 1.5rem;
     margin: 2% auto;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .modal-content.import-completion-modal-content h3 {
@@ -504,8 +506,11 @@ h1 {
 }
 
 .modal-content.import-completion-modal-content .import-log {
-    margin-bottom: 1rem;
+    flex: 1;
     padding: 0 0.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
 }
 
 .import-log h4 {
@@ -563,6 +568,7 @@ h1 {
     box-shadow: 
         inset 0 2px 4px rgba(0, 0, 0, 0.3),
         0 2px 4px rgba(0, 0, 0, 0.2);
+    flex: 1;
 }
 
 .log-entry {
@@ -616,13 +622,15 @@ h1 {
     font-size: 0.75rem;
 }
 
+/* Updated import actions to center buttons between log and bottom border */
 .modal-content.import-completion-modal-content .import-actions {
     display: flex;
     gap: 1rem;
     justify-content: center;
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
-    padding-bottom: 0.25rem;
+    align-items: center;
+    padding: 1.5rem 0;
+    margin: 0;
+    border-top: 1px solid rgba(0, 150, 255, 0.2);
 }
 
 .import-actions .btn {
