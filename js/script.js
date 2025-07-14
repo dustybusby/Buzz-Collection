@@ -1578,7 +1578,7 @@ function viewCard(cardId) {
     // Format estimated value text
     let estimatedValueText = '';
     if (estimatedValue !== 'Unknown' && estimatedValueDate !== 'Not specified') {
-        estimatedValueText = `Estimated market value on ${estimatedValueDate} : ${estimatedValue}`;
+        estimatedValueText = `Estimated market value on ${estimatedValueDate}: ${estimatedValue}`;
     } else if (estimatedValue !== 'Unknown') {
         estimatedValueText = `Estimated market value: ${estimatedValue}`;
     } else {
