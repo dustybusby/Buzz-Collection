@@ -1121,7 +1121,7 @@ function displayExpensiveCards() {
     const container = document.getElementById('expensiveCards');
     if (container) {
         if (expensiveCards.length === 0) {
-            container.innerHTML = '<p style="color: #888; text-align: center; padding: 2rem;">No cards with estimated value data yet.</p>';
+            container.innerHTML = '<p style="color: #888; text-align: center; padding: 2rem;">No cards with estimated market value data yet.</p>';
             return;
         }
 
@@ -1578,11 +1578,11 @@ function viewCard(cardId) {
     // Format estimated value text
     let estimatedValueText = '';
     if (estimatedValue !== 'Unknown' && estimatedValueDate !== 'Not specified') {
-        estimatedValueText = `Estimated value as of ${estimatedValueDate} is ${estimatedValue}`;
+        estimatedValueText = `Estimated market value on ${estimatedValueDate} is ${estimatedValue}`;
     } else if (estimatedValue !== 'Unknown') {
-        estimatedValueText = `Estimated value: ${estimatedValue}`;
+        estimatedValueText = `Estimated market value: ${estimatedValue}`;
     } else {
-        estimatedValueText = 'Estimated value: Unknown';
+        estimatedValueText = 'Estimated market value: Unknown';
     }
     
     const modalHTML = `
@@ -1671,7 +1671,7 @@ function exportToCSV() {
     }
     
     // Updated headers for new column order
-    const headers = ['Category', 'Year', 'Brand', 'Card #', 'Base Set', 'Player', 'Team', 'Insert', 'Parallel', 'Numbered', 'Rookie Card', 'Image Variation', 'Quantity', 'Grade', 'Purchase Date', 'Purchase Price', 'Estimated Value', 'Estimated Value As Of', "Add'l Notes"];
+    const headers = ['Category', 'Year', 'Brand', 'Card #', 'Base Set', 'Player', 'Team', 'Insert', 'Parallel', 'Numbered', 'Rookie Card', 'Image Variation', 'Quantity', 'Grade', 'Purchase Date', 'Purchase Price', 'Estimated Market Value', 'Estimated Market Value On', "Add'l Notes"];
     const csvRows = [headers.join(',')];
     
     cardCollection.forEach(card => {
