@@ -17,7 +17,7 @@ let filteredCards = [];
 
 // Password protection variables
 let isPasswordVerified = false;
-const ADMIN_PASSWORD_HASH = "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9";
+const ADMIN_PASSWORD_HASH = "4ab494b65bff40c8138477242279b8c97f8a3fa6344c8a4bb3111abe23f51a77";
 
 // Simple hash function for password verification using crypto-js style hashing
 function simpleHash(str) {
