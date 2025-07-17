@@ -17,7 +17,17 @@ let filteredCards = [];
 
 // Password protection variables
 let isPasswordVerified = false;
-const ADMIN_PASSWORD = "BuzzCollection2024!"; // Change this to your desired password
+// More secure password hashing - user can change this hash
+const ADMIN_PASSWORD_HASH = "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"; // Default: "admin123"
+
+// Simple hash function for password verification
+async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
 // Initialize Firebase with dynamic imports
 async function initFirebase() {
@@ -106,13 +116,18 @@ function showPasswordDialog() {
         window.location.href = 'index.html';
     });
     
-    function verifyPassword() {
+    async function verifyPassword() {
         const enteredPassword = passwordInput.value;
-        if (enteredPassword === ADMIN_PASSWORD) {
+        const enteredHash = await hashPassword(enteredPassword);
+        
+        if (enteredHash === ADMIN_PASSWORD_HASH) {
             isPasswordVerified = true;
             passwordModal.remove();
             // Store password verification in session
             sessionStorage.setItem('adminVerified', 'true');
+            
+            // Fix: Continue with page initialization after password verification
+            initializeAddPageAfterAuth();
         } else {
             passwordInput.value = '';
             passwordInput.style.borderColor = '#ff6b6b';
@@ -125,8 +140,81 @@ function showPasswordDialog() {
     }
 }
 
+// New function to continue add page initialization after authentication
+async function initializeAddPageAfterAuth() {
+    const loadingEl = document.getElementById('loading');
+    const mainContentEl = document.getElementById('mainContent');
+    
+    // Show content
+    if (loadingEl) loadingEl.style.display = 'none';
+    if (mainContentEl) mainContentEl.style.display = 'block';
+    
+    // Initialize Firebase and then set up the form
+    const success = await initFirebase();
+    console.log('Firebase init success:', success);
+    
+    if (success) {
+        initializeYearDropdown();
+        checkEditMode();
+        
+        // Add form event listener
+        const cardForm = document.getElementById('cardForm');
+        if (cardForm) {
+            cardForm.addEventListener('submit', addCard);
+        }
+        
+        // Add toggle event listeners
+        const parallelSelect = document.getElementById('parallelSelect');
+        if (parallelSelect) {
+            parallelSelect.addEventListener('change', toggleParallelInput);
+        }
+        
+        const numberedSelect = document.getElementById('numberedSelect');
+        if (numberedSelect) {
+            numberedSelect.addEventListener('change', toggleNumberedInput);
+        }
+        
+        const insertSelect = document.getElementById('insertSelect');
+        if (insertSelect) {
+            insertSelect.addEventListener('change', toggleInsertInput);
+        }
+        
+        const unknownEstimatedValue = document.getElementById('unknownEstimatedValue');
+        if (unknownEstimatedValue) {
+            unknownEstimatedValue.addEventListener('change', toggleEstimatedValueInput);
+        }
+        
+        const imageVariationSelect = document.getElementById('imageVariationSelect');
+        if (imageVariationSelect) {
+            imageVariationSelect.addEventListener('change', toggleImageVariationInput);
+        }
+        
+        const unknownDate = document.getElementById('unknownDate');
+        if (unknownDate) {
+            unknownDate.addEventListener('change', toggleDateInput);
+        }
+        
+        const unknownCost = document.getElementById('unknownCost');
+        if (unknownCost) {
+            unknownCost.addEventListener('change', toggleCostInput);
+        }
+        
+        const ungradedGrade = document.getElementById('ungradedGrade');
+        if (ungradedGrade) {
+            ungradedGrade.addEventListener('change', toggleGradeInput);
+        }
+        
+        const csvFile = document.getElementById('csvFile');
+        if (csvFile) {
+            csvFile.addEventListener('change', handleCSVUpload);
+        }
+    } else {
+        alert('Failed to initialize Firebase. Some features may not work.');
+    }
+}
+
 function checkDeletePermission() {
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
         if (sessionStorage.getItem('adminVerified') === 'true') {
             resolve(true);
             return;
@@ -170,9 +258,11 @@ function checkDeletePermission() {
             resolve(false);
         });
         
-        function verifyDeletePassword() {
+        async function verifyDeletePassword() {
             const enteredPassword = passwordInput.value;
-            if (enteredPassword === ADMIN_PASSWORD) {
+            const enteredHash = await hashPassword(enteredPassword);
+            
+            if (enteredHash === ADMIN_PASSWORD_HASH) {
                 sessionStorage.setItem('adminVerified', 'true');
                 passwordModal.remove();
                 resolve(true);
@@ -1089,7 +1179,7 @@ function downloadImportLog(importLog) {
     ].join('\n');
     
     const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
+    const url = window.URL.createObjectURL(url);
     const a = document.createElement('a');
     a.href = url;
     a.download = 'import_log_' + new Date().toISOString().split('T')[0] + '.csv';
@@ -1265,7 +1355,7 @@ function displayTeamDistribution() {
     }
 }
 
-// Updated function to show top 8 cards with click functionality and comma formatting
+// Fixed function to show top 8 cards with working click functionality and comma formatting
 function displayExpensiveCards() {
     // Use estimatedValue instead of purchaseCost for expensive cards
     const expensiveCards = [...cardCollection]
@@ -1293,12 +1383,53 @@ function displayExpensiveCards() {
             </div>
         `).join('');
 
-        // Add click event listeners to mini cards
-        container.querySelectorAll('.clickable-card').forEach(card => {
-            card.addEventListener('click', function() {
-                const cardId = this.getAttribute('data-card-id');
-                viewCard(cardId);
-            });
+        // Fixed: Add click event listeners to mini cards using event delegation
+        container.removeEventListener('click', handleMiniCardClick); // Remove any existing listeners
+        container.addEventListener('click', handleMiniCardClick);
+    }
+}
+
+// New centralized event handler for mini card clicks
+function handleMiniCardClick(event) {
+    const clickedCard = event.target.closest('.clickable-card');
+    if (clickedCard) {
+        event.preventDefault();
+        event.stopPropagation();
+        const cardId = clickedCard.getAttribute('data-card-id');
+        if (cardId) {
+            // Create a temporary modal for the card view since we're on the dashboard
+            createTemporaryCardModal();
+            viewCard(cardId);
+        }
+    }
+}
+
+// Create temporary modal for dashboard card views
+function createTemporaryCardModal() {
+    // Check if modal already exists
+    let modal = document.getElementById('cardModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'cardModal';
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <div id="modalCardContent"></div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Add close functionality
+        const closeBtn = modal.querySelector('.close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeCardModal);
+        }
+        
+        modal.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                closeCardModal();
+            }
         });
     }
 }
@@ -1967,7 +2098,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         isPasswordVerified = true;
     }
     
-    // For add page, show content immediately and then initialize Firebase
+    // For add page, handle password protection first
     if (isAddPage()) {
         console.log('Detected add page');
         
@@ -1976,73 +2107,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             return; // Password dialog will handle the flow
         }
         
-        // Show content first
-        if (loadingEl) loadingEl.style.display = 'none';
-        if (mainContentEl) mainContentEl.style.display = 'block';
-        
-        // Initialize Firebase and then set up the form
-        const success = await initFirebase();
-        console.log('Firebase init success:', success);
-        
-        if (success) {
-            initializeYearDropdown();
-            checkEditMode();
-            
-            // Add form event listener
-            const cardForm = document.getElementById('cardForm');
-            if (cardForm) {
-                cardForm.addEventListener('submit', addCard);
-            }
-            
-            // Add toggle event listeners
-            const parallelSelect = document.getElementById('parallelSelect');
-            if (parallelSelect) {
-                parallelSelect.addEventListener('change', toggleParallelInput);
-            }
-            
-            const numberedSelect = document.getElementById('numberedSelect');
-            if (numberedSelect) {
-                numberedSelect.addEventListener('change', toggleNumberedInput);
-            }
-            
-            const insertSelect = document.getElementById('insertSelect');
-            if (insertSelect) {
-                insertSelect.addEventListener('change', toggleInsertInput);
-            }
-            
-            const unknownEstimatedValue = document.getElementById('unknownEstimatedValue');
-            if (unknownEstimatedValue) {
-                unknownEstimatedValue.addEventListener('change', toggleEstimatedValueInput);
-            }
-            
-            const imageVariationSelect = document.getElementById('imageVariationSelect');
-            if (imageVariationSelect) {
-                imageVariationSelect.addEventListener('change', toggleImageVariationInput);
-            }
-            
-            const unknownDate = document.getElementById('unknownDate');
-            if (unknownDate) {
-                unknownDate.addEventListener('change', toggleDateInput);
-            }
-            
-            const unknownCost = document.getElementById('unknownCost');
-            if (unknownCost) {
-                unknownCost.addEventListener('change', toggleCostInput);
-            }
-            
-            const ungradedGrade = document.getElementById('ungradedGrade');
-            if (ungradedGrade) {
-                ungradedGrade.addEventListener('change', toggleGradeInput);
-            }
-            
-            const csvFile = document.getElementById('csvFile');
-            if (csvFile) {
-                csvFile.addEventListener('change', handleCSVUpload);
-            }
-            
-            // Note: Success modal button listeners are now added dynamically in showSuccessModal
-        } else {
-            alert('Failed to initialize Firebase. Some features may not work.');
+        // If password is already verified, continue with initialization
+        if (isPasswordVerified) {
+            initializeAddPageAfterAuth();
         }
         return;
     }
