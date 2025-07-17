@@ -15,6 +15,10 @@ let currentPage = 1;
 let recordsPerPage = 50;
 let filteredCards = [];
 
+// Password protection variables
+let isPasswordVerified = false;
+const ADMIN_PASSWORD = "BuzzCollection2024!"; // Change this to your desired password
+
 // Initialize Firebase with dynamic imports
 async function initFirebase() {
     try {
@@ -52,6 +56,137 @@ async function initFirebase() {
         console.error('Firebase initialization error:', error);
         return false;
     }
+}
+
+// Password protection functions
+function checkPasswordProtection() {
+    if (isAddPage() && !isPasswordVerified) {
+        showPasswordDialog();
+        return false;
+    }
+    return true;
+}
+
+function showPasswordDialog() {
+    const passwordModal = document.createElement('div');
+    passwordModal.className = 'modal';
+    passwordModal.id = 'passwordModal';
+    passwordModal.innerHTML = `
+        <div class="modal-content password-modal-content">
+            <h3>Admin Access Required</h3>
+            <p>Please enter the admin password to access this page:</p>
+            <div class="password-input-container">
+                <input type="password" id="passwordInput" placeholder="Enter password">
+                <div class="password-buttons">
+                    <button class="btn btn-primary" id="submitPassword">Submit</button>
+                    <button class="btn" id="cancelPassword">Cancel</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(passwordModal);
+    passwordModal.style.display = 'block';
+    
+    const passwordInput = document.getElementById('passwordInput');
+    const submitBtn = document.getElementById('submitPassword');
+    const cancelBtn = document.getElementById('cancelPassword');
+    
+    passwordInput.focus();
+    
+    passwordInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            verifyPassword();
+        }
+    });
+    
+    submitBtn.addEventListener('click', verifyPassword);
+    cancelBtn.addEventListener('click', function() {
+        passwordModal.remove();
+        window.location.href = 'index.html';
+    });
+    
+    function verifyPassword() {
+        const enteredPassword = passwordInput.value;
+        if (enteredPassword === ADMIN_PASSWORD) {
+            isPasswordVerified = true;
+            passwordModal.remove();
+            // Store password verification in session
+            sessionStorage.setItem('adminVerified', 'true');
+        } else {
+            passwordInput.value = '';
+            passwordInput.style.borderColor = '#ff6b6b';
+            passwordInput.placeholder = 'Incorrect password - try again';
+            setTimeout(() => {
+                passwordInput.style.borderColor = '';
+                passwordInput.placeholder = 'Enter password';
+            }, 2000);
+        }
+    }
+}
+
+function checkDeletePermission() {
+    return new Promise((resolve) => {
+        if (sessionStorage.getItem('adminVerified') === 'true') {
+            resolve(true);
+            return;
+        }
+        
+        const passwordModal = document.createElement('div');
+        passwordModal.className = 'modal';
+        passwordModal.id = 'deletePasswordModal';
+        passwordModal.innerHTML = `
+            <div class="modal-content password-modal-content">
+                <h3>Admin Verification Required</h3>
+                <p>Admin password required to delete cards:</p>
+                <div class="password-input-container">
+                    <input type="password" id="deletePasswordInput" placeholder="Enter admin password">
+                    <div class="password-buttons">
+                        <button class="btn btn-primary" id="submitDeletePassword">Verify</button>
+                        <button class="btn" id="cancelDeletePassword">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(passwordModal);
+        passwordModal.style.display = 'block';
+        
+        const passwordInput = document.getElementById('deletePasswordInput');
+        const submitBtn = document.getElementById('submitDeletePassword');
+        const cancelBtn = document.getElementById('cancelDeletePassword');
+        
+        passwordInput.focus();
+        
+        passwordInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                verifyDeletePassword();
+            }
+        });
+        
+        submitBtn.addEventListener('click', verifyDeletePassword);
+        cancelBtn.addEventListener('click', function() {
+            passwordModal.remove();
+            resolve(false);
+        });
+        
+        function verifyDeletePassword() {
+            const enteredPassword = passwordInput.value;
+            if (enteredPassword === ADMIN_PASSWORD) {
+                sessionStorage.setItem('adminVerified', 'true');
+                passwordModal.remove();
+                resolve(true);
+            } else {
+                passwordInput.value = '';
+                passwordInput.style.borderColor = '#ff6b6b';
+                passwordInput.placeholder = 'Incorrect password - try again';
+                setTimeout(() => {
+                    passwordInput.style.borderColor = '';
+                    passwordInput.placeholder = 'Enter admin password';
+                }, 2000);
+            }
+        }
+    });
 }
 
 // Shared function to load collection from Firebase
@@ -146,7 +281,7 @@ function initializeCollectionPage() {
         });
     });
     
-    // Add event listeners for filtering
+    // Add event listeners for filtering with improved prioritization
     document.querySelectorAll('.filter-input').forEach(input => {
         input.addEventListener('keyup', filterCollection);
         input.addEventListener('change', filterCollection);
@@ -379,8 +514,6 @@ function populateForm(card) {
         if (purchaseCost) purchaseCost.disabled = true;
     }
 }
-
-// Remove the toggleBaseSetInput function since we no longer need it
 
 function toggleParallelInput() {
     const select = document.getElementById('parallelSelect');
@@ -667,7 +800,7 @@ function viewCollection() {
     window.location.href = 'collection.html';
 }
 
-// Updated CSV import function with corrected progress tracking - fixed to exclude header row
+// Updated CSV import function with corrected progress tracking and blank row prevention
 async function handleCSVUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -682,39 +815,47 @@ async function handleCSVUpload(event) {
         
         let successCount = 0;
         let errorCount = 0;
-        // Calculate total data lines (excluding header row)
-        let totalDataLines = lines.length - 1;
-        // Remove empty lines from count
-        let actualDataLines = 0;
-        for (let i = 1; i < lines.length; i++) {
-            if (lines[i].trim() !== '') actualDataLines++;
-        }
-        totalDataLines = actualDataLines;
-        
         let importLog = [];
+        
+        // Filter out empty lines and count only non-empty data lines
+        const dataLines = [];
+        for (let i = 1; i < lines.length; i++) {
+            const trimmedLine = lines[i].trim();
+            if (trimmedLine !== '' && trimmedLine.split(',').some(cell => cell.trim() !== '')) {
+                dataLines.push({
+                    content: lines[i],
+                    lineNumber: i + 1 // Keep original line number for reference
+                });
+            }
+        }
+        
+        const totalDataLines = dataLines.length;
         
         const { addDoc, collection } = window.firebaseRefs;
         
-        // Update progress with correct total count (excluding header)
+        // Update progress with correct total count (excluding header and empty lines)
         updateImportProgress(0, totalDataLines, 0, 0);
         
         let processedCount = 0;
         
-        for (let i = 1; i < lines.length; i++) {
-            if (lines[i].trim() === '') continue;
-            
-            const dataLineNumber = i; // Keep original line number for reference
-            processedCount++; // Increment only for actual data rows
+        for (const lineData of dataLines) {
+            processedCount++;
             
             try {
-                const values = lines[i].split(',').map(v => v.trim().replace(/^["']|["']$/g, ''));
+                const values = lineData.content.split(',').map(v => v.trim().replace(/^["']|["']$/g, ''));
+                
+                // Check if all values are empty (additional safeguard)
+                if (values.every(val => val === '')) {
+                    continue; // Skip completely empty rows
+                }
+                
                 // Updated CSV mapping for new column order
                 const card = {
                     category: values[0] || '',
                     year: parseInt(values[1]) || 0,
                     product: values[2] || '',
                     cardNumber: values[3] || '',
-                    baseSet: values[4] || 'N', // Updated to use Y/N value directly
+                    baseSet: values[4] || 'N',
                     player: values[5] || '',
                     team: values[6] || '',
                     insert: values[7] || 'N',
@@ -749,14 +890,14 @@ async function handleCSVUpload(event) {
                 }
                 
                 importLog.push({
-                    line: dataLineNumber,
+                    line: lineData.lineNumber,
                     status: 'Success',
                     player: card.player,
                     details: cardDetails
                 });
                 
             } catch (error) {
-                console.error('Error adding card on line', dataLineNumber, ':', error);
+                console.error('Error adding card on line', lineData.lineNumber, ':', error);
                 errorCount++;
                 
                 // Format error card details
@@ -773,12 +914,12 @@ async function handleCSVUpload(event) {
                 }
                 
                 importLog.push({
-                    line: dataLineNumber,
+                    line: lineData.lineNumber,
                     status: 'Failed',
                     player: values[5] || 'Unknown',
                     details: cardDetails,
                     error: error.message,
-                    rawData: lines[i]
+                    rawData: lineData.content
                 });
             }
             
@@ -985,7 +1126,7 @@ function displayInventory() {
 
 function updateSummaryStats() {
     const totalCards = cardCollection.length;
-    // FIXED: Use estimatedValue instead of purchaseCost for total value
+    // Use estimatedValue instead of purchaseCost for total value with comma formatting
     const totalValue = cardCollection.reduce((sum, card) => {
         const value = card.estimatedValue;
         if (value === 'Unknown' || !value) return sum;
@@ -1000,7 +1141,7 @@ function updateSummaryStats() {
     const numberedCardsEl = document.getElementById('numberedCards');
 
     if (totalCardsEl) totalCardsEl.textContent = totalCards.toLocaleString();
-    if (totalValueEl) totalValueEl.textContent = `$${totalValue.toFixed(2)}`;
+    if (totalValueEl) totalValueEl.textContent = `$${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     if (rookieCardsEl) rookieCardsEl.textContent = rookieCards.toLocaleString();
     if (numberedCardsEl) numberedCardsEl.textContent = numberedCards.toLocaleString();
 }
@@ -1013,7 +1154,7 @@ function displayCategoryBreakdown() {
             categoryStats[category] = { count: 0, value: 0 };
         }
         categoryStats[category].count++;
-        // FIXED: Use estimatedValue instead of purchaseCost
+        // Use estimatedValue instead of purchaseCost
         const value = card.estimatedValue;
         if (value !== 'Unknown' && value) {
             categoryStats[category].value += parseFloat(value);
@@ -1026,7 +1167,7 @@ function displayCategoryBreakdown() {
             <div class="category-item">
                 <div class="category-name">${category}</div>
                 <div class="category-count">${stats.count}</div>
-                <div class="category-value">${stats.value.toFixed(2)}</div>
+                <div class="category-value">${stats.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
             </div>
         `).join('');
     }
@@ -1063,26 +1204,40 @@ function displayYearDistribution() {
     }
 }
 
-// Updated function to remove hyphen between product name and category
+// Updated function to include Estimated Market Value (EMV) for Top Brands
 function displayTopProducts() {
     const productStats = {};
     cardCollection.forEach(card => {
         const productKey = `${card.year || 'Unknown'} ${card.product || 'Unknown'}`;
         const category = card.category || 'Unknown';
         const fullKey = `${productKey} ${category}`;
-        productStats[fullKey] = (productStats[fullKey] || 0) + 1;
+        
+        if (!productStats[fullKey]) {
+            productStats[fullKey] = { count: 0, emv: 0 };
+        }
+        
+        productStats[fullKey].count++;
+        
+        // Add EMV (Estimated Market Value)
+        const value = card.estimatedValue;
+        if (value !== 'Unknown' && value) {
+            productStats[fullKey].emv += parseFloat(value);
+        }
     });
 
     const topProducts = Object.entries(productStats)
-        .sort((a, b) => b[1] - a[1])
+        .sort((a, b) => b[1].count - a[1].count)
         .slice(0, 12);
 
     const container = document.getElementById('productList');
     if (container) {
-        container.innerHTML = topProducts.map(([product, count]) => `
+        container.innerHTML = topProducts.map(([product, stats]) => `
             <div class="product-item">
-                <div class="product-name">${product}</div>
-                <div class="product-count">${count}</div>
+                <div class="product-info">
+                    <div class="product-name">${product}</div>
+                    <div class="product-emv">EMV: $${stats.emv.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                </div>
+                <div class="product-count">${stats.count}</div>
             </div>
         `).join('');
     }
@@ -1110,13 +1265,13 @@ function displayTeamDistribution() {
     }
 }
 
-// Updated function to show top 8 cards and remove hyphen between product name and category
+// Updated function to show top 8 cards with click functionality and comma formatting
 function displayExpensiveCards() {
-    // FIXED: Use estimatedValue instead of purchaseCost for expensive cards
+    // Use estimatedValue instead of purchaseCost for expensive cards
     const expensiveCards = [...cardCollection]
         .filter(card => card.estimatedValue !== 'Unknown' && card.estimatedValue > 0)
         .sort((a, b) => parseFloat(b.estimatedValue) - parseFloat(a.estimatedValue))
-        .slice(0, 8); // Changed from 6 to 8
+        .slice(0, 8);
 
     const container = document.getElementById('expensiveCards');
     if (container) {
@@ -1126,10 +1281,10 @@ function displayExpensiveCards() {
         }
 
         container.innerHTML = expensiveCards.map(card => `
-            <div class="mini-card">
+            <div class="mini-card clickable-card" data-card-id="${card.id}" style="cursor: pointer;">
                 <div class="mini-card-header">
                     <div class="mini-card-player">${card.player || 'Unknown Player'}</div>
-                    <div class="mini-card-price">&#36;${parseFloat(card.estimatedValue).toFixed(2)}</div>
+                    <div class="mini-card-price">$${parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                 </div>
                 <div class="mini-card-details">
                     ${card.year || 'Unknown'} ${card.product || 'Unknown'} ${card.category || 'Unknown'} #${card.cardNumber || 'N/A'}<br>
@@ -1137,6 +1292,14 @@ function displayExpensiveCards() {
                 </div>
             </div>
         `).join('');
+
+        // Add click event listeners to mini cards
+        container.querySelectorAll('.clickable-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const cardId = this.getAttribute('data-card-id');
+                viewCard(cardId);
+            });
+        });
     }
 }
 
@@ -1190,7 +1353,59 @@ function updateSortIndicators() {
     }
 }
 
-// Updated display collection function with pagination
+// Custom sort function for improved filtering with exact match priority
+function smartSort(cards, filterValue, field) {
+    if (!filterValue) return cards;
+    
+    const exactMatches = [];
+    const startsWithMatches = [];
+    const containsMatches = [];
+    
+    const lowerFilterValue = filterValue.toLowerCase();
+    
+    cards.forEach(card => {
+        const fieldValue = (card[field] || '').toString().toLowerCase();
+        
+        if (fieldValue === lowerFilterValue) {
+            exactMatches.push(card);
+        } else if (fieldValue.startsWith(lowerFilterValue)) {
+            startsWithMatches.push(card);
+        } else if (fieldValue.includes(lowerFilterValue)) {
+            containsMatches.push(card);
+        }
+    });
+    
+    // Sort each group alphabetically/numerically
+    const sortGroup = (group) => {
+        return group.sort((a, b) => {
+            let aVal = a[field] || '';
+            let bVal = b[field] || '';
+            
+            // Handle numeric fields
+            if (field === 'year' || field === 'cardNumber') {
+                const aNum = parseInt(aVal);
+                const bNum = parseInt(bVal);
+                if (!isNaN(aNum) && !isNaN(bNum)) {
+                    return aNum - bNum;
+                }
+            }
+            
+            // Handle string fields
+            aVal = aVal.toString().toLowerCase();
+            bVal = bVal.toString().toLowerCase();
+            
+            return aVal.localeCompare(bVal);
+        });
+    };
+    
+    return [
+        ...sortGroup(exactMatches),
+        ...sortGroup(startsWithMatches),
+        ...sortGroup(containsMatches)
+    ];
+}
+
+// Updated display collection function with improved filtering
 function displayCollection() {
     const totalElement = document.getElementById('totalCards');
     const filteredElement = document.getElementById('filteredCount');
@@ -1202,84 +1417,80 @@ function displayCollection() {
     
     filteredCards = [...cardCollection];
     
-    // Apply filters
+    // Apply filters with smart sorting
     const categoryFilter = document.getElementById('categoryFilter')?.value || '';
-    const yearFilter = document.getElementById('filter-year')?.value.toLowerCase() || '';
-    const productFilter = document.getElementById('filter-product')?.value.toLowerCase() || '';
-    const cardNumberFilter = document.getElementById('filter-cardNumber')?.value.toLowerCase() || '';
+    const yearFilter = document.getElementById('filter-year')?.value || '';
+    const productFilter = document.getElementById('filter-product')?.value || '';
+    const cardNumberFilter = document.getElementById('filter-cardNumber')?.value || '';
     const baseSetFilter = document.getElementById('filter-baseSet')?.value.toLowerCase() || '';
-    const playerFilter = document.getElementById('filter-player')?.value.toLowerCase() || '';
-    const teamFilter = document.getElementById('filter-team')?.value.toLowerCase() || '';
+    const playerFilter = document.getElementById('filter-player')?.value || '';
+    const teamFilter = document.getElementById('filter-team')?.value || '';
     const rookieCardFilter = document.getElementById('filter-rookieCard')?.value || '';
-    const parallelFilter = document.getElementById('filter-parallel')?.value.toLowerCase() || '';
-    const numberedFilter = document.getElementById('filter-numbered')?.value.toLowerCase() || '';
-    const insertFilter = document.getElementById('filter-insert')?.value.toLowerCase() || '';
+    const parallelFilter = document.getElementById('filter-parallel')?.value || '';
+    const numberedFilter = document.getElementById('filter-numbered')?.value || '';
+    const insertFilter = document.getElementById('filter-insert')?.value || '';
     
     if (categoryFilter) {
         filteredCards = filteredCards.filter(card => card.category && card.category.toString() === categoryFilter);
     }
+    
+    // Apply smart sorting for each filter
     if (yearFilter) {
-        filteredCards = filteredCards.filter(card => card.year && card.year.toString().toLowerCase().includes(yearFilter));
+        filteredCards = smartSort(filteredCards, yearFilter, 'year');
     }
     if (productFilter) {
-        filteredCards = filteredCards.filter(card => card.product && card.product.toString().toLowerCase().includes(productFilter));
+        filteredCards = smartSort(filteredCards, productFilter, 'product');
     }
     if (cardNumberFilter) {
-        filteredCards = filteredCards.filter(card => card.cardNumber && card.cardNumber.toString().toLowerCase().includes(cardNumberFilter));
+        filteredCards = smartSort(filteredCards, cardNumberFilter, 'cardNumber');
     }
+    if (playerFilter) {
+        filteredCards = smartSort(filteredCards, playerFilter, 'player');
+    }
+    if (teamFilter) {
+        filteredCards = smartSort(filteredCards, teamFilter, 'team');
+    }
+    
+    // Handle other filters normally
     if (baseSetFilter) {
         filteredCards = filteredCards.filter(card => {
-            // Updated to handle Y/N filtering properly
             const baseSetValue = card.baseSet === 'Y' ? 'y' : 'n';
             return baseSetValue.includes(baseSetFilter);
         });
-    }
-    if (playerFilter) {
-        filteredCards = filteredCards.filter(card => card.player && card.player.toString().toLowerCase().includes(playerFilter));
-    }
-    if (teamFilter) {
-        filteredCards = filteredCards.filter(card => card.team && card.team.toString().toLowerCase().includes(teamFilter));
     }
     if (rookieCardFilter) {
         filteredCards = filteredCards.filter(card => card.rookieCard === rookieCardFilter);
     }
     if (parallelFilter) {
-        filteredCards = filteredCards.filter(card => {
-            const parallelValue = card.parallel === 'N' ? '' : (card.parallel || '').toString().toLowerCase();
-            return parallelValue.includes(parallelFilter);
-        });
+        filteredCards = smartSort(filteredCards, parallelFilter, 'parallel');
     }
     if (numberedFilter) {
-        filteredCards = filteredCards.filter(card => {
-            const numberedValue = card.numbered === 'N' ? '' : (card.numbered || '').toString().toLowerCase();
-            return numberedValue.includes(numberedFilter);
-        });
+        filteredCards = smartSort(filteredCards, numberedFilter, 'numbered');
     }
     if (insertFilter) {
-        filteredCards = filteredCards.filter(card => {
-            const insertValue = card.insert === 'N' ? '' : (card.insert || '').toString().toLowerCase();
-            return insertValue.includes(insertFilter);
-        });
+        filteredCards = smartSort(filteredCards, insertFilter, 'insert');
     }
 
-    // Apply sorting
-    if (currentSort.field) {
-        filteredCards.sort((a, b) => {
-            let aVal = a[currentSort.field];
-            let bVal = b[currentSort.field];
-            
-            if (currentSort.field === 'year') {
-                aVal = parseInt(aVal) || 0;
-                bVal = parseInt(bVal) || 0;
-            } else if (typeof aVal === 'string' && typeof bVal === 'string') {
-                aVal = aVal.toLowerCase();
-                bVal = bVal.toLowerCase();
-            }
-            
-            if (aVal < bVal) return currentSort.direction === 'asc' ? -1 : 1;
-            if (aVal > bVal) return currentSort.direction === 'asc' ? 1 : -1;
-            return 0;
-        });
+    // Apply sorting if no smart filter was applied
+    if (!yearFilter && !productFilter && !cardNumberFilter && !playerFilter && !teamFilter && !parallelFilter && !numberedFilter && !insertFilter) {
+        if (currentSort.field) {
+            filteredCards.sort((a, b) => {
+                let aVal = a[currentSort.field];
+                let bVal = b[currentSort.field];
+                
+                if (currentSort.field === 'year') {
+                    aVal = parseInt(aVal) || 0;
+                    bVal = parseInt(bVal) || 0;
+                } else if (typeof aVal === 'string' && typeof bVal === 'string') {
+                    aVal = aVal.toLowerCase();
+                    bVal = bVal.toLowerCase();
+                }
+                
+                if (aVal < bVal) return currentSort.direction === 'asc' ? -1 : 1;
+                if (aVal > bVal) return currentSort.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
     }
     
     totalElement.textContent = cardCollection.length + ' total cards';
@@ -1456,7 +1667,7 @@ function changePage(newPage) {
     }
 }
 
-// Updated displayListView function with Base Set column and removed quantity column
+// Updated displayListView function with improved event handling (fix for double-click issue)
 function displayListView(cards) {
     const container = document.getElementById('listContainer');
     if (!container) return;
@@ -1465,7 +1676,7 @@ function displayListView(cards) {
         const year = card.year || '';
         const product = card.product || '';
         const cardNumber = card.cardNumber || '';
-        const baseSet = card.baseSet === 'Y' ? '✓' : ''; // Updated to show checkmark for Y, empty for N
+        const baseSet = card.baseSet === 'Y' ? '✓' : '';
         const player = card.player || '';
         const team = card.team || '';
         const rookieCheck = card.rookieCard === 'Y' ? '✓' : '';
@@ -1495,27 +1706,31 @@ function displayListView(cards) {
     
     container.innerHTML = listHTML;
     
-// Add event listeners to action buttons
-    container.querySelectorAll('.view-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const cardId = this.getAttribute('data-card-id');
-            viewCard(cardId);
-        });
-    });
+    // Add event listeners to action buttons - using event delegation to prevent double-click issues
+    container.removeEventListener('click', handleActionButtonClick); // Remove any existing listeners
+    container.addEventListener('click', handleActionButtonClick);
+}
+
+// New centralized event handler for action buttons
+function handleActionButtonClick(event) {
+    const target = event.target;
     
-    container.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const cardId = this.getAttribute('data-card-id');
-            editCard(cardId);
-        });
-    });
-    
-    container.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const cardId = this.getAttribute('data-card-id');
-            deleteCard(cardId);
-        });
-    });
+    if (target.classList.contains('view-btn')) {
+        event.preventDefault();
+        event.stopPropagation();
+        const cardId = target.getAttribute('data-card-id');
+        viewCard(cardId);
+    } else if (target.classList.contains('edit-btn')) {
+        event.preventDefault();
+        event.stopPropagation();
+        const cardId = target.getAttribute('data-card-id');
+        editCard(cardId);
+    } else if (target.classList.contains('delete-btn')) {
+        event.preventDefault();
+        event.stopPropagation();
+        const cardId = target.getAttribute('data-card-id');
+        deleteCard(cardId);
+    }
 }
 
 // Updated clearAllFilters function - added base set filter and reset pagination
@@ -1551,7 +1766,7 @@ function viewCard(cardId) {
     const category = card.category || 'Unknown';
     const cardNumber = card.cardNumber || 'N/A';
     const rookieText = card.rookieCard === 'Y' ? 'Rookie Card: Yes' : 'Rookie Card: No';
-    const baseSetText = card.baseSet === 'Y' ? 'Base Set: Yes' : 'Base Set: No'; // Updated to show Yes/No
+    const baseSetText = card.baseSet === 'Y' ? 'Base Set: Yes' : 'Base Set: No';
     const parallelText = card.parallel && card.parallel !== 'N' ? `Parallel: ${card.parallel}` : 'Parallel: No';
     const numberedText = card.numbered && card.numbered !== 'N' ? `Numbered: ${card.numbered}` : 'Numbered: No';
     const insertText = card.insert && card.insert !== 'N' ? `Insert: ${card.insert}` : 'Insert: No';
@@ -1559,10 +1774,10 @@ function viewCard(cardId) {
     const description = card.description || 'None';
     const quantity = card.quantity || 1;
     
-    // Monetary data formatting - FIXED STRING CONCATENATION
+    // Monetary data formatting with comma formatting
     const purchaseDate = card.purchaseDate === 'Unknown' || !card.purchaseDate ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString('en-US');
-    const purchaseCost = card.purchaseCost === 'Unknown' || !card.purchaseCost ? 'Unknown' : '$' + parseFloat(card.purchaseCost).toFixed(2);
-    const estimatedValue = card.estimatedValue === 'Unknown' || !card.estimatedValue ? 'Unknown' : '$' + parseFloat(card.estimatedValue).toFixed(2);
+    const purchaseCost = card.purchaseCost === 'Unknown' || !card.purchaseCost ? 'Unknown' : '$' + parseFloat(card.purchaseCost).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const estimatedValue = card.estimatedValue === 'Unknown' || !card.estimatedValue ? 'Unknown' : '$' + parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     
     // Format estimated value date to MM/DD/YYYY
     let estimatedValueDate = 'Not specified';
@@ -1636,7 +1851,12 @@ function editCard(cardId) {
     window.location.href = 'add.html?edit=true';
 }
 
+// Updated delete function with password protection
 async function deleteCard(cardId) {
+    // Check password first
+    const hasPermission = await checkDeletePermission();
+    if (!hasPermission) return;
+    
     const card = cardCollection.find(c => c.id === cardId);
     if (!card) return;
     
@@ -1686,7 +1906,7 @@ function exportToCSV() {
             card.year || '',
             card.product || '',
             card.cardNumber || '',
-            card.baseSet || 'N', // Updated to use Y/N value directly
+            card.baseSet || 'N',
             card.player || '',
             card.team || '',
             card.insert || 'N',
@@ -1742,9 +1962,19 @@ document.addEventListener('DOMContentLoaded', async function() {
     console.log('Main content element:', mainContentEl);
     console.log('Is add page?', isAddPage());
     
+    // Check if user already verified password this session
+    if (sessionStorage.getItem('adminVerified') === 'true') {
+        isPasswordVerified = true;
+    }
+    
     // For add page, show content immediately and then initialize Firebase
     if (isAddPage()) {
         console.log('Detected add page');
+        
+        // Check password protection first
+        if (!checkPasswordProtection()) {
+            return; // Password dialog will handle the flow
+        }
         
         // Show content first
         if (loadingEl) loadingEl.style.display = 'none';
@@ -1764,7 +1994,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 cardForm.addEventListener('submit', addCard);
             }
             
-            // Add toggle event listeners - removed baseSetSelect listener since it's no longer needed
+            // Add toggle event listeners
             const parallelSelect = document.getElementById('parallelSelect');
             if (parallelSelect) {
                 parallelSelect.addEventListener('change', toggleParallelInput);
@@ -1870,13 +2100,20 @@ window.addEventListener('click', function(event) {
         importModal.style.display = 'none';
     }
     
-    // DO NOT close import completion modal when clicking outside - removed this functionality
-    // const completionModal = document.getElementById('completionModal');
-    // if (event.target === completionModal) {
-    //     completionModal.style.display = 'none';
-    // }
+    // Close password modals when clicking outside
+    const passwordModal = document.getElementById('passwordModal');
+    if (event.target === passwordModal) {
+        passwordModal.remove();
+        if (isAddPage()) {
+            window.location.href = 'index.html';
+        }
+    }
+    
+    const deletePasswordModal = document.getElementById('deletePasswordModal');
+    if (event.target === deletePasswordModal) {
+        deletePasswordModal.remove();
+    }
 });
 
 // Make changePage function globally accessible
 window.changePage = changePage;
-
