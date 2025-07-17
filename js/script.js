@@ -17,16 +17,35 @@ let filteredCards = [];
 
 // Password protection variables
 let isPasswordVerified = false;
-// More secure password hashing - user can change this hash
-const ADMIN_PASSWORD_HASH = "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"; // Default: "admin123"
+const ADMIN_PASSWORD_HASH = "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9";
 
-// Simple hash function for password verification
-async function hashPassword(password) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+// Simple hash function for password verification using crypto-js style hashing
+function simpleHash(str) {
+    let hash = 0;
+    if (str.length === 0) return hash.toString();
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    // Convert to positive hex string
+    const hexHash = Math.abs(hash).toString(16);
+    // Pad to ensure consistent length and add some complexity
+    return 'bz' + hexHash.padStart(8, '0') + str.length.toString(16).padStart(2, '0');
+}
+
+// More secure hash function using built-in crypto API
+async function secureHashPassword(password) {
+    try {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password + 'buzz_collection_salt_2024'); // Add salt
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch (error) {
+        console.error('Crypto API not available, using fallback hash');
+        return simpleHash(password + 'buzz_collection_salt_2024');
+    }
 }
 
 // Initialize Firebase with dynamic imports
@@ -118,7 +137,17 @@ function showPasswordDialog() {
     
     async function verifyPassword() {
         const enteredPassword = passwordInput.value;
-        const enteredHash = await hashPassword(enteredPassword);
+        let enteredHash;
+        
+        try {
+            enteredHash = await secureHashPassword(enteredPassword);
+        } catch (error) {
+            console.error('Error hashing password:', error);
+            enteredHash = simpleHash(enteredPassword + 'buzz_collection_salt_2024');
+        }
+        
+        console.log('Entered hash:', enteredHash); // For debugging - remove in production
+        console.log('Expected hash:', ADMIN_PASSWORD_HASH); // For debugging - remove in production
         
         if (enteredHash === ADMIN_PASSWORD_HASH) {
             isPasswordVerified = true;
@@ -260,7 +289,14 @@ function checkDeletePermission() {
         
         async function verifyDeletePassword() {
             const enteredPassword = passwordInput.value;
-            const enteredHash = await hashPassword(enteredPassword);
+            let enteredHash;
+            
+            try {
+                enteredHash = await secureHashPassword(enteredPassword);
+            } catch (error) {
+                console.error('Error hashing password:', error);
+                enteredHash = simpleHash(enteredPassword + 'buzz_collection_salt_2024');
+            }
             
             if (enteredHash === ADMIN_PASSWORD_HASH) {
                 sessionStorage.setItem('adminVerified', 'true');
@@ -1179,7 +1215,7 @@ function downloadImportLog(importLog) {
     ].join('\n');
     
     const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(url);
+    const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = 'import_log_' + new Date().toISOString().split('T')[0] + '.csv';
