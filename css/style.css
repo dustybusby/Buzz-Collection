@@ -915,9 +915,9 @@ h1 {
 /* New styling for special info line (RC | Parallel | Numbered) - moved to last line */
 .mini-card-special-info {
     color: #b8e6ff;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     margin-top: 0.5rem;
-    font-weight: 500;
+    font-weight: 400;
 }
 
 .mini-card-details {
