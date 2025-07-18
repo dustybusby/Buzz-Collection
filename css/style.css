@@ -895,6 +895,15 @@ h1 {
         0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
+/* Green styling for price in mini cards */
+.mini-card-price-green {
+    color: #00ff88;
+    font-weight: 700;
+    text-shadow: 
+        0 0 2px #00ff88,
+        0 0 4px rgba(0, 255, 136, 0.3);
+}
+
 /* New styling for team under player name */
 .mini-card-team {
     color: #b8e6ff;
@@ -903,15 +912,12 @@ h1 {
     font-weight: 500;
 }
 
-/* New styling for special info line (RC | Parallel | Numbered) */
+/* New styling for special info line (RC | Parallel | Numbered) - moved to last line */
 .mini-card-special-info {
-    color: #00ff88;
+    color: #b8e6ff;
     font-size: 0.85rem;
-    margin-bottom: 0.5rem;
+    margin-top: 0.5rem;
     font-weight: 500;
-    text-shadow: 
-        0 0 2px #00ff88,
-        0 0 4px rgba(0, 255, 136, 0.3);
 }
 
 .mini-card-details {
@@ -2519,19 +2525,12 @@ body:has(#listView) .container {
     transition: transform 0.1s ease;
 }
 
-/* Improved form validation styles */
+/* Reset form validation styles to maintain blue borders */
 .form-group input:invalid,
-.form-group select:invalid {
-    border-color: rgba(255, 107, 107, 0.6);
-    box-shadow: 
-        0 0 3px #ff6b6b,
-        0 0 6px rgba(255, 107, 107, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
+.form-group select:invalid,
 .form-group input:valid,
 .form-group select:valid {
-    border-color: rgba(0, 255, 136, 0.6);
+    border-color: rgba(0, 150, 255, 0.4);
 }
 
 /* Enhanced modal animations */

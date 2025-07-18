@@ -1407,13 +1407,13 @@ function displayExpensiveCards() {
                 <div class="mini-card clickable-card" data-card-id="${card.id}" style="cursor: pointer;">
                     <div class="mini-card-header">
                         <div class="mini-card-player">${card.player || 'Unknown Player'}</div>
-                        <div class="mini-card-price">$${parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                        <div class="mini-card-price-green">$${parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                     </div>
                     <div class="mini-card-team">${card.team || 'Unknown'}</div>
-                    ${specialInfoLine}
                     <div class="mini-card-details">
                         ${card.year || 'Unknown'} ${card.product || 'Unknown'} ${card.category || 'Unknown'} #${card.cardNumber || 'N/A'}
                     </div>
+                    ${specialInfoLine}
                 </div>
             `;
         }).join('');
