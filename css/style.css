@@ -2475,7 +2475,6 @@ body:has(#listView) .container {
 }
 
 /* Ensure sufficient color contrast for all text */
-.mini-card-special-info,
 .product-emv,
 .stat-value.success {
     color: #00ff99; /* Slightly brighter green for better contrast */
