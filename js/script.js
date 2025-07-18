@@ -1246,7 +1246,6 @@ function displayInventory() {
     displayCategoryBreakdown();
     displayYearDistribution();
     displayTopProducts();
-    displayTeamDistribution();
     displayExpensiveCards();
 }
 
@@ -1369,35 +1368,13 @@ function displayTopProducts() {
     }
 }
 
-function displayTeamDistribution() {
-    const teamStats = {};
-    cardCollection.forEach(card => {
-        const team = card.team || 'Unknown';
-        teamStats[team] = (teamStats[team] || 0) + 1;
-    });
-
-    const sortedTeams = Object.entries(teamStats)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 20);
-
-    const container = document.getElementById('teamGrid');
-    if (container) {
-        container.innerHTML = sortedTeams.map(([team, count]) => `
-            <div class="team-item">
-                <div class="team-name">${team}</div>
-                <div class="team-count">${count}</div>
-            </div>
-        `).join('');
-    }
-}
-
-// Fixed function to show top 8 cards with working click functionality and comma formatting
+// Updated function to show top 20 cards with new layout structure
 function displayExpensiveCards() {
-    // Use estimatedValue instead of purchaseCost for expensive cards
+    // Use estimatedValue instead of purchaseCost for expensive cards and increase to 20
     const expensiveCards = [...cardCollection]
         .filter(card => card.estimatedValue !== 'Unknown' && card.estimatedValue > 0)
         .sort((a, b) => parseFloat(b.estimatedValue) - parseFloat(a.estimatedValue))
-        .slice(0, 8);
+        .slice(0, 20); // Changed from 8 to 20
 
     const container = document.getElementById('expensiveCards');
     if (container) {
@@ -1406,18 +1383,40 @@ function displayExpensiveCards() {
             return;
         }
 
-        container.innerHTML = expensiveCards.map(card => `
-            <div class="mini-card clickable-card" data-card-id="${card.id}" style="cursor: pointer;">
-                <div class="mini-card-header">
-                    <div class="mini-card-player">${card.player || 'Unknown Player'}</div>
-                    <div class="mini-card-price">$${parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+        container.innerHTML = expensiveCards.map(card => {
+            // Build the special info line (RC | Parallel | Numbered)
+            const specialInfo = [];
+            
+            if (card.rookieCard === 'Y') {
+                specialInfo.push('RC');
+            }
+            
+            if (card.parallel && card.parallel !== 'N') {
+                specialInfo.push(card.parallel);
+            }
+            
+            if (card.numbered && card.numbered !== 'N') {
+                specialInfo.push(card.numbered);
+            }
+            
+            // Only show the special info line if there's at least one item
+            const specialInfoLine = specialInfo.length > 0 ? 
+                `<div class="mini-card-special-info">${specialInfo.join(' | ')}</div>` : '';
+            
+            return `
+                <div class="mini-card clickable-card" data-card-id="${card.id}" style="cursor: pointer;">
+                    <div class="mini-card-header">
+                        <div class="mini-card-player">${card.player || 'Unknown Player'}</div>
+                        <div class="mini-card-price">$${parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                    </div>
+                    <div class="mini-card-team">${card.team || 'Unknown'}</div>
+                    ${specialInfoLine}
+                    <div class="mini-card-details">
+                        ${card.year || 'Unknown'} ${card.product || 'Unknown'} ${card.category || 'Unknown'} #${card.cardNumber || 'N/A'}
+                    </div>
                 </div>
-                <div class="mini-card-details">
-                    ${card.year || 'Unknown'} ${card.product || 'Unknown'} ${card.category || 'Unknown'} #${card.cardNumber || 'N/A'}<br>
-                    ${card.team || 'Unknown'}${card.rookieCard === 'Y' ? ' | RC' : ''}
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
         // Fixed: Add click event listeners to mini cards using event delegation
         container.removeEventListener('click', handleMiniCardClick); // Remove any existing listeners
@@ -1611,8 +1610,7 @@ function displayCollection() {
     if (cardNumberFilter) {
         filteredCards = smartSort(filteredCards, cardNumberFilter, 'cardNumber');
     }
-    if (playerFilter) {
-        filteredCards = smartSort(filteredCards, playerFilter, 'player');
+    if (playerFilter) {filteredCards = smartSort(filteredCards, playerFilter, 'player');
     }
     if (teamFilter) {
         filteredCards = smartSort(filteredCards, teamFilter, 'team');
@@ -2220,3 +2218,4 @@ window.addEventListener('click', function(event) {
 
 // Make changePage function globally accessible
 window.changePage = changePage;
+// End of script.js file
