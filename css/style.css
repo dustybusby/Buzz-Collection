@@ -472,6 +472,7 @@ h1 {
     padding: 0 0.5rem;
 }
 
+/* FIXED PROGRESS BAR - Removed external glow, kept internal glow */
 .progress-bar {
     width: 100%;
     height: 20px;
@@ -480,6 +481,7 @@ h1 {
     overflow: hidden;
     margin-bottom: 1rem;
     border: 1px solid rgba(0, 150, 255, 0.3);
+    position: relative;
 }
 
 .progress-fill {
@@ -491,6 +493,29 @@ h1 {
     box-shadow: 
         0 0 10px rgba(0, 200, 255, 0.4),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Internal shimmer effect that stays within the progress bar */
+.progress-fill::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: progressShimmer 2s ease-in-out infinite;
+}
+
+@keyframes progressShimmer {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
 }
 
 .progress-text {
@@ -500,6 +525,7 @@ h1 {
     margin-bottom: 1rem;
 }
 
+/* FIXED IMPORT STATS - Better alignment and sizing */
 .import-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -518,6 +544,10 @@ h1 {
         0 4px 8px rgba(0, 0, 0, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .stat-label {
@@ -526,15 +556,19 @@ h1 {
     margin-bottom: 0.5rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    text-align: center;
+    width: 100%;
 }
 
 .stat-value {
     color: #ffffff;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     font-weight: 700;
     text-shadow: 
         0 0 2px #00d4ff,
         0 0 4px rgba(0, 200, 255, 0.3);
+    text-align: center;
+    width: 100%;
 }
 
 .stat-value.success {
@@ -551,7 +585,7 @@ h1 {
         0 0 4px rgba(255, 107, 107, 0.3);
 }
 
-/* Import Completion Dialog Styles - UPDATED WITH FIXED ALIGNMENT */
+/* Import Completion Dialog Styles - UPDATED WITH PERFECTLY ALIGNED LOG */
 .modal-content.import-completion-modal-content {
     min-width: 900px;
     max-width: 950px;
@@ -660,10 +694,10 @@ h1 {
     text-align: center;
 }
 
-/* Log header styling - FIXED ALIGNMENT */
+/* COMPLETELY FIXED LOG ALIGNMENT - Exact same measurements */
 .log-header {
     display: grid;
-    grid-template-columns: 80px 80px 1fr 2fr;
+    grid-template-columns: 80px 80px 200px 1fr;
     gap: 1rem;
     padding: 0.75rem 1rem;
     background: linear-gradient(135deg, rgba(0, 100, 150, 0.3), rgba(0, 150, 200, 0.2));
@@ -677,22 +711,27 @@ h1 {
     font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    align-items: center;
 }
 
 .log-header-line {
     text-align: center;
+    justify-self: center;
 }
 
 .log-header-status {
     text-align: center;
+    justify-self: center;
 }
 
 .log-header-player {
     text-align: left;
+    justify-self: start;
 }
 
 .log-header-details {
     text-align: left;
+    justify-self: start;
 }
 
 .log-container {
@@ -710,7 +749,7 @@ h1 {
 
 .log-entry {
     display: grid;
-    grid-template-columns: 80px 80px 1fr 2fr;
+    grid-template-columns: 80px 80px 200px 1fr;
     gap: 1rem;
     padding: 0.5rem 1rem;
     border-bottom: 1px solid rgba(0, 150, 255, 0.2);
@@ -734,11 +773,13 @@ h1 {
     color: #b8e6ff;
     font-weight: 500;
     text-align: center;
+    justify-self: center;
 }
 
 .log-status {
     font-weight: 600;
     text-align: center;
+    justify-self: center;
 }
 
 .log-entry.success .log-status {
@@ -752,11 +793,15 @@ h1 {
 .log-player {
     color: #ffffff;
     font-weight: 500;
+    text-align: left;
+    justify-self: start;
 }
 
 .log-details {
     color: #e0f4ff;
     font-size: 0.75rem;
+    text-align: left;
+    justify-self: start;
 }
 
 /* Updated import actions to center buttons between log and bottom border */
@@ -1437,7 +1482,6 @@ h1 {
         inset 0 -1px 0 rgba(0, 0, 0, 0.2);
 }
 
-/* Collection page specific styles - Updated grid layout with autograph column */
 .cards-list-header {
     background: linear-gradient(135deg, rgba(5, 10, 20, 0.9), rgba(10, 15, 25, 0.8));
     padding: 1rem;
@@ -2383,7 +2427,7 @@ body:has(#listView) .container {
         border-color: #fff;
     }
     
-.btn {
+    .btn {
         background: #fff;
         color: #000;
         border-color: #fff;
@@ -2417,6 +2461,11 @@ body:has(#listView) .container {
         animation: none;
         border: 3px solid #4a7bc8;
         border-top-color: transparent;
+    }
+    
+    /* Disable progress bar shimmer animation for reduced motion */
+    .progress-fill::before {
+        animation: none;
     }
 }
 
@@ -2730,38 +2779,14 @@ body:has(#listView) .container {
     background: linear-gradient(135deg, rgba(50, 50, 50, 0.5), rgba(60, 60, 60, 0.4));
 }
 
-/* Enhanced progress bar styling */
+/* Enhanced progress bar styling - REMOVED EXTERNAL GLOW ANIMATION */
 .progress-bar {
     position: relative;
-    overflow: visible;
+    overflow: hidden;
 }
 
 .progress-fill {
     position: relative;
-}
-
-.progress-fill::after {
-    content: '';
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    background: linear-gradient(90deg, transparent, rgba(0, 200, 255, 0.3), transparent);
-    border-radius: 12px;
-    opacity: 0;
-    animation: progressGlow 2s ease-in-out infinite;
-}
-
-@keyframes progressGlow {
-    0%, 100% { 
-        opacity: 0;
-        transform: translateX(-100%);
-    }
-    50% { 
-        opacity: 1;
-        transform: translateX(100%);
-    }
 }
 
 /* Better visual hierarchy for inventory sections */
