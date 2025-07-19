@@ -525,7 +525,7 @@ h1 {
     margin-bottom: 1rem;
 }
 
-/* FIXED IMPORT STATS - Better alignment and sizing */
+/* FIXED IMPORT STATS - Better alignment and sizing with proper vertical centering */
 .import-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -544,6 +544,7 @@ h1 {
         0 4px 8px rgba(0, 0, 0, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
     min-width: 0;
+    height: 80px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -558,6 +559,7 @@ h1 {
     letter-spacing: 0.5px;
     text-align: center;
     width: 100%;
+    line-height: 1.2;
 }
 
 .stat-value {
@@ -569,6 +571,8 @@ h1 {
         0 0 4px rgba(0, 200, 255, 0.3);
     text-align: center;
     width: 100%;
+    line-height: 1;
+    margin: 0;
 }
 
 .stat-value.success {

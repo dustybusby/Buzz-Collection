@@ -1051,7 +1051,7 @@ async function handleCSVUpload(event) {
                     continue; // Skip completely empty rows
                 }
                 
-                // Updated CSV mapping for new column order with autograph field
+// Updated CSV mapping for new column order with autograph field
                 const card = {
                     category: values[0] || '',
                     year: parseInt(values[1]) || 0,
@@ -1200,6 +1200,7 @@ function updateImportProgress(current, total, successCount, errorCount) {
 }
 
 // Show import completion with updated headers and formatting - separate larger dialog with disabled outside click
+// UPDATED: Added period after line numbers
 function showImportCompletion(successCount, errorCount, importLog) {
     // Hide the status modal first
     const statusModal = document.getElementById('importModal');
@@ -1240,7 +1241,7 @@ function showImportCompletion(successCount, errorCount, importLog) {
                 <div class="log-container" id="logContainer">
                     ${importLog.map(entry => `
                         <div class="log-entry ${entry.status.toLowerCase()}">
-                            <span class="log-line">${entry.line}</span>
+                            <span class="log-line">${entry.line}.</span>
                             <span class="log-status">${entry.status}</span>
                             <span class="log-player">${entry.player}</span>
                             <span class="log-details">${entry.details}</span>
@@ -1282,12 +1283,12 @@ function showImportCompletion(successCount, errorCount, importLog) {
     completionModal.style.display = 'block';
 }
 
-// Download import log with updated header
+// Download import log with updated header - UPDATED: Added period after line numbers
 function downloadImportLog(importLog) {
     const csvContent = [
         'Line,Status,Player,"Card Details (Card # | Parallel | Numbered)"',
         ...importLog.map(entry => 
-            `${entry.line},"${entry.status}","${entry.player}","${entry.details}"`
+            `${entry.line}.,"${entry.status}","${entry.player}","${entry.details}"`
         )
     ].join('\n');
     
@@ -1527,7 +1528,8 @@ function handleMiniCardClick(event) {
 function createTemporaryCardModal() {
     // Check if modal already exists
     let modal = document.getElementById('cardModal');
-    if (!modal) {modal = document.createElement('div');
+    if (!modal) {
+        modal = document.createElement('div');
         modal.id = 'cardModal';
         modal.className = 'modal';
         modal.innerHTML = `
@@ -2244,7 +2246,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Check if user already verified password this session
     if (sessionStorage.getItem('adminVerified') === 'true') {
-    isPasswordVerified = true;
+        isPasswordVerified = true;
     }
     
     // For add page, handle password protection first
@@ -2338,4 +2340,4 @@ window.addEventListener('click', function(event) {
 
 // Make changePage function globally accessible
 window.changePage = changePage;
-// End of script.js file    
+// End of script.js file
