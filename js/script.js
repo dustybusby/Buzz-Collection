@@ -1372,7 +1372,7 @@ function displayCategoryBreakdown() {
             <div class="category-item">
                 <div class="category-name">${category}</div>
                 <div class="category-count">${stats.count}</div>
-                <div class="category-value-green">$${stats.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                <div class="category-value-green">${stats.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
             </div>
         `).join('');
     }
