@@ -242,6 +242,80 @@ async function initializeAddPageAfterAuth() {
     }
 }
 
+// Updated password protection for Edit actions
+function checkEditPermission() {
+    return new Promise(async (resolve) => {
+        if (sessionStorage.getItem('adminVerified') === 'true') {
+            resolve(true);
+            return;
+        }
+        
+        const passwordModal = document.createElement('div');
+        passwordModal.className = 'modal';
+        passwordModal.id = 'editPasswordModal';
+        passwordModal.innerHTML = `
+            <div class="modal-content password-modal-content">
+                <h3>Admin Verification Required</h3>
+                <p>Admin password required to edit cards:</p>
+                <div class="password-input-container">
+                    <input type="password" id="editPasswordInput" placeholder="Enter admin password">
+                    <div class="password-buttons">
+                        <button class="btn btn-primary" id="submitEditPassword">Verify</button>
+                        <button class="btn" id="cancelEditPassword">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(passwordModal);
+        passwordModal.style.display = 'block';
+        
+        const passwordInput = document.getElementById('editPasswordInput');
+        const submitBtn = document.getElementById('submitEditPassword');
+        const cancelBtn = document.getElementById('cancelEditPassword');
+        
+        passwordInput.focus();
+        
+        passwordInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                verifyEditPassword();
+            }
+        });
+        
+        submitBtn.addEventListener('click', verifyEditPassword);
+        cancelBtn.addEventListener('click', function() {
+            passwordModal.remove();
+            resolve(false);
+        });
+        
+        async function verifyEditPassword() {
+            const enteredPassword = passwordInput.value;
+            let enteredHash;
+            
+            try {
+                enteredHash = await secureHashPassword(enteredPassword);
+            } catch (error) {
+                console.error('Error hashing password:', error);
+                enteredHash = simpleHash(enteredPassword + 'buzz_collection_salt_2024');
+            }
+            
+            if (enteredHash === ADMIN_PASSWORD_HASH) {
+                sessionStorage.setItem('adminVerified', 'true');
+                passwordModal.remove();
+                resolve(true);
+            } else {
+                passwordInput.value = '';
+                passwordInput.style.borderColor = '#ff6b6b';
+                passwordInput.placeholder = 'Incorrect password - try again';
+                setTimeout(() => {
+                    passwordInput.style.borderColor = '';
+                    passwordInput.placeholder = 'Enter admin password';
+                }, 2000);
+            }
+        }
+    });
+}
+
 function checkDeletePermission() {
     return new Promise(async (resolve) => {
         if (sessionStorage.getItem('adminVerified') === 'true') {
@@ -539,6 +613,7 @@ function populateForm(card) {
     setFieldValue('cardNumber', card.cardNumber);
     setFieldValue('player', card.player);
     setFieldValue('team', card.team);
+    setFieldValue('autograph', card.autograph || 'N'); // New autograph field
     setFieldValue('quantity', card.quantity || 1);
     setFieldValue('rookieCard', card.rookieCard || 'N');
     
@@ -738,6 +813,7 @@ async function addCard(event) {
         baseSet: getFieldValue('baseSet') || 'N', // Updated to use direct Y/N value
         player: getFieldValue('player'),
         team: getFieldValue('team'),
+        autograph: getFieldValue('autograph') || 'N', // New autograph field
         quantity: parseInt(getFieldValue('quantity')) || 1,
         rookieCard: getFieldValue('rookieCard'),
         parallel: document.getElementById('parallelSelect')?.value === 'Y' ? getFieldValue('parallelText') : 'N',
@@ -975,7 +1051,7 @@ async function handleCSVUpload(event) {
                     continue; // Skip completely empty rows
                 }
                 
-                // Updated CSV mapping for new column order
+                // Updated CSV mapping for new column order with autograph field
                 const card = {
                     category: values[0] || '',
                     year: parseInt(values[1]) || 0,
@@ -984,18 +1060,19 @@ async function handleCSVUpload(event) {
                     baseSet: values[4] || 'N',
                     player: values[5] || '',
                     team: values[6] || '',
-                    insert: values[7] || 'N',
-                    parallel: values[8] || 'N',
-                    numbered: values[9] ? values[9].replace(/^'/, '') : 'N',
-                    rookieCard: values[10] || 'N',
-                    imageVariation: values[11] || 'N',
-                    quantity: parseInt(values[12]) || 1,
-                    grade: values[13] || 'Ungraded',
-                    purchaseDate: values[14] || 'Unknown',
-                    purchaseCost: values[15] ? (values[15].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[15]) || 0) : 0,
-                    estimatedValue: values[16] ? (values[16].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[16]) || 0) : 0,
-                    estimatedValueDate: values[17] || '',
-                    description: values[18] || '',
+                    autograph: values[7] || 'N', // New autograph field
+                    insert: values[8] || 'N',
+                    parallel: values[9] || 'N',
+                    numbered: values[10] ? values[10].replace(/^'/, '') : 'N',
+                    rookieCard: values[11] || 'N',
+                    imageVariation: values[12] || 'N',
+                    quantity: parseInt(values[13]) || 1,
+                    grade: values[14] || 'Ungraded',
+                    purchaseDate: values[15] || 'Unknown',
+                    purchaseCost: values[16] ? (values[16].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[16]) || 0) : 0,
+                    estimatedValue: values[17] ? (values[17].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[17]) || 0) : 0,
+                    estimatedValueDate: values[18] || '',
+                    description: values[19] || '',
                     dateAdded: new Date()
                 };
                 
@@ -1028,13 +1105,13 @@ async function handleCSVUpload(event) {
                 
                 // Format error card details
                 let cardDetails = values[3] || 'N/A';
-                if (values[8] && values[8] !== 'N') {
-                    cardDetails += ` | ${values[8]}`;
+                if (values[9] && values[9] !== 'N') {
+                    cardDetails += ` | ${values[9]}`;
                 } else {
                     cardDetails += ' | N';
                 }
-                if (values[9] && values[9] !== 'N') {
-                    cardDetails += ` | ${values[9]}`;
+                if (values[10] && values[10] !== 'N') {
+                    cardDetails += ` | ${values[10]}`;
                 } else {
                     cardDetails += ' | N';
                 }
@@ -1224,7 +1301,7 @@ function downloadImportLog(importLog) {
 }
 
 // ============================================================================
-// DASHBOARD/INVENTORY FUNCTIONS (for index.html) - UPDATED WITH CATEGORY FIELD
+// DASHBOARD/INVENTORY FUNCTIONS (for index.html) - UPDATED WITH CATEGORY FIELD AND AUTOGRAPHS
 // ============================================================================
 
 function displayInventory() {
@@ -1259,16 +1336,19 @@ function updateSummaryStats() {
     }, 0);
     const rookieCards = cardCollection.filter(card => card.rookieCard === 'Y').length;
     const numberedCards = cardCollection.filter(card => card.numbered !== 'N').length;
+    const autographCards = cardCollection.filter(card => card.autograph === 'Y').length; // New autograph count
 
     const totalCardsEl = document.getElementById('totalCards');
     const totalValueEl = document.getElementById('totalValue');
     const rookieCardsEl = document.getElementById('rookieCards');
     const numberedCardsEl = document.getElementById('numberedCards');
+    const autographCardsEl = document.getElementById('autographCards'); // New element
 
     if (totalCardsEl) totalCardsEl.textContent = totalCards.toLocaleString();
     if (totalValueEl) totalValueEl.textContent = `$${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     if (rookieCardsEl) rookieCardsEl.textContent = rookieCards.toLocaleString();
     if (numberedCardsEl) numberedCardsEl.textContent = numberedCards.toLocaleString();
+    if (autographCardsEl) autographCardsEl.textContent = autographCards.toLocaleString(); // New stat
 }
 
 function displayCategoryBreakdown() {
@@ -1292,7 +1372,7 @@ function displayCategoryBreakdown() {
             <div class="category-item">
                 <div class="category-name">${category}</div>
                 <div class="category-count">${stats.count}</div>
-                <div class="category-value">${stats.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                <div class="category-value-green">$${stats.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
             </div>
         `).join('');
     }
@@ -1368,7 +1448,7 @@ function displayTopProducts() {
     }
 }
 
-// Updated function to show top 20 cards with new layout structure
+// Updated function to show top 20 cards with new layout structure and autograph info
 function displayExpensiveCards() {
     // Use estimatedValue instead of purchaseCost for expensive cards and increase to 20
     const expensiveCards = [...cardCollection]
@@ -1384,11 +1464,15 @@ function displayExpensiveCards() {
         }
 
         container.innerHTML = expensiveCards.map(card => {
-            // Build the special info line (RC | Parallel | Numbered)
+            // Build the special info line (RC | Autograph | Parallel | Numbered)
             const specialInfo = [];
             
             if (card.rookieCard === 'Y') {
                 specialInfo.push('RC');
+            }
+            
+            if (card.autograph === 'Y') {
+                specialInfo.push('Auto');
             }
             
             if (card.parallel && card.parallel !== 'N') {
@@ -1443,8 +1527,7 @@ function handleMiniCardClick(event) {
 function createTemporaryCardModal() {
     // Check if modal already exists
     let modal = document.getElementById('cardModal');
-    if (!modal) {
-        modal = document.createElement('div');
+    if (!modal) {modal = document.createElement('div');
         modal.id = 'cardModal';
         modal.className = 'modal';
         modal.innerHTML = `
@@ -1470,7 +1553,7 @@ function createTemporaryCardModal() {
 }
 
 // ============================================================================
-// COLLECTION VIEW FUNCTIONS (for collection.html) - UPDATED WITH PAGINATION
+// COLLECTION VIEW FUNCTIONS (for collection.html) - UPDATED WITH PAGINATION AND ASTERISK FILTERING
 // ============================================================================
 
 function updateCategoryFilter() {
@@ -1519,9 +1602,17 @@ function updateSortIndicators() {
     }
 }
 
-// Custom sort function for improved filtering with exact match priority
+// Custom sort function for improved filtering with exact match priority and asterisk support
 function smartSort(cards, filterValue, field) {
     if (!filterValue) return cards;
+    
+    // Handle asterisk filtering - show only cards with non-empty values
+    if (filterValue === '*') {
+        return cards.filter(card => {
+            const fieldValue = card[field];
+            return fieldValue && fieldValue !== '' && fieldValue !== 'N' && fieldValue !== 'Unknown';
+        });
+    }
     
     const exactMatches = [];
     const startsWithMatches = [];
@@ -1571,7 +1662,7 @@ function smartSort(cards, filterValue, field) {
     ];
 }
 
-// Updated display collection function with improved filtering
+// Updated display collection function with improved filtering and asterisk support
 function displayCollection() {
     const totalElement = document.getElementById('totalCards');
     const filteredElement = document.getElementById('filteredCount');
@@ -1583,7 +1674,7 @@ function displayCollection() {
     
     filteredCards = [...cardCollection];
     
-    // Apply filters with smart sorting
+    // Apply filters with smart sorting and asterisk support
     const categoryFilter = document.getElementById('categoryFilter')?.value || '';
     const yearFilter = document.getElementById('filter-year')?.value || '';
     const productFilter = document.getElementById('filter-product')?.value || '';
@@ -1595,12 +1686,13 @@ function displayCollection() {
     const parallelFilter = document.getElementById('filter-parallel')?.value || '';
     const numberedFilter = document.getElementById('filter-numbered')?.value || '';
     const insertFilter = document.getElementById('filter-insert')?.value || '';
+    const autographFilter = document.getElementById('filter-autograph')?.value || ''; // New autograph filter
     
     if (categoryFilter) {
         filteredCards = filteredCards.filter(card => card.category && card.category.toString() === categoryFilter);
     }
     
-    // Apply smart sorting for each filter
+    // Apply smart sorting for each filter with asterisk support
     if (yearFilter) {
         filteredCards = smartSort(filteredCards, yearFilter, 'year');
     }
@@ -1610,21 +1702,11 @@ function displayCollection() {
     if (cardNumberFilter) {
         filteredCards = smartSort(filteredCards, cardNumberFilter, 'cardNumber');
     }
-    if (playerFilter) {filteredCards = smartSort(filteredCards, playerFilter, 'player');
+    if (playerFilter) {
+        filteredCards = smartSort(filteredCards, playerFilter, 'player');
     }
     if (teamFilter) {
         filteredCards = smartSort(filteredCards, teamFilter, 'team');
-    }
-    
-    // Handle other filters normally
-    if (baseSetFilter) {
-        filteredCards = filteredCards.filter(card => {
-            const baseSetValue = card.baseSet === 'Y' ? 'y' : 'n';
-            return baseSetValue.includes(baseSetFilter);
-        });
-    }
-    if (rookieCardFilter) {
-        filteredCards = filteredCards.filter(card => card.rookieCard === rookieCardFilter);
     }
     if (parallelFilter) {
         filteredCards = smartSort(filteredCards, parallelFilter, 'parallel');
@@ -1635,9 +1717,32 @@ function displayCollection() {
     if (insertFilter) {
         filteredCards = smartSort(filteredCards, insertFilter, 'insert');
     }
+    if (autographFilter) {
+        filteredCards = smartSort(filteredCards, autographFilter, 'autograph');
+    }
+    
+    // Handle other filters normally
+    if (baseSetFilter) {
+        if (baseSetFilter === '*') {
+            // Show cards with base set = 'Y'
+            filteredCards = filteredCards.filter(card => card.baseSet === 'Y');
+        } else {
+            const baseSetValue = card => card.baseSet === 'Y' ? 'y' : 'n';
+            filteredCards = filteredCards.filter(card => baseSetValue(card).includes(baseSetFilter));
+        }
+    }
+    
+    if (rookieCardFilter) {
+        if (rookieCardFilter === '*') {
+            // Show cards with rookie card = 'Y'
+            filteredCards = filteredCards.filter(card => card.rookieCard === 'Y');
+        } else {
+            filteredCards = filteredCards.filter(card => card.rookieCard === rookieCardFilter);
+        }
+    }
 
     // Apply sorting if no smart filter was applied
-    if (!yearFilter && !productFilter && !cardNumberFilter && !playerFilter && !teamFilter && !parallelFilter && !numberedFilter && !insertFilter) {
+    if (!yearFilter && !productFilter && !cardNumberFilter && !playerFilter && !teamFilter && !parallelFilter && !numberedFilter && !insertFilter && !autographFilter) {
         if (currentSort.field) {
             filteredCards.sort((a, b) => {
                 let aVal = a[currentSort.field];
@@ -1681,7 +1786,7 @@ function displayCollection() {
             // Check if this is an empty collection or filtered result
             const hasActiveFilters = categoryFilter || yearFilter || productFilter || cardNumberFilter || 
                                    baseSetFilter || playerFilter || teamFilter || rookieCardFilter || 
-                                   parallelFilter || numberedFilter || insertFilter;
+                                   parallelFilter || numberedFilter || insertFilter || autographFilter;
             
             if (cardCollection.length === 0) {
                 // Truly empty collection - hide the entire cards-list including headers
@@ -1832,7 +1937,7 @@ function changePage(newPage) {
     }
 }
 
-// Updated displayListView function with improved event handling (fix for double-click issue)
+// Updated displayListView function with improved event handling and autograph display
 function displayListView(cards) {
     const container = document.getElementById('listContainer');
     if (!container) return;
@@ -1845,6 +1950,7 @@ function displayListView(cards) {
         const player = card.player || '';
         const team = card.team || '';
         const rookieCheck = card.rookieCard === 'Y' ? '✓' : '';
+        const autographCheck = card.autograph === 'Y' ? '✓' : ''; // New autograph column
         const parallel = card.parallel !== 'N' ? (card.parallel || '') : '';
         const numbered = card.numbered !== 'N' ? (card.numbered || '') : '';
         const insert = card.insert !== 'N' ? (card.insert || '') : '';
@@ -1857,6 +1963,7 @@ function displayListView(cards) {
             <div style="text-align: center;">${baseSet}</div>
             <div class="list-item-player">${player}</div>
             <div>${team}</div>
+            <div style="text-align: center;">${autographCheck}</div>
             <div style="text-align: center;">${rookieCheck}</div>
             <div>${parallel}</div>
             <div>${numbered}</div>
@@ -1898,11 +2005,11 @@ function handleActionButtonClick(event) {
     }
 }
 
-// Updated clearAllFilters function - added base set filter and reset pagination
+// Updated clearAllFilters function - added autograph filter and reset pagination
 function clearAllFilters() {
     const filters = [
         'filter-year', 'filter-product', 'filter-cardNumber', 'filter-baseSet', 'filter-player', 
-        'filter-team', 'filter-rookieCard', 'filter-parallel',
+        'filter-team', 'filter-rookieCard', 'filter-autograph', 'filter-parallel',
         'filter-numbered', 'filter-insert', 'categoryFilter'
     ];
     
@@ -1931,6 +2038,7 @@ function viewCard(cardId) {
     const category = card.category || 'Unknown';
     const cardNumber = card.cardNumber || 'N/A';
     const rookieText = card.rookieCard === 'Y' ? 'Rookie Card: Yes' : 'Rookie Card: No';
+    const autographText = card.autograph === 'Y' ? 'Autograph: Yes' : 'Autograph: No'; // New autograph display
     const baseSetText = card.baseSet === 'Y' ? 'Base Set: Yes' : 'Base Set: No';
     const parallelText = card.parallel && card.parallel !== 'N' ? `Parallel: ${card.parallel}` : 'Parallel: No';
     const numberedText = card.numbered && card.numbered !== 'N' ? `Numbered: ${card.numbered}` : 'Numbered: No';
@@ -1982,6 +2090,7 @@ function viewCard(cardId) {
                 <div class="card-detail-line">${parallelText}</div>
                 <div class="card-detail-line">${numberedText}</div>
                 <div class="card-detail-line">${rookieText}</div>
+                <div class="card-detail-line">${autographText}</div>
                 <div class="card-detail-line">${imageVariationText}</div>
                 <div class="card-detail-line">Quantity: ${quantity}</div>
                 <div class="card-detail-line">Add'l Notes: ${description}</div>
@@ -2007,7 +2116,12 @@ function closeCardModal() {
     }
 }
 
-function editCard(cardId) {
+// Updated edit function with password protection
+async function editCard(cardId) {
+    // Check password first
+    const hasPermission = await checkEditPermission();
+    if (!hasPermission) return;
+    
     const card = cardCollection.find(c => c.id === cardId);
     if (!card) return;
     
@@ -2055,8 +2169,8 @@ function exportToCSV() {
         return;
     }
     
-    // Updated headers for new column order
-    const headers = ['Category', 'Year', 'Brand', 'Card #', 'Base Set', 'Player', 'Team', 'Insert', 'Parallel', 'Numbered', 'Rookie Card', 'Image Variation', 'Quantity', 'Grade', 'Purchase Date', 'Purchase Price', 'Estimated Market Value', 'Estimated Market Value On', "Add'l Notes"];
+    // Updated headers for new column order with autograph field
+    const headers = ['Category', 'Year', 'Brand', 'Card #', 'Base Set', 'Player', 'Team', 'Autograph', 'Insert', 'Parallel', 'Numbered', 'Rookie Card', 'Image Variation', 'Quantity', 'Grade', 'Purchase Date', 'Purchase Price', 'Estimated Market Value', 'Estimated Market Value On', "Add'l Notes"];
     const csvRows = [headers.join(',')];
     
     cardCollection.forEach(card => {
@@ -2074,6 +2188,7 @@ function exportToCSV() {
             card.baseSet || 'N',
             card.player || '',
             card.team || '',
+            card.autograph || 'N', // New autograph field
             card.insert || 'N',
             card.parallel || 'N',
             numberedValue,
@@ -2129,7 +2244,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Check if user already verified password this session
     if (sessionStorage.getItem('adminVerified') === 'true') {
-        isPasswordVerified = true;
+    isPasswordVerified = true;
     }
     
     // For add page, handle password protection first
@@ -2214,8 +2329,13 @@ window.addEventListener('click', function(event) {
     if (event.target === deletePasswordModal) {
         deletePasswordModal.remove();
     }
+    
+    const editPasswordModal = document.getElementById('editPasswordModal');
+    if (event.target === editPasswordModal) {
+        editPasswordModal.remove();
+    }
 });
 
 // Make changePage function globally accessible
 window.changePage = changePage;
-// End of script.js file
+// End of script.js file    
