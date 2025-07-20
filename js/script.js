@@ -1002,9 +1002,8 @@ function viewCollection() {
     window.location.href = 'collection.html';
 }
 
-// Show import dialog - Updated with Continue button
+// Simple working import dialog
 function showImportDialog() {
-    // Create import status modal if it doesn't exist
     let importModal = document.getElementById('importModal');
     if (!importModal) {
         importModal = document.createElement('div');
@@ -1041,9 +1040,8 @@ function showImportDialog() {
         document.body.appendChild(importModal);
     }
     
-    // Reset the continue button
+    // Reset continue button
     const continueSection = document.getElementById('importStatusContinue');
-    const continueBtn = document.getElementById('continueToResults');
     if (continueSection) {
         continueSection.classList.remove('show');
     }
@@ -1051,7 +1049,7 @@ function showImportDialog() {
     importModal.style.display = 'block';
 }
 
-// Update import progress - Updated to show Continue button when complete
+// Simple working progress update
 function updateImportProgress(current, total, successCount, errorCount) {
     const progressFill = document.getElementById('progressFill');
     const progressText = document.getElementById('progressText');
@@ -1063,8 +1061,7 @@ function updateImportProgress(current, total, successCount, errorCount) {
         const percentage = total > 0 ? (current / total) * 100 : 0;
         progressFill.style.width = percentage + '%';
         
-        if (current === total) {
-            // Import completed
+        if (current === total && current > 0) {
             progressText.textContent = `Import completed! Processed ${total} records.`;
             
             // Show continue button
@@ -1082,12 +1079,14 @@ function updateImportProgress(current, total, successCount, errorCount) {
     }
 }
 
-// Updated CSV import function with Continue button functionality
+// Store import results for continue button
+let importResults = null;
+
+// Simple working CSV import
 async function handleCSVUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
     
-    // Show import dialog
     showImportDialog();
     
     const reader = new FileReader();
@@ -1099,24 +1098,21 @@ async function handleCSVUpload(event) {
         let errorCount = 0;
         let importLog = [];
         
-        // Filter out empty lines and count only non-empty data lines (skip header row)
+        // Get data lines (skip header)
         const dataLines = [];
-        for (let i = 1; i < lines.length; i++) { // Start from 1 to skip header
+        for (let i = 1; i < lines.length; i++) {
             const trimmedLine = lines[i].trim();
             if (trimmedLine !== '' && trimmedLine.split(',').some(cell => cell.trim() !== '')) {
                 dataLines.push({
                     content: lines[i],
-                    originalLineNumber: i + 1, // Keep original line number for reference
-                    logLineNumber: dataLines.length + 1 // Sequential numbering for log (1, 2, 3...)
+                    logLineNumber: dataLines.length + 1
                 });
             }
         }
         
         const totalDataLines = dataLines.length;
-        
         const { addDoc, collection } = window.firebaseRefs;
         
-        // Update progress with correct total count (excluding header and empty lines)
         updateImportProgress(0, totalDataLines, 0, 0);
         
         let processedCount = 0;
@@ -1127,12 +1123,10 @@ async function handleCSVUpload(event) {
             try {
                 const values = lineData.content.split(',').map(v => v.trim().replace(/^["']|["']$/g, ''));
                 
-                // Check if all values are empty (additional safeguard)
                 if (values.every(val => val === '')) {
-                    continue; // Skip completely empty rows
+                    continue;
                 }
                 
-                // Updated CSV mapping for new column order with autograph field
                 const card = {
                     category: values[0] || '',
                     year: parseInt(values[1]) || 0,
@@ -1141,7 +1135,7 @@ async function handleCSVUpload(event) {
                     baseSet: values[4] || 'N',
                     player: values[5] || '',
                     team: values[6] || '',
-                    autograph: values[7] || 'N', // New autograph field
+                    autograph: values[7] || 'N',
                     insert: values[8] || 'N',
                     parallel: values[9] || 'N',
                     numbered: values[10] ? values[10].replace(/^'/, '') : 'N',
@@ -1160,133 +1154,53 @@ async function handleCSVUpload(event) {
                 await addDoc(collection(db, 'cards'), card);
                 successCount++;
                 
-                // Format card details for the log
                 let cardDetails = card.cardNumber || 'N/A';
-                if (card.parallel && card.parallel !== 'N') {
-                    cardDetails += ` | ${card.parallel}`;
-                } else {
-                    cardDetails += ' | N';
-                }
-                if (card.numbered && card.numbered !== 'N') {
-                    cardDetails += ` | ${card.numbered}`;
-                } else {
-                    cardDetails += ' | N';
-                }
+                cardDetails += card.parallel && card.parallel !== 'N' ? ` | ${card.parallel}` : ' | N';
+                cardDetails += card.numbered && card.numbered !== 'N' ? ` | ${card.numbered}` : ' | N';
                 
                 importLog.push({
-                    line: lineData.logLineNumber, // Use sequential log line number (1, 2, 3...)
+                    line: lineData.logLineNumber,
                     status: 'Success',
                     player: card.player,
                     details: cardDetails
                 });
                 
             } catch (error) {
-                console.error('Error adding card on line', lineData.originalLineNumber, ':', error);
                 errorCount++;
                 
-                // Format error card details
                 let cardDetails = values[3] || 'N/A';
-                if (values[9] && values[9] !== 'N') {
-                    cardDetails += ` | ${values[9]}`;
-                } else {
-                    cardDetails += ' | N';
-                }
-                if (values[10] && values[10] !== 'N') {
-                    cardDetails += ` | ${values[10]}`;
-                } else {
-                    cardDetails += ' | N';
-                }
+                cardDetails += values[9] && values[9] !== 'N' ? ` | ${values[9]}` : ' | N';
+                cardDetails += values[10] && values[10] !== 'N' ? ` | ${values[10]}` : ' | N';
                 
                 importLog.push({
-                    line: lineData.logLineNumber, // Use sequential log line number (1, 2, 3...)
+                    line: lineData.logLineNumber,
                     status: 'Failed',
                     player: values[5] || 'Unknown',
                     details: cardDetails,
-                    error: error.message,
-                    rawData: lineData.content
+                    error: error.message
                 });
             }
             
-            // Update progress (use processedCount for correct progress display)
             updateImportProgress(processedCount, totalDataLines, successCount, errorCount);
-            
-            // Small delay to allow UI updates
             await new Promise(resolve => setTimeout(resolve, 10));
         }
         
-        // Set up Continue button event listener
+        // Store results and set up continue button
+        importResults = { successCount, errorCount, importLog };
+        
         const continueBtn = document.getElementById('continueToResults');
         if (continueBtn) {
             continueBtn.onclick = function() {
-                showImportCompletion(successCount, errorCount, importLog);
+                showImportCompletion(importResults.successCount, importResults.errorCount, importResults.importLog);
             };
         }
         
-        // Reset file input
         event.target.value = '';
     };
     reader.readAsText(file);
 }
 
-// Show import dialog - smaller for status tracking
-function showImportDialog() {
-    // Create import status modal if it doesn't exist
-    let importModal = document.getElementById('importModal');
-    if (!importModal) {
-        importModal = document.createElement('div');
-        importModal.id = 'importModal';
-        importModal.className = 'modal';
-        importModal.innerHTML = `
-            <div class="modal-content import-status-modal-content">
-                <h3>Import Status</h3>
-                <div class="import-progress">
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progressFill"></div>
-                    </div>
-                    <div class="progress-text" id="progressText">Preparing import...</div>
-                </div>
-                <div class="import-stats" id="importStats">
-                    <div class="stat-item">
-                        <span class="stat-label">Processed:</span>
-                        <span class="stat-value" id="processedCount">0</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Successful:</span>
-                        <span class="stat-value success" id="successCount">0</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Failed:</span>
-                        <span class="stat-value error" id="errorCount">0</span>
-                    </div>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(importModal);
-    }
-    
-    importModal.style.display = 'block';
-}
-
-// Update import progress
-function updateImportProgress(current, total, successCount, errorCount) {
-    const progressFill = document.getElementById('progressFill');
-    const progressText = document.getElementById('progressText');
-    const processedCountEl = document.getElementById('processedCount');
-    const successCountEl = document.getElementById('successCount');
-    const errorCountEl = document.getElementById('errorCount');
-    
-    if (progressFill && progressText && processedCountEl && successCountEl && errorCountEl) {
-        const percentage = total > 0 ? (current / total) * 100 : 0;
-        progressFill.style.width = percentage + '%';
-        progressText.textContent = `Processing record ${current} of ${total}...`;
-        processedCountEl.textContent = current;
-        successCountEl.textContent = successCount;
-        errorCountEl.textContent = errorCount;
-    }
-}
-
-// Show import completion with updated headers and formatting - separate larger dialog with disabled outside click
-// UPDATED: Added period after line numbers
+// Show import completion - FIXED alignment with exact grid measurements
 function showImportCompletion(successCount, errorCount, importLog) {
     // Hide the status modal first
     const statusModal = document.getElementById('importModal');
@@ -1369,7 +1283,7 @@ function showImportCompletion(successCount, errorCount, importLog) {
     completionModal.style.display = 'block';
 }
 
-// Download import log with updated header - UPDATED: Added period after line numbers
+// Download import log with updated header - FIXED: Added periods after line numbers
 function downloadImportLog(importLog) {
     const csvContent = [
         'Line,Status,Player,"Card Details (Card # | Parallel | Numbered)"',
@@ -2319,72 +2233,51 @@ function toggleMobileMenu() {
 // INITIALIZATION
 // ============================================================================
 
-// Initialize everything when DOM is ready
+// Simple working initialization
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('DOM loaded, current pathname:', window.location.pathname);
-    
     const loadingEl = document.getElementById('loading');
     const mainContentEl = document.getElementById('mainContent');
     
-    console.log('Loading element:', loadingEl);
-    console.log('Main content element:', mainContentEl);
-    console.log('Is add page?', isAddPage());
-    
-    // Check if user already verified password this session
+    // Check password for add page
     if (sessionStorage.getItem('adminVerified') === 'true') {
         isPasswordVerified = true;
     }
     
-    // For add page, handle password protection first
     if (isAddPage()) {
-        console.log('Detected add page');
-        
-        // Check password protection first
         if (!checkPasswordProtection()) {
-            return; // Password dialog will handle the flow
+            return;
         }
-        
-        // If password is already verified, continue with initialization
         if (isPasswordVerified) {
             initializeAddPageAfterAuth();
         }
         return;
     }
     
-    // For other pages, initialize Firebase first then load data
-    console.log('Other page detected, initializing normally');
-    
+    // For other pages
     if (!loadingEl || !mainContentEl) {
-        console.error('Required DOM elements not found!');
         return;
     }
     
     const success = await initFirebase();
     
     if (success) {
-        // Check if this is the collection page
         if (isCollectionPage()) {
             initializeCollectionPage();
         }
         
-        setTimeout(() => {
-            loadCollectionFromFirebase();
-        }, 1000);
+        loadCollectionFromFirebase();
     } else {
         if (loadingEl) {
             loadingEl.innerHTML = `
                 <div style="color: #ff6b6b; text-align: center; padding: 2rem;">
-                    <h3>Failed to Initialize Firebase</h3>
-                    <p>Could not load Firebase modules.</p>
-                    <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #4a7bc8; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                        Retry
-                    </button>
+                    <h3>Failed to Initialize</h3>
+                    <button onclick="location.reload()" class="btn btn-primary">Retry</button>
                 </div>
             `;
         }
     }
     
-    // Add menu toggle listener for all pages
+    // Menu toggle
     const menuToggle = document.querySelector('.menu-toggle');
     if (menuToggle) {
         menuToggle.addEventListener('click', toggleMobileMenu);
