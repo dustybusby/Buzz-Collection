@@ -727,10 +727,10 @@ h1 {
     text-align: center;
 }
 
-/* COMPLETELY FIXED LOG ALIGNMENT - Exact pixel-perfect alignment */
+/* FIXED LOG ALIGNMENT - Works with span elements in grid */
 .log-header {
     display: grid;
-    grid-template-columns: 40px 70px 180px 1fr;
+    grid-template-columns: 40px 80px 200px 1fr;
     gap: 20px;
     padding: 12px 24px;
     background: linear-gradient(135deg, rgba(0, 100, 150, 0.3), rgba(0, 150, 200, 0.2));
@@ -747,12 +747,8 @@ h1 {
     align-items: center;
 }
 
-.log-header-line,
-.log-header-status,
-.log-header-player,
-.log-header-details {
+.log-header span {
     text-align: left;
-    justify-self: start;
 }
 
 .log-container {
@@ -770,7 +766,7 @@ h1 {
 
 .log-entry {
     display: grid;
-    grid-template-columns: 40px 70px 180px 1fr;
+    grid-template-columns: 40px 80px 200px 1fr;
     gap: 20px;
     padding: 8px 24px;
     border-bottom: 1px solid rgba(0, 150, 255, 0.2);
@@ -790,12 +786,8 @@ h1 {
     background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(200, 50, 50, 0.05));
 }
 
-.log-line,
-.log-status,
-.log-player,
-.log-details {
+.log-entry span {
     text-align: left;
-    justify-self: start;
 }
 
 .log-line {
