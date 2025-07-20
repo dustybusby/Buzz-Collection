@@ -448,7 +448,7 @@ h1 {
     margin-left: 1rem;
 }
 
-/* Import Status Dialog Styles - FIXED HEIGHT AND CENTERED */
+/* FIXED: Import Status Dialog Styles - Improved vertical alignment */
 .modal-content.import-status-modal-content {
     min-width: 500px;
     max-width: 550px;
@@ -525,7 +525,7 @@ h1 {
     margin-bottom: 1rem;
 }
 
-/* FIXED IMPORT STATS - Better alignment and sizing with proper vertical centering */
+/* COMPLETELY FIXED IMPORT STATS - Perfect vertical and horizontal centering */
 .import-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -560,6 +560,10 @@ h1 {
     text-align: center;
     width: 100%;
     line-height: 1.2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
 }
 
 .stat-value {
@@ -573,6 +577,10 @@ h1 {
     width: 100%;
     line-height: 1;
     margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
 }
 
 .stat-value.success {
@@ -589,7 +597,7 @@ h1 {
         0 0 4px rgba(255, 107, 107, 0.3);
 }
 
-/* Import Completion Dialog Styles - UPDATED WITH PERFECTLY ALIGNED LOG */
+/* Import Completion Dialog Styles - FIXED ALIGNMENT AND ADDED PERIODS */
 .modal-content.import-completion-modal-content {
     min-width: 900px;
     max-width: 950px;
@@ -698,10 +706,10 @@ h1 {
     text-align: center;
 }
 
-/* COMPLETELY FIXED LOG ALIGNMENT - Exact same measurements */
+/* COMPLETELY FIXED LOG ALIGNMENT - Perfect grid alignment with periods */
 .log-header {
     display: grid;
-    grid-template-columns: 80px 80px 200px 1fr;
+    grid-template-columns: 50px 70px 180px 1fr;
     gap: 1rem;
     padding: 0.75rem 1rem;
     background: linear-gradient(135deg, rgba(0, 100, 150, 0.3), rgba(0, 150, 200, 0.2));
@@ -753,7 +761,7 @@ h1 {
 
 .log-entry {
     display: grid;
-    grid-template-columns: 80px 80px 200px 1fr;
+    grid-template-columns: 50px 70px 180px 1fr;
     gap: 1rem;
     padding: 0.5rem 1rem;
     border-bottom: 1px solid rgba(0, 150, 255, 0.2);
