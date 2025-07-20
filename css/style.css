@@ -727,12 +727,12 @@ h1 {
     text-align: center;
 }
 
-/* COMPLETELY FIXED LOG ALIGNMENT - Perfect grid alignment with exact spacing */
+/* COMPLETELY FIXED LOG ALIGNMENT - Exact pixel-perfect alignment */
 .log-header {
     display: grid;
-    grid-template-columns: 50px 80px 200px 1fr;
-    gap: 1.5rem;
-    padding: 0.75rem 1.5rem;
+    grid-template-columns: 40px 70px 180px 1fr;
+    gap: 20px;
+    padding: 12px 24px;
     background: linear-gradient(135deg, rgba(0, 100, 150, 0.3), rgba(0, 150, 200, 0.2));
     border: 1px solid rgba(0, 150, 255, 0.5);
     border-radius: 8px 8px 0 0;
@@ -747,21 +747,9 @@ h1 {
     align-items: center;
 }
 
-.log-header-line {
-    text-align: left;
-    justify-self: start;
-}
-
-.log-header-status {
-    text-align: left;
-    justify-self: start;
-}
-
-.log-header-player {
-    text-align: left;
-    justify-self: start;
-}
-
+.log-header-line,
+.log-header-status,
+.log-header-player,
 .log-header-details {
     text-align: left;
     justify-self: start;
@@ -782,9 +770,9 @@ h1 {
 
 .log-entry {
     display: grid;
-    grid-template-columns: 50px 80px 200px 1fr;
-    gap: 1.5rem;
-    padding: 0.5rem 1.5rem;
+    grid-template-columns: 40px 70px 180px 1fr;
+    gap: 20px;
+    padding: 8px 24px;
     border-bottom: 1px solid rgba(0, 150, 255, 0.2);
     font-size: 0.8rem;
     align-items: center;
@@ -802,17 +790,21 @@ h1 {
     background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(200, 50, 50, 0.05));
 }
 
-.log-line {
-    color: #b8e6ff;
-    font-weight: 500;
+.log-line,
+.log-status,
+.log-player,
+.log-details {
     text-align: left;
     justify-self: start;
 }
 
+.log-line {
+    color: #b8e6ff;
+    font-weight: 500;
+}
+
 .log-status {
     font-weight: 600;
-    text-align: left;
-    justify-self: start;
 }
 
 .log-entry.success .log-status {
@@ -826,15 +818,11 @@ h1 {
 .log-player {
     color: #ffffff;
     font-weight: 500;
-    text-align: left;
-    justify-self: start;
 }
 
 .log-details {
     color: #e0f4ff;
     font-size: 0.75rem;
-    text-align: left;
-    justify-self: start;
 }
 
 /* Updated import actions to center buttons between log and bottom border */
