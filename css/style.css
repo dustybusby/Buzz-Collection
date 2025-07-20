@@ -727,11 +727,10 @@ h1 {
     text-align: center;
 }
 
-/* FIXED LOG ALIGNMENT - Works with span elements in grid */
+/* ALTERNATIVE APPROACH - Table-based layout for perfect alignment */
 .log-header {
-    display: grid;
-    grid-template-columns: 40px 80px 200px 1fr;
-    gap: 20px;
+    display: table;
+    width: 100%;
     padding: 12px 24px;
     background: linear-gradient(135deg, rgba(0, 100, 150, 0.3), rgba(0, 150, 200, 0.2));
     border: 1px solid rgba(0, 150, 255, 0.5);
@@ -744,12 +743,20 @@ h1 {
     font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    align-items: center;
+    table-layout: fixed;
 }
 
 .log-header span {
+    display: table-cell;
     text-align: left;
+    vertical-align: middle;
+    padding-right: 20px;
 }
+
+.log-header span:nth-child(1) { width: 40px; }
+.log-header span:nth-child(2) { width: 80px; }
+.log-header span:nth-child(3) { width: 200px; }
+.log-header span:nth-child(4) { width: auto; }
 
 .log-container {
     background: linear-gradient(135deg, rgba(5, 15, 25, 0.9), rgba(10, 20, 30, 0.8));
@@ -765,13 +772,12 @@ h1 {
 }
 
 .log-entry {
-    display: grid;
-    grid-template-columns: 40px 80px 200px 1fr;
-    gap: 20px;
+    display: table;
+    width: 100%;
     padding: 8px 24px;
     border-bottom: 1px solid rgba(0, 150, 255, 0.2);
     font-size: 0.8rem;
-    align-items: center;
+    table-layout: fixed;
 }
 
 .log-entry:last-child {
@@ -787,8 +793,16 @@ h1 {
 }
 
 .log-entry span {
+    display: table-cell;
     text-align: left;
+    vertical-align: middle;
+    padding-right: 20px;
 }
+
+.log-entry span:nth-child(1) { width: 40px; }
+.log-entry span:nth-child(2) { width: 80px; }
+.log-entry span:nth-child(3) { width: 200px; }
+.log-entry span:nth-child(4) { width: auto; }
 
 .log-line {
     color: #b8e6ff;
