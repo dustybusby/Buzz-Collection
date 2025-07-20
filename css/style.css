@@ -727,39 +727,21 @@ h1 {
     text-align: center;
 }
 
-/* Log header styling */
-.log-header {
-    display: grid;
-    grid-template-columns: 80px 80px 1fr 2fr;
-    gap: 1rem;
-    padding: 0.75rem 1rem;
-    background: linear-gradient(135deg, rgba(0, 100, 150, 0.3), rgba(0, 150, 200, 0.2));
-    border: 1px solid rgba(0, 150, 255, 0.5);
-    border-radius: 8px 8px 0 0;
-    font-weight: 600;
-    color: #ffffff;
-    text-shadow: 
-        0 0 2px #00d4ff,
-        0 0 4px rgba(0, 200, 255, 0.3);
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+.log-entry.success .log-status {
+    color: #00ff88;
 }
 
-.log-header-line {
-    text-align: center;
-}
-
-.log-header-status {
-    text-align: center;
-}
-
-.log-header-player {
+.log-entry.failed .log-status {
+    color: #ff6b6b;
+    width: 180px; 
     text-align: left;
+    padding-left: 10px;
 }
 
-.log-header-details {
-    text-align: left;
+.log-header span:nth-child(4) { 
+    width: auto; 
+    text-align: right;
+    padding-right: 0; 
 }
 
 .log-container {
@@ -776,10 +758,9 @@ h1 {
 }
 
 .log-entry {
-    display: grid;
-    grid-template-columns: 80px 80px 1fr 2fr;
-    gap: 1rem;
-    padding: 0.5rem 1rem;
+    display: flex;
+    width: 100%;
+    padding: 8px 24px;
     border-bottom: 1px solid rgba(0, 150, 255, 0.2);
     font-size: 0.8rem;
     align-items: center;
@@ -797,33 +778,33 @@ h1 {
     background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(200, 50, 50, 0.05));
 }
 
-.log-line {
+.log-entry .log-line {
+    width: 45px;
+    text-align: left;
     color: #b8e6ff;
     font-weight: 500;
-    text-align: center;
 }
 
-.log-status {
+.log-entry .log-status {
+    width: 75px;
+    text-align: left;
+    padding-left: 8px;
     font-weight: 600;
-    text-align: center;
 }
 
-.log-entry.success .log-status {
-    color: #00ff88;
-}
-
-.log-entry.failed .log-status {
-    color: #ff6b6b;
-}
-
-.log-player {
+.log-entry .log-player {
+    width: 180px;
+    text-align: left;
+    padding-left: 15px;
     color: #ffffff;
     font-weight: 500;
 }
 
-.log-details {
+.log-entry .log-details {
+    flex: 1;
+    text-align: left;
     color: #e0f4ff;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
 }
 
 /* Updated import actions to center buttons between log and bottom border */
