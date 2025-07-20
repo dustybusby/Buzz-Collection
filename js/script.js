@@ -1002,7 +1002,87 @@ function viewCollection() {
     window.location.href = 'collection.html';
 }
 
-// Updated CSV import function with corrected progress tracking and line numbering
+// Show import dialog - Updated with Continue button
+function showImportDialog() {
+    // Create import status modal if it doesn't exist
+    let importModal = document.getElementById('importModal');
+    if (!importModal) {
+        importModal = document.createElement('div');
+        importModal.id = 'importModal';
+        importModal.className = 'modal';
+        importModal.innerHTML = `
+            <div class="modal-content import-status-modal-content">
+                <h3>Import Status</h3>
+                <div class="import-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">Preparing import...</div>
+                </div>
+                <div class="import-stats" id="importStats">
+                    <div class="stat-item">
+                        <span class="stat-label">Processed:</span>
+                        <span class="stat-value" id="processedCount">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Successful:</span>
+                        <span class="stat-value success" id="successCount">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Failed:</span>
+                        <span class="stat-value error" id="errorCount">0</span>
+                    </div>
+                </div>
+                <div class="import-status-continue" id="importStatusContinue">
+                    <button class="btn btn-primary" id="continueToResults">Continue</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(importModal);
+    }
+    
+    // Reset the continue button
+    const continueSection = document.getElementById('importStatusContinue');
+    const continueBtn = document.getElementById('continueToResults');
+    if (continueSection) {
+        continueSection.classList.remove('show');
+    }
+    
+    importModal.style.display = 'block';
+}
+
+// Update import progress - Updated to show Continue button when complete
+function updateImportProgress(current, total, successCount, errorCount) {
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    const processedCountEl = document.getElementById('processedCount');
+    const successCountEl = document.getElementById('successCount');
+    const errorCountEl = document.getElementById('errorCount');
+    
+    if (progressFill && progressText && processedCountEl && successCountEl && errorCountEl) {
+        const percentage = total > 0 ? (current / total) * 100 : 0;
+        progressFill.style.width = percentage + '%';
+        
+        if (current === total) {
+            // Import completed
+            progressText.textContent = `Import completed! Processed ${total} records.`;
+            
+            // Show continue button
+            const continueSection = document.getElementById('importStatusContinue');
+            if (continueSection) {
+                continueSection.classList.add('show');
+            }
+        } else {
+            progressText.textContent = `Processing record ${current} of ${total}...`;
+        }
+        
+        processedCountEl.textContent = current;
+        successCountEl.textContent = successCount;
+        errorCountEl.textContent = errorCount;
+    }
+}
+
+// Updated CSV import function with Continue button functionality
 async function handleCSVUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -1134,8 +1214,13 @@ async function handleCSVUpload(event) {
             await new Promise(resolve => setTimeout(resolve, 10));
         }
         
-        // Show completion
-        showImportCompletion(successCount, errorCount, importLog);
+        // Set up Continue button event listener
+        const continueBtn = document.getElementById('continueToResults');
+        if (continueBtn) {
+            continueBtn.onclick = function() {
+                showImportCompletion(successCount, errorCount, importLog);
+            };
+        }
         
         // Reset file input
         event.target.value = '';

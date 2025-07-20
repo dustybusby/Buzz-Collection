@@ -448,12 +448,12 @@ h1 {
     margin-left: 1rem;
 }
 
-/* FIXED: Import Status Dialog Styles - Improved vertical alignment */
+/* FIXED: Import Status Dialog Styles - Improved vertical alignment with Continue button */
 .modal-content.import-status-modal-content {
     min-width: 500px;
     max-width: 550px;
-    min-height: 250px;
-    max-height: 300px;
+    min-height: 280px;
+    max-height: 350px;
     padding: 1.5rem;
     margin: 50vh auto;
     transform: translateY(-50%);
@@ -470,6 +470,24 @@ h1 {
 .modal-content.import-status-modal-content .import-progress {
     margin-bottom: 1rem;
     padding: 0 0.5rem;
+}
+
+/* Continue button for import status */
+.import-status-continue {
+    display: none;
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0, 150, 255, 0.2);
+}
+
+.import-status-continue.show {
+    display: block;
+}
+
+.import-status-continue .btn {
+    min-width: 120px;
+    padding: 0.8rem 1.5rem;
 }
 
 /* FIXED PROGRESS BAR - Removed external glow, kept internal glow */
@@ -706,12 +724,12 @@ h1 {
     text-align: center;
 }
 
-/* COMPLETELY FIXED LOG ALIGNMENT - Perfect grid alignment with proper spacing */
+/* COMPLETELY FIXED LOG ALIGNMENT - Perfect grid alignment with exact spacing */
 .log-header {
     display: grid;
-    grid-template-columns: 60px 80px 200px 1fr;
-    gap: 1.5rem;
-    padding: 0.75rem 1rem;
+    grid-template-columns: 60px 100px 220px 1fr;
+    gap: 2rem;
+    padding: 0.75rem 1.5rem;
     background: linear-gradient(135deg, rgba(0, 100, 150, 0.3), rgba(0, 150, 200, 0.2));
     border: 1px solid rgba(0, 150, 255, 0.5);
     border-radius: 8px 8px 0 0;
@@ -729,25 +747,21 @@ h1 {
 .log-header-line {
     text-align: left;
     justify-self: start;
-    padding-left: 0.5rem;
 }
 
 .log-header-status {
     text-align: left;
     justify-self: start;
-    padding-left: 0.5rem;
 }
 
 .log-header-player {
     text-align: left;
     justify-self: start;
-    padding-left: 0.5rem;
 }
 
 .log-header-details {
     text-align: left;
     justify-self: start;
-    padding-left: 0.5rem;
 }
 
 .log-container {
@@ -765,9 +779,9 @@ h1 {
 
 .log-entry {
     display: grid;
-    grid-template-columns: 60px 80px 200px 1fr;
-    gap: 1.5rem;
-    padding: 0.5rem 1rem;
+    grid-template-columns: 60px 100px 220px 1fr;
+    gap: 2rem;
+    padding: 0.5rem 1.5rem;
     border-bottom: 1px solid rgba(0, 150, 255, 0.2);
     font-size: 0.8rem;
     align-items: center;
@@ -790,14 +804,12 @@ h1 {
     font-weight: 500;
     text-align: left;
     justify-self: start;
-    padding-left: 0.5rem;
 }
 
 .log-status {
     font-weight: 600;
     text-align: left;
     justify-self: start;
-    padding-left: 0.5rem;
 }
 
 .log-entry.success .log-status {
@@ -813,7 +825,6 @@ h1 {
     font-weight: 500;
     text-align: left;
     justify-self: start;
-    padding-left: 0.5rem;
 }
 
 .log-details {
@@ -821,7 +832,6 @@ h1 {
     font-size: 0.75rem;
     text-align: left;
     justify-self: start;
-    padding-left: 0.5rem;
 }
 
 /* Updated import actions to center buttons between log and bottom border */
@@ -2238,8 +2248,9 @@ body:has(#listView) .container {
     }
 
     .log-header {
-        grid-template-columns: 60px 80px 1fr;
-        gap: 0.75rem;
+        grid-template-columns: 60px 100px 1fr;
+        gap: 1rem;
+        padding: 0.75rem 1rem;
     }
 
     .log-header-details {
@@ -2250,8 +2261,9 @@ body:has(#listView) .container {
     }
 
     .log-entry {
-        grid-template-columns: 60px 80px 1fr;
-        gap: 0.75rem;
+        grid-template-columns: 60px 100px 1fr;
+        gap: 1rem;
+        padding: 0.5rem 1rem;
     }
 
     .log-entry .log-details {
