@@ -727,7 +727,7 @@ h1 {
     text-align: center;
 }
 
-/* ALTERNATIVE APPROACH - Table-based layout for perfect alignment */
+/* FINE-TUNED TABLE LAYOUT - Adjusting column widths and spacing */
 .log-header {
     display: table;
     width: 100%;
@@ -750,13 +750,13 @@ h1 {
     display: table-cell;
     text-align: left;
     vertical-align: middle;
-    padding-right: 20px;
+    padding-right: 15px;
 }
 
-.log-header span:nth-child(1) { width: 40px; }
-.log-header span:nth-child(2) { width: 80px; }
-.log-header span:nth-child(3) { width: 200px; }
-.log-header span:nth-child(4) { width: auto; }
+.log-header span:nth-child(1) { width: 45px; }
+.log-header span:nth-child(2) { width: 75px; }
+.log-header span:nth-child(3) { width: 180px; }
+.log-header span:nth-child(4) { width: auto; padding-right: 0; }
 
 .log-container {
     background: linear-gradient(135deg, rgba(5, 15, 25, 0.9), rgba(10, 20, 30, 0.8));
@@ -796,13 +796,13 @@ h1 {
     display: table-cell;
     text-align: left;
     vertical-align: middle;
-    padding-right: 20px;
+    padding-right: 15px;
 }
 
-.log-entry span:nth-child(1) { width: 40px; }
-.log-entry span:nth-child(2) { width: 80px; }
-.log-entry span:nth-child(3) { width: 200px; }
-.log-entry span:nth-child(4) { width: auto; }
+.log-entry span:nth-child(1) { width: 45px; }
+.log-entry span:nth-child(2) { width: 75px; }
+.log-entry span:nth-child(3) { width: 180px; }
+.log-entry span:nth-child(4) { width: auto; padding-right: 0; }
 
 .log-line {
     color: #b8e6ff;
