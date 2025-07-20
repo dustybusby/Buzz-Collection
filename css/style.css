@@ -706,11 +706,11 @@ h1 {
     text-align: center;
 }
 
-/* COMPLETELY FIXED LOG ALIGNMENT - Perfect grid alignment with periods */
+/* COMPLETELY FIXED LOG ALIGNMENT - Perfect grid alignment with proper spacing */
 .log-header {
     display: grid;
-    grid-template-columns: 50px 70px 180px 1fr;
-    gap: 1rem;
+    grid-template-columns: 60px 80px 200px 1fr;
+    gap: 1.5rem;
     padding: 0.75rem 1rem;
     background: linear-gradient(135deg, rgba(0, 100, 150, 0.3), rgba(0, 150, 200, 0.2));
     border: 1px solid rgba(0, 150, 255, 0.5);
@@ -727,23 +727,27 @@ h1 {
 }
 
 .log-header-line {
-    text-align: center;
-    justify-self: center;
+    text-align: left;
+    justify-self: start;
+    padding-left: 0.5rem;
 }
 
 .log-header-status {
-    text-align: center;
-    justify-self: center;
+    text-align: left;
+    justify-self: start;
+    padding-left: 0.5rem;
 }
 
 .log-header-player {
     text-align: left;
     justify-self: start;
+    padding-left: 0.5rem;
 }
 
 .log-header-details {
     text-align: left;
     justify-self: start;
+    padding-left: 0.5rem;
 }
 
 .log-container {
@@ -761,8 +765,8 @@ h1 {
 
 .log-entry {
     display: grid;
-    grid-template-columns: 50px 70px 180px 1fr;
-    gap: 1rem;
+    grid-template-columns: 60px 80px 200px 1fr;
+    gap: 1.5rem;
     padding: 0.5rem 1rem;
     border-bottom: 1px solid rgba(0, 150, 255, 0.2);
     font-size: 0.8rem;
@@ -784,14 +788,16 @@ h1 {
 .log-line {
     color: #b8e6ff;
     font-weight: 500;
-    text-align: center;
-    justify-self: center;
+    text-align: left;
+    justify-self: start;
+    padding-left: 0.5rem;
 }
 
 .log-status {
     font-weight: 600;
-    text-align: center;
-    justify-self: center;
+    text-align: left;
+    justify-self: start;
+    padding-left: 0.5rem;
 }
 
 .log-entry.success .log-status {
@@ -807,6 +813,7 @@ h1 {
     font-weight: 500;
     text-align: left;
     justify-self: start;
+    padding-left: 0.5rem;
 }
 
 .log-details {
@@ -814,6 +821,7 @@ h1 {
     font-size: 0.75rem;
     text-align: left;
     justify-self: start;
+    padding-left: 0.5rem;
 }
 
 /* Updated import actions to center buttons between log and bottom border */
@@ -2230,8 +2238,8 @@ body:has(#listView) .container {
     }
 
     .log-header {
-        grid-template-columns: 60px 70px 1fr;
-        gap: 0.5rem;
+        grid-template-columns: 60px 80px 1fr;
+        gap: 0.75rem;
     }
 
     .log-header-details {
@@ -2242,8 +2250,8 @@ body:has(#listView) .container {
     }
 
     .log-entry {
-        grid-template-columns: 60px 70px 1fr;
-        gap: 0.5rem;
+        grid-template-columns: 60px 80px 1fr;
+        gap: 0.75rem;
     }
 
     .log-entry .log-details {

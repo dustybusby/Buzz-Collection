@@ -1002,7 +1002,7 @@ function viewCollection() {
     window.location.href = 'collection.html';
 }
 
-// Updated CSV import function with corrected progress tracking and blank row prevention
+// Updated CSV import function with corrected progress tracking and line numbering
 async function handleCSVUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -1019,14 +1019,15 @@ async function handleCSVUpload(event) {
         let errorCount = 0;
         let importLog = [];
         
-        // Filter out empty lines and count only non-empty data lines
+        // Filter out empty lines and count only non-empty data lines (skip header row)
         const dataLines = [];
-        for (let i = 1; i < lines.length; i++) {
+        for (let i = 1; i < lines.length; i++) { // Start from 1 to skip header
             const trimmedLine = lines[i].trim();
             if (trimmedLine !== '' && trimmedLine.split(',').some(cell => cell.trim() !== '')) {
                 dataLines.push({
                     content: lines[i],
-                    lineNumber: i + 1 // Keep original line number for reference
+                    originalLineNumber: i + 1, // Keep original line number for reference
+                    logLineNumber: dataLines.length + 1 // Sequential numbering for log (1, 2, 3...)
                 });
             }
         }
@@ -1051,7 +1052,7 @@ async function handleCSVUpload(event) {
                     continue; // Skip completely empty rows
                 }
                 
-// Updated CSV mapping for new column order with autograph field
+                // Updated CSV mapping for new column order with autograph field
                 const card = {
                     category: values[0] || '',
                     year: parseInt(values[1]) || 0,
@@ -1093,14 +1094,14 @@ async function handleCSVUpload(event) {
                 }
                 
                 importLog.push({
-                    line: lineData.lineNumber,
+                    line: lineData.logLineNumber, // Use sequential log line number (1, 2, 3...)
                     status: 'Success',
                     player: card.player,
                     details: cardDetails
                 });
                 
             } catch (error) {
-                console.error('Error adding card on line', lineData.lineNumber, ':', error);
+                console.error('Error adding card on line', lineData.originalLineNumber, ':', error);
                 errorCount++;
                 
                 // Format error card details
@@ -1117,7 +1118,7 @@ async function handleCSVUpload(event) {
                 }
                 
                 importLog.push({
-                    line: lineData.lineNumber,
+                    line: lineData.logLineNumber, // Use sequential log line number (1, 2, 3...)
                     status: 'Failed',
                     player: values[5] || 'Unknown',
                     details: cardDetails,
