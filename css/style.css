@@ -755,14 +755,14 @@ h1 {
     width: 90px;
     text-align: left;
     flex-shrink: 0;
-    padding-left: 1.5rem;
+    padding-left: 2rem;
 }
 
 .log-header-player {
     width: 200px;
     text-align: left;
     flex-shrink: 0;
-    padding-left: 2.5rem;
+    padding-left: 3rem;
 }
 
 .log-header-details {
@@ -819,7 +819,7 @@ h1 {
     text-align: left;
     font-weight: 600;
     flex-shrink: 0;
-    padding-left: 1.5rem;
+    padding-left: 2rem;
 }
 
 .log-entry.success .log-status {
@@ -839,7 +839,7 @@ h1 {
     overflow: hidden;
     text-overflow: ellipsis;
     flex-shrink: 0;
-    padding-left: 2.5rem;
+    padding-left: 3rem;
 }
 
 .log-entry .log-details {
