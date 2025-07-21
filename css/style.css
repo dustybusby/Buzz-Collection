@@ -455,8 +455,6 @@ h1 {
     min-height: 280px;
     max-height: 350px;
     padding: 1.5rem;
-    margin: 50vh auto;
-    transform: translateY(-50%);
 }
 
 .modal-content.import-status-modal-content h3 {
@@ -625,7 +623,6 @@ h1 {
     min-height: 500px;
     max-height: 75vh;
     padding: 0.75rem 1.5rem 1.5rem 1.5rem;
-    margin: 2% auto;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -731,7 +728,7 @@ h1 {
 .log-header {
     display: flex;
     width: 100%;
-    padding: 8px 24px;
+    padding: 8px 16px;
     background: linear-gradient(135deg, rgba(0, 100, 150, 0.3), rgba(0, 150, 200, 0.2));
     border: 1px solid rgba(0, 150, 255, 0.5);
     border-radius: 8px 8px 0 0;
@@ -748,29 +745,29 @@ h1 {
 
 /* NEW STYLES FOR HEADER SPANS TO MATCH DATA SPANS */
 .log-header-line {
-    width: 50px;
+    width: 40px;
     text-align: left;
     flex-shrink: 0;
 }
 
 .log-header-status {
-    width: 120px;
+    width: 90px;
     text-align: left;
-    padding-left: 1rem;
+    padding-left: 0.5rem;
     flex-shrink: 0;
 }
 
 .log-header-player {
-    width: 220px;
+    width: 200px;
     text-align: left;
-    padding-left: 1rem;
+    padding-left: 0.5rem;
     flex-shrink: 0;
 }
 
 .log-header-details {
     flex: 1;
     text-align: left;
-    padding-left: 1rem;
+    padding-left: 0.5rem;
 }
 
 .log-container {
@@ -789,10 +786,10 @@ h1 {
 .log-entry {
     display: flex;
     width: 100%;
-    padding: 8px 24px;
+    padding: 8px 16px;
     border-bottom: 1px solid rgba(0, 150, 255, 0.2);
-    font-size: 0.8rem;
     align-items: center;
+    font-size: 0.85rem;
 }
 
 .log-entry:last-child {
@@ -809,7 +806,7 @@ h1 {
 
 /* UPDATED LOG ENTRY SPAN STYLES TO MATCH HEADER */
 .log-entry .log-line {
-    width: 50px;
+    width: 40px;
     text-align: left;
     color: #b8e6ff;
     font-weight: 500;
@@ -817,9 +814,9 @@ h1 {
 }
 
 .log-entry .log-status {
-    width: 120px;
+    width: 90px;
     text-align: left;
-    padding-left: 1rem;
+    padding-left: 0.5rem;
     font-weight: 600;
     flex-shrink: 0;
 }
@@ -833,9 +830,9 @@ h1 {
 }
 
 .log-entry .log-player {
-    width: 220px;
+    width: 200px;
     text-align: left;
-    padding-left: 1rem;
+    padding-left: 0.5rem;
     color: #ffffff;
     font-weight: 500;
     white-space: nowrap;
@@ -847,9 +844,8 @@ h1 {
 .log-entry .log-details {
     flex: 1;
     text-align: left;
-    padding-left: 1rem;
+    padding-left: 0.5rem;
     color: #e0f4ff;
-    font-size: 0.8rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1292,14 +1288,6 @@ h1 {
 
 /* Updated styling for collection controls select dropdown to match add page */
 .collection-controls select option {
-    background: rgba(20, 35, 50, 0.98);
-    color: #ffffff;
-    padding: 0.5rem;
-}
-
-/* Fixed styling for both Auto and RC field dropdowns on collection page */
-#filter-autograph option,
-#filter-rookieCard option {
     background: rgba(20, 35, 50, 0.98);
     color: #ffffff;
     padding: 0.5rem;
@@ -1937,6 +1925,9 @@ h1 {
     height: 100%;
     background-color: rgba(0,0,0,0.8);
     backdrop-filter: blur(5px);
+    display: none; /* Hidden by default */
+    align-items: center;
+    justify-content: center;
 }
 
 .modal-content {
@@ -1944,7 +1935,7 @@ h1 {
     backdrop-filter: blur(15px);
     border: 2px solid rgba(0, 150, 255, 0.4);
     border-radius: 15px;
-    margin: 3% auto;
+    margin: 1rem;
     padding: 0;
     width: 90%;
     max-width: 650px; /* Increased from 500px */
@@ -2245,8 +2236,6 @@ body:has(#listView) .container {
         padding: 1rem;
         min-height: 200px;
         max-height: 240px;
-        margin: 50vh auto;
-        transform: translateY(-50%);
     }
 
     .modal-content.import-completion-modal-content {
