@@ -755,14 +755,14 @@ h1 {
     width: 90px;
     text-align: left;
     flex-shrink: 0;
-    padding-left: 2rem;
+    padding-left: 2.5rem;
 }
 
 .log-header-player {
     width: 200px;
     text-align: left;
     flex-shrink: 0;
-    padding-left: 3rem;
+    padding-left: 4rem;
 }
 
 .log-header-details {
