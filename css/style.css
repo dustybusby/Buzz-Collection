@@ -753,21 +753,18 @@ h1 {
 .log-header-status {
     width: 90px;
     text-align: left;
-    padding-left: 0.5rem;
     flex-shrink: 0;
 }
 
 .log-header-player {
     width: 200px;
     text-align: left;
-    padding-left: 0.5rem;
     flex-shrink: 0;
 }
 
 .log-header-details {
     flex: 1;
-    text-align: left;
-    padding-left: 0.5rem;
+    text-align: right;
 }
 
 .log-container {
@@ -816,7 +813,6 @@ h1 {
 .log-entry .log-status {
     width: 90px;
     text-align: left;
-    padding-left: 0.5rem;
     font-weight: 600;
     flex-shrink: 0;
 }
@@ -832,7 +828,6 @@ h1 {
 .log-entry .log-player {
     width: 200px;
     text-align: left;
-    padding-left: 0.5rem;
     color: #ffffff;
     font-weight: 500;
     white-space: nowrap;
@@ -843,8 +838,7 @@ h1 {
 
 .log-entry .log-details {
     flex: 1;
-    text-align: left;
-    padding-left: 0.5rem;
+    text-align: right;
     color: #e0f4ff;
     white-space: nowrap;
     overflow: hidden;
@@ -1925,7 +1919,6 @@ h1 {
     height: 100%;
     background-color: rgba(0,0,0,0.8);
     backdrop-filter: blur(5px);
-    display: none; /* Hidden by default */
     align-items: center;
     justify-content: center;
 }
@@ -2736,7 +2729,7 @@ body:has(#listView) .container {
     border-radius: 8px;
     padding: 8px 12px;
     position: absolute;
-    z-index: 1000;
+    z-index: 3000;
     bottom: 125%;
     left: 50%;
     margin-left: -100px;
@@ -3020,7 +3013,7 @@ body:has(#listView) .container {
 }
 
 .modal[aria-hidden="false"] {
-    display: block;
+    display: flex;
 }
 
 /* Improved keyboard navigation */

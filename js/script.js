@@ -115,7 +115,7 @@ function showPasswordDialog() {
     `;
     
     document.body.appendChild(passwordModal);
-    passwordModal.style.display = 'block';
+    passwordModal.style.display = 'flex';
     
     const passwordInput = document.getElementById('passwordInput');
     const submitBtn = document.getElementById('submitPassword');
@@ -268,7 +268,7 @@ function checkEditPermission() {
         `;
         
         document.body.appendChild(passwordModal);
-        passwordModal.style.display = 'block';
+        passwordModal.style.display = 'flex';
         
         const passwordInput = document.getElementById('editPasswordInput');
         const submitBtn = document.getElementById('submitEditPassword');
@@ -341,7 +341,7 @@ function checkDeletePermission() {
         `;
         
         document.body.appendChild(passwordModal);
-        passwordModal.style.display = 'block';
+        passwordModal.style.display = 'flex';
         
         const passwordInput = document.getElementById('deletePasswordInput');
         const submitBtn = document.getElementById('submitDeletePassword');
@@ -946,7 +946,7 @@ function showSuccessModal(message, isEdit) {
         }
     }
     
-    modal.style.display = 'block';
+    modal.style.display = 'flex';
 }
 
 // New function to return to collection page
@@ -1046,7 +1046,7 @@ function showImportDialog() {
         continueSection.classList.remove('show');
     }
     
-    importModal.style.display = 'block';
+    importModal.style.display = 'flex';
 }
 
 // Simple working progress update
@@ -1280,7 +1280,7 @@ function showImportCompletion(successCount, errorCount, importLog) {
         event.stopPropagation();
     };
     
-    completionModal.style.display = 'block';
+    completionModal.style.display = 'flex';
 }
 
 // Download import log with updated header - FIXED: Added periods after line numbers
@@ -2108,7 +2108,7 @@ function viewCard(cardId) {
     `;
     
     document.getElementById('modalCardContent').innerHTML = modalHTML;
-    document.getElementById('cardModal').style.display = 'block';
+    document.getElementById('cardModal').style.display = 'flex';
 }
 
 function closeCardModal() {
