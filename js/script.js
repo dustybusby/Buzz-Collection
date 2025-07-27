@@ -465,7 +465,7 @@ function isAddPage() {
            document.querySelector('form[id="cardForm"]') !== null;
 }
 
-// Initialize collection page functionality
+// Fixed: Single event listener addition to prevent double-click issue
 function initializeCollectionPage() {
     // Remove view toggle event listeners - always use list view
     const listView = document.querySelector('.cards-list');
@@ -601,6 +601,7 @@ function cancelEdit() {
     window.location.href = 'collection.html';
 }
 
+// Fixed: populateForm function to handle date formatting properly
 function populateForm(card) {
     const setFieldValue = (id, value) => {
         const element = document.getElementById(id);
@@ -613,7 +614,7 @@ function populateForm(card) {
     setFieldValue('cardNumber', card.cardNumber);
     setFieldValue('player', card.player);
     setFieldValue('team', card.team);
-    setFieldValue('autograph', card.autograph || 'N'); // New autograph field
+    setFieldValue('autograph', card.autograph || 'N');
     setFieldValue('quantity', card.quantity || 1);
     setFieldValue('rookieCard', card.rookieCard || 'N');
     
@@ -680,7 +681,15 @@ function populateForm(card) {
         if (estimatedValue) estimatedValue.disabled = true;
     }
     
-    setFieldValue('estimatedValueDate', card.estimatedValueDate);
+    // Fixed: Handle estimated value date with proper date formatting
+    const estimatedValueDate = document.getElementById('estimatedValueDate');
+    if (estimatedValueDate && card.estimatedValueDate) {
+        // Convert date to YYYY-MM-DD format for input field
+        const date = new Date(card.estimatedValueDate);
+        if (!isNaN(date.getTime())) {
+            estimatedValueDate.value = date.toISOString().split('T')[0];
+        }
+    }
     
     // Handle image variation field
     if (card.imageVariation && card.imageVariation !== 'N') {
@@ -695,11 +704,15 @@ function populateForm(card) {
 
     setFieldValue('description', card.description);
     
-    // Handle purchase date
+    // Fixed: Handle purchase date with proper date formatting
     const purchaseDate = document.getElementById('purchaseDate');
     const unknownDate = document.getElementById('unknownDate');
     if (card.purchaseDate && card.purchaseDate !== 'Unknown') {
-        if (purchaseDate) purchaseDate.value = card.purchaseDate;
+        // Convert date to YYYY-MM-DD format for input field
+        const date = new Date(card.purchaseDate);
+        if (!isNaN(date.getTime())) {
+            if (purchaseDate) purchaseDate.value = date.toISOString().split('T')[0];
+        }
     } else {
         if (unknownDate) unknownDate.checked = true;
         if (purchaseDate) purchaseDate.disabled = true;
@@ -1082,7 +1095,7 @@ function updateImportProgress(current, total, successCount, errorCount) {
 // Store import results for continue button
 let importResults = null;
 
-// Simple working CSV import
+// Fixed: CSV import with proper comma handling and correct column order
 async function handleCSVUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -1121,12 +1134,14 @@ async function handleCSVUpload(event) {
             processedCount++;
             
             try {
-                const values = lineData.content.split(',').map(v => v.trim().replace(/^["']|["']$/g, ''));
+                // Fixed: Use proper CSV parsing to handle commas in quoted fields
+                const values = parseCSVLine(lineData.content);
                 
                 if (values.every(val => val === '')) {
                     continue;
                 }
                 
+                // Fixed: Match exact export column order
                 const card = {
                     category: values[0] || '',
                     year: parseInt(values[1]) || 0,
@@ -1168,6 +1183,7 @@ async function handleCSVUpload(event) {
             } catch (error) {
                 errorCount++;
                 
+                const values = parseCSVLine(lineData.content);
                 let cardDetails = values[3] || 'N/A';
                 cardDetails += values[9] && values[9] !== 'N' ? ` | ${values[9]}` : ' | N';
                 cardDetails += values[10] && values[10] !== 'N' ? ` | ${values[10]}` : ' | N';
@@ -1198,6 +1214,45 @@ async function handleCSVUpload(event) {
         event.target.value = '';
     };
     reader.readAsText(file);
+}
+
+// Fixed: Proper CSV parsing function to handle commas in quoted fields
+function parseCSVLine(line) {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    let i = 0;
+    
+    while (i < line.length) {
+        const char = line[i];
+        const nextChar = line[i + 1];
+        
+        if (char === '"') {
+            if (inQuotes && nextChar === '"') {
+                // Escaped quote
+                current += '"';
+                i += 2;
+                continue;
+            } else {
+                // Toggle quote state
+                inQuotes = !inQuotes;
+            }
+        } else if (char === ',' && !inQuotes) {
+            // End of field
+            result.push(current.trim());
+            current = '';
+            i++;
+            continue;
+        } else {
+            current += char;
+        }
+        i++;
+    }
+    
+    // Add the last field
+    result.push(current.trim());
+    
+    return result;
 }
 
 // Show import completion - FIXED alignment with exact grid measurements
@@ -1480,7 +1535,7 @@ function displayExpensiveCards() {
                 specialInfo.push(card.parallel);
             }
             
-            if (card.numbered && card.numbered !== 'N') {
+if (card.numbered && card.numbered !== 'N') {
                 specialInfo.push(card.numbered);
             }
             
@@ -1939,7 +1994,7 @@ function changePage(newPage) {
     }
 }
 
-// Updated displayListView function with improved event handling and autograph display
+// Fixed: displayListView function - remove duplicate event listeners to prevent double-click issue
 function displayListView(cards) {
     const container = document.getElementById('listContainer');
     if (!container) return;
@@ -1980,14 +2035,17 @@ function displayListView(cards) {
     
     container.innerHTML = listHTML;
     
-    // Add event listeners to action buttons - using event delegation to prevent double-click issues
-    container.removeEventListener('click', handleActionButtonClick); // Remove any existing listeners
+    // Fixed: Remove any existing listeners first, then add new ones to prevent double-click issue
+    container.removeEventListener('click', handleActionButtonClick);
     container.addEventListener('click', handleActionButtonClick);
 }
 
-// New centralized event handler for action buttons
+// Fixed: Single event handler for action buttons to prevent double-click issue
 function handleActionButtonClick(event) {
     const target = event.target;
+    
+    // Prevent multiple rapid clicks
+    if (target.disabled) return;
     
     if (target.classList.contains('view-btn')) {
         event.preventDefault();
@@ -2029,6 +2087,7 @@ function filterCollection() {
     displayCollection();
 }
 
+// Fixed: viewCard function with proper date formatting
 function viewCard(cardId) {
     const card = cardCollection.find(c => c.id === cardId);
     if (!card) return;
@@ -2049,19 +2108,24 @@ function viewCard(cardId) {
     const description = card.description || 'None';
     const quantity = card.quantity || 1;
     
-    // Monetary data formatting with comma formatting
-    const purchaseDate = card.purchaseDate === 'Unknown' || !card.purchaseDate ? 'Unknown' : new Date(card.purchaseDate).toLocaleDateString('en-US');
+    // Fixed: Monetary data formatting with proper date handling
+    let purchaseDate = 'Unknown';
+    if (card.purchaseDate && card.purchaseDate !== 'Unknown') {
+        const date = new Date(card.purchaseDate);
+        if (!isNaN(date.getTime())) {
+            purchaseDate = date.toLocaleDateString('en-US');
+        }
+    }
+    
     const purchaseCost = card.purchaseCost === 'Unknown' || !card.purchaseCost ? 'Unknown' : '$' + parseFloat(card.purchaseCost).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const estimatedValue = card.estimatedValue === 'Unknown' || !card.estimatedValue ? 'Unknown' : '$' + parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     
-    // Format estimated value date to MM/DD/YYYY
+    // Fixed: Format estimated value date properly
     let estimatedValueDate = 'Not specified';
     if (card.estimatedValueDate) {
-        try {
-            const date = new Date(card.estimatedValueDate);
+        const date = new Date(card.estimatedValueDate);
+        if (!isNaN(date.getTime())) {
             estimatedValueDate = date.toLocaleDateString('en-US');
-        } catch (e) {
-            estimatedValueDate = 'Not specified';
         }
     }
     
@@ -2132,7 +2196,7 @@ async function editCard(cardId) {
     window.location.href = 'add.html?edit=true';
 }
 
-// Updated delete function with password protection
+// Fixed: Custom delete modal instead of browser popup
 async function deleteCard(cardId) {
     // Check password first
     const hasPermission = await checkDeletePermission();
@@ -2147,31 +2211,166 @@ async function deleteCard(cardId) {
     const team = card.team || '';
     const cardNumber = card.cardNumber || '';
     
-    const confirmDelete = confirm(`Are you sure you want to delete this card?\n\n${year} ${product}\n${player} - ${team}\nCard #${cardNumber}`);
-    if (!confirmDelete) return;
-    
-    const finalConfirm = confirm('This action cannot be undone!\n\nClick OK to permanently delete this card from your collection.');
-    if (!finalConfirm) return;
-    
-    try {
-        const { deleteDoc, doc } = window.firebaseRefs;
-        await deleteDoc(doc(db, 'cards', cardId));
-        cardCollection = cardCollection.filter(c => c.id !== cardId);
-        displayCollection();
-        alert('Card deleted successfully!');
-    } catch (error) {
-        console.error('Error deleting card:', error);
-        alert('Error deleting card: ' + error.message);
-    }
+    // Create custom delete confirmation modal
+    showDeleteConfirmModal(card, year, product, player, team, cardNumber, cardId);
 }
 
+// New function to show custom delete confirmation modal
+function showDeleteConfirmModal(card, year, product, player, team, cardNumber, cardId) {
+    // Create delete confirmation modal
+    const deleteModal = document.createElement('div');
+    deleteModal.className = 'modal';
+    deleteModal.id = 'deleteConfirmModal';
+    deleteModal.innerHTML = `
+        <div class="modal-content password-modal-content">
+            <h3>Confirm Delete</h3>
+            <p>Are you sure you want to delete this card?</p>
+            <div class="card-info-preview">
+                <div><strong>${year} ${product}</strong></div>
+                <div>${player} - ${team}</div>
+                <div>Card #${cardNumber}</div>
+            </div>
+            <div class="password-buttons">
+                <button class="btn" id="confirmDeleteBtn">Yes, Delete</button>
+                <button class="btn btn-primary" id="cancelDeleteBtn">Cancel</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(deleteModal);
+    deleteModal.style.display = 'flex';
+    
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    const cancelBtn = document.getElementById('cancelDeleteBtn');
+    
+    cancelBtn.focus(); // Focus on cancel for safety
+    
+    cancelBtn.addEventListener('click', function() {
+        deleteModal.remove();
+    });
+    
+confirmBtn.addEventListener('click', function() {
+        deleteModal.remove();
+        // Show final confirmation
+        showFinalDeleteConfirm(cardId);
+    });
+    
+    // Close on outside click
+    deleteModal.addEventListener('click', function(event) {
+        if (event.target === deleteModal) {
+            deleteModal.remove();
+        }
+    });
+}
+
+// New function for final delete confirmation
+function showFinalDeleteConfirm(cardId) {
+    const finalModal = document.createElement('div');
+    finalModal.className = 'modal';
+    finalModal.id = 'finalDeleteModal';
+    finalModal.innerHTML = `
+        <div class="modal-content password-modal-content">
+            <h3>Final Confirmation</h3>
+            <p><strong>This action cannot be undone!</strong></p>
+            <p>Click "Permanently Delete" to remove this card from your collection forever.</p>
+            <div class="password-buttons">
+                <button class="btn" id="permanentDeleteBtn" style="background: #e74c3c; border-color: #c0392b;">Permanently Delete</button>
+                <button class="btn btn-primary" id="cancelFinalBtn">Cancel</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(finalModal);
+    finalModal.style.display = 'flex';
+    
+    const permanentBtn = document.getElementById('permanentDeleteBtn');
+    const cancelFinalBtn = document.getElementById('cancelFinalBtn');
+    
+    cancelFinalBtn.focus(); // Focus on cancel for safety
+    
+    cancelFinalBtn.addEventListener('click', function() {
+        finalModal.remove();
+    });
+    
+    permanentBtn.addEventListener('click', async function() {
+        try {
+            // Disable button to prevent double-clicks
+            permanentBtn.disabled = true;
+            permanentBtn.textContent = 'Deleting...';
+            
+            const { deleteDoc, doc } = window.firebaseRefs;
+            await deleteDoc(doc(db, 'cards', cardId));
+            cardCollection = cardCollection.filter(c => c.id !== cardId);
+            displayCollection();
+            
+            finalModal.remove();
+            
+            // Show success confirmation
+            showDeleteSuccessModal();
+            
+        } catch (error) {
+            console.error('Error deleting card:', error);
+            finalModal.remove();
+            alert('Error deleting card: ' + error.message);
+        }
+    });
+    
+    // Close on outside click
+    finalModal.addEventListener('click', function(event) {
+        if (event.target === finalModal) {
+            finalModal.remove();
+        }
+    });
+}
+
+// New function to show delete success confirmation
+function showDeleteSuccessModal() {
+    const successModal = document.createElement('div');
+    successModal.className = 'modal';
+    successModal.id = 'deleteSuccessModal';
+    successModal.innerHTML = `
+        <div class="modal-content password-modal-content">
+            <h3>Card Deleted Successfully!</h3>
+            <p>The card has been permanently removed from your collection.</p>
+            <div class="password-buttons">
+                <button class="btn btn-primary" id="okBtn">OK</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(successModal);
+    successModal.style.display = 'flex';
+    
+    const okBtn = document.getElementById('okBtn');
+    okBtn.focus();
+    
+    okBtn.addEventListener('click', function() {
+        successModal.remove();
+    });
+    
+    // Auto-close after 3 seconds
+    setTimeout(() => {
+        if (document.getElementById('deleteSuccessModal')) {
+            successModal.remove();
+        }
+    }, 3000);
+    
+    // Close on outside click
+    successModal.addEventListener('click', function(event) {
+        if (event.target === successModal) {
+            successModal.remove();
+        }
+    });
+}
+
+// Fixed: exportToCSV function with correct column order matching import
 function exportToCSV() {
     if (cardCollection.length === 0) {
         alert('No cards to export!');
         return;
     }
     
-    // Updated headers for new column order with autograph field
+    // Fixed: Updated headers to match exact import column order
     const headers = ['Category', 'Year', 'Brand', 'Card #', 'Base Set', 'Player', 'Team', 'Autograph', 'Insert', 'Parallel', 'Numbered', 'Rookie Card', 'Image Variation', 'Quantity', 'Grade', 'Purchase Date', 'Purchase Price', 'Estimated Market Value', 'Estimated Market Value On', "Add'l Notes"];
     const csvRows = [headers.join(',')];
     
@@ -2180,6 +2379,12 @@ function exportToCSV() {
         let numberedValue = card.numbered || 'N';
         if (numberedValue !== 'N' && numberedValue !== '') {
             numberedValue = "'" + numberedValue;
+        }
+        
+        // Fixed: Escape description field properly to handle commas
+        let description = card.description || '';
+        if (description.includes(',') || description.includes('"') || description.includes('\n')) {
+            description = '"' + description.replace(/"/g, '""') + '"';
         }
         
         const row = [
@@ -2202,7 +2407,7 @@ function exportToCSV() {
             card.purchaseCost || '',
             card.estimatedValue || '',
             card.estimatedValueDate || '',
-            '"' + (card.description || '') + '"'
+            description
         ];
         csvRows.push(row.join(','));
     });

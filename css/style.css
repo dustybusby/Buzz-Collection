@@ -252,6 +252,79 @@ h1 {
     min-width: 100px;
 }
 
+/* Card info preview in delete modal */
+.card-info-preview {
+    background: linear-gradient(135deg, rgba(10, 20, 30, 0.9), rgba(15, 25, 35, 0.8));
+    border: 1px solid rgba(0, 150, 255, 0.4);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+    text-align: left;
+    box-shadow: 
+        0 4px 8px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.card-info-preview div {
+    margin-bottom: 0.5rem;
+    color: #e0f4ff;
+    font-size: 0.9rem;
+}
+
+.card-info-preview div:last-child {
+    margin-bottom: 0;
+}
+
+.card-info-preview strong {
+    color: #ffffff;
+    text-shadow: 
+        0 0 2px #00d4ff,
+        0 0 4px rgba(0, 200, 255, 0.3);
+}
+
+/* Delete button styling in confirmation modal */
+#permanentDeleteBtn {
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.8), rgba(192, 57, 43, 0.6)) !important;
+    border-color: #c0392b !important;
+    color: #ffffff !important;
+}
+
+#permanentDeleteBtn:hover {
+    background: linear-gradient(135deg, rgba(231, 76, 60, 1), rgba(192, 57, 43, 0.8)) !important;
+    border-color: #a93226 !important;
+    box-shadow: 
+        0 6px 20px rgba(231, 76, 60, 0.4),
+        inset 0 0 15px rgba(231, 76, 60, 0.2);
+}
+
+#permanentDeleteBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* Success modal for delete confirmation */
+#deleteSuccessModal .modal-content h3 {
+    color: #00ff88;
+    text-shadow: 
+        0 0 2px #00ff88,
+        0 0 4px rgba(0, 255, 136, 0.4);
+}
+
+/* Enhance existing password modal styles for delete confirmations */
+#deleteConfirmModal .modal-content,
+#finalDeleteModal .modal-content,
+#deleteSuccessModal .modal-content {
+    max-width: 450px;
+}
+
+#finalDeleteModal .modal-content p strong {
+    color: #ff6b6b;
+    text-shadow: 
+        0 0 2px #ff6b6b,
+        0 0 4px rgba(255, 107, 107, 0.3);
+}
+
 /* Dashboard specific styles */
 .stats-grid {
     display: grid;
@@ -395,7 +468,7 @@ h1 {
     align-items: center;
     transition: all 0.3s ease;
     box-shadow: 
-        0 4px 8px rgba(0, 0, 0, 0.3),
+0 4px 8px rgba(0, 0, 0, 0.3),
         0 2px 4px rgba(0, 0, 0, 0.2),
         inset 0 1px 0 rgba(255, 255, 255, 0.1),
         inset 0 -1px 0 rgba(0, 0, 0, 0.2);
@@ -1892,7 +1965,7 @@ h1 {
     border-radius: 14px;
     z-index: -1;
     filter: blur(4px);
-    opacity: 0.8;
+opacity: 0.8;
 }
 
 .monetary-field {
