@@ -303,56 +303,26 @@ h1 {
     transform: none !important;
 }
 
-/* Updated delete modal styles - Combined single dialog */
-#deleteConfirmModal .modal-content {
-    max-width: 450px;
-}
-
-#deleteConfirmModal .modal-content h3 {
-    color: #ff6b6b;
-    text-shadow: 
-        0 0 2px #ff6b6b,
-        0 0 4px rgba(255, 107, 107, 0.3);
-}
-
-#deleteConfirmModal .modal-content p strong {
-    color: #ff6b6b;
-    text-shadow: 
-        0 0 2px #ff6b6b,
-        0 0 4px rgba(255, 107, 107, 0.3);
-}
-
-/* Enhanced delete button styling in confirmation modal */
-#deleteConfirmModal #permanentDeleteBtn {
-    background: linear-gradient(135deg, rgba(231, 76, 60, 0.8), rgba(192, 57, 43, 0.6)) !important;
-    border-color: #c0392b !important;
-    color: #ffffff !important;
-}
-
-#deleteConfirmModal #permanentDeleteBtn:hover {
-    background: linear-gradient(135deg, rgba(231, 76, 60, 1), rgba(192, 57, 43, 0.8)) !important;
-    border-color: #a93226 !important;
-    box-shadow: 
-        0 6px 20px rgba(231, 76, 60, 0.4),
-        inset 0 0 15px rgba(231, 76, 60, 0.2);
-}
-
-#deleteConfirmModal #permanentDeleteBtn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none !important;
-}
-
 /* Success modal for delete confirmation */
-#deleteSuccessModal .modal-content {
-    max-width: 450px;
-}
-
 #deleteSuccessModal .modal-content h3 {
     color: #00ff88;
     text-shadow: 
         0 0 2px #00ff88,
         0 0 4px rgba(0, 255, 136, 0.4);
+}
+
+/* Enhance existing password modal styles for delete confirmations */
+#deleteConfirmModal .modal-content,
+#finalDeleteModal .modal-content,
+#deleteSuccessModal .modal-content {
+    max-width: 450px;
+}
+
+#finalDeleteModal .modal-content p strong {
+    color: #ff6b6b;
+    text-shadow: 
+        0 0 2px #ff6b6b,
+        0 0 4px rgba(255, 107, 107, 0.3);
 }
 
 /* Dashboard specific styles */
