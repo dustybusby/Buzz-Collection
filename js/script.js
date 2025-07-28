@@ -233,9 +233,13 @@ async function initializeAddPageAfterAuth() {
             ungradedGrade.addEventListener('change', toggleGradeInput);
         }
         
+        // FIXED: Add CSV file upload listener
         const csvFile = document.getElementById('csvFile');
         if (csvFile) {
             csvFile.addEventListener('change', handleCSVUpload);
+            console.log('CSV file input listener added successfully');
+        } else {
+            console.error('CSV file input not found!');
         }
     } else {
         alert('Failed to initialize Firebase. Some features may not work.');
@@ -810,14 +814,14 @@ function toggleEstimatedValueInput() {
         dateInput.style.opacity = checkbox.checked ? '0.5' : '1';
         if (checkbox.checked) dateInput.value = '';
     }
+}
 
-    function toggleImageVariationInput() {
+function toggleImageVariationInput() {
     const select = document.getElementById('imageVariationSelect');
     const text = document.getElementById('imageVariationText');
-        if (select && text) {
-            text.style.display = select.value === 'Y' ? 'block' : 'none';
-            if (select.value === 'N') text.value = '';
-        }
+    if (select && text) {
+        text.style.display = select.value === 'Y' ? 'block' : 'none';
+        if (select.value === 'N') text.value = '';
     }
 }
 
@@ -1133,15 +1137,28 @@ function updateImportProgress(current, total, successCount, errorCount) {
 // Store import results for continue button
 let importResults = null;
 
-// Fixed: CSV import with proper comma handling and correct column order
+// FIXED: CSV import with proper comma handling and correct column order
 async function handleCSVUpload(event) {
     const file = event.target.files[0];
-    if (!file) return;
+    if (!file) {
+        console.log('No file selected');
+        return;
+    }
+    
+    console.log('CSV file selected:', file.name);
+    
+    // Check if Firebase is initialized
+    if (!db || !window.firebaseRefs) {
+        console.error('Firebase not initialized');
+        alert('System not ready. Please wait a moment and try again.');
+        return;
+    }
     
     showImportDialog();
     
     const reader = new FileReader();
     reader.onload = async function(e) {
+        console.log('File read successfully, starting processing...');
         const csv = e.target.result;
         const lines = csv.split('\n');
         
@@ -1162,6 +1179,8 @@ async function handleCSVUpload(event) {
         }
         
         const totalDataLines = dataLines.length;
+        console.log(`Processing ${totalDataLines} data lines`);
+        
         const { addDoc, collection } = window.firebaseRefs;
         
         updateImportProgress(0, totalDataLines, 0, 0);
@@ -1170,6 +1189,7 @@ async function handleCSVUpload(event) {
         
         for (const lineData of dataLines) {
             processedCount++;
+            console.log(`Processing line ${processedCount}/${totalDataLines}`);
             
             try {
                 // Fixed: Use proper CSV parsing to handle commas in quoted fields
@@ -1219,6 +1239,7 @@ async function handleCSVUpload(event) {
                 });
                 
             } catch (error) {
+                console.error(`Error processing line ${processedCount}:`, error);
                 errorCount++;
                 
                 const values = parseCSVLine(lineData.content);
@@ -1249,8 +1270,16 @@ async function handleCSVUpload(event) {
             };
         }
         
+        console.log(`Import completed: ${successCount} successful, ${errorCount} failed`);
+        
         event.target.value = '';
     };
+    
+    reader.onerror = function() {
+        console.error('Error reading file');
+        alert('Error reading file. Please try again.');
+    };
+    
     reader.readAsText(file);
 }
 
@@ -1537,8 +1566,7 @@ function displayTopProducts() {
                     <div class="product-emv">EMV: $${stats.emv.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                 </div>
                 <div class="product-count">${stats.count}</div>
-            </div>
-        `).join('');
+            </div`).join('');
     }
 }
 
@@ -2480,8 +2508,10 @@ function toggleMobileMenu() {
 // INITIALIZATION
 // ============================================================================
 
-// Simple working initialization
+// FIXED: Initialization with proper CSV handler setup
 document.addEventListener('DOMContentLoaded', async function() {
+    console.log('DOM Content Loaded - Initializing application...');
+    
     const loadingEl = document.getElementById('loading');
     const mainContentEl = document.getElementById('mainContent');
     
@@ -2491,6 +2521,15 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     
     if (isAddPage()) {
+        console.log('Add page detected');
+        
+        // FIXED: Set up CSV file input listener immediately for add page
+        const csvFile = document.getElementById('csvFile');
+        if (csvFile) {
+            console.log('Setting up CSV file listener on page load');
+            csvFile.addEventListener('change', handleCSVUpload);
+        }
+        
         if (!checkPasswordProtection()) {
             return;
         }
@@ -2502,18 +2541,24 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // For other pages
     if (!loadingEl || !mainContentEl) {
+        console.log('Loading or main content elements not found');
         return;
     }
     
+    console.log('Initializing Firebase...');
     const success = await initFirebase();
+    console.log('Firebase initialization result:', success);
     
     if (success) {
         if (isCollectionPage()) {
+            console.log('Collection page detected, initializing...');
             initializeCollectionPage();
         }
         
+        console.log('Loading collection from Firebase...');
         loadCollectionFromFirebase();
     } else {
+        console.error('Firebase initialization failed');
         if (loadingEl) {
             loadingEl.innerHTML = `
                 <div style="color: #ff6b6b; text-align: center; padding: 2rem;">
@@ -2529,6 +2574,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (menuToggle) {
         menuToggle.addEventListener('click', toggleMobileMenu);
     }
+    
+    console.log('Application initialization complete');
 });
 
 // Modal click outside to close - Updated to prevent import completion modal from closing
@@ -2572,4 +2619,5 @@ window.addEventListener('click', function(event) {
 
 // Make changePage function globally accessible
 window.changePage = changePage;
+
 // End of script.js file
