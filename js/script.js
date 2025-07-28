@@ -1563,7 +1563,7 @@ function displayTopProducts() {
             <div class="product-item">
                 <div class="product-info">
                     <div class="product-name">${product}</div>
-                    <div class="product-emv">EMV: $${stats.emv.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                    <div class="product-emv">EMV: ${stats.emv.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                 </div>
                 <div class="product-count">${stats.count}</div>
             </div`).join('');
@@ -2077,9 +2077,17 @@ function displayListView(cards) {
         const rookieCheck = card.rookieCard === 'Y' ? '✓' : '';
         const autographCheck = card.autograph === 'Y' ? '✓' : ''; // New autograph column
         const parallel = card.parallel !== 'N' ? (card.parallel || '') : '';
-        // FIXED: Remove leading single quote from numbered display
+        // FIXED: Remove leading single quote from numbered display AND ending single quote
         const numberedRaw = card.numbered !== 'N' ? (card.numbered || '') : '';
-        const numbered = numberedRaw.startsWith("'") ? numberedRaw.substring(1) : numberedRaw;
+        let numbered = numberedRaw;
+        // Remove leading quote
+        if (numbered.startsWith("'")) {
+            numbered = numbered.substring(1);
+        }
+        // Remove ending quote
+        if (numbered.endsWith("'")) {
+            numbered = numbered.slice(0, -1);
+        }
         const insert = card.insert !== 'N' ? (card.insert || '') : '';
         const cardId = card.id;
         
@@ -2172,9 +2180,19 @@ function viewCard(cardId) {
     const autographText = card.autograph === 'Y' ? 'Autograph: Yes' : 'Autograph: No'; // New autograph display
     const baseSetText = card.baseSet === 'Y' ? 'Base Set: Yes' : 'Base Set: No';
     const parallelText = card.parallel && card.parallel !== 'N' ? `Parallel: ${card.parallel}` : 'Parallel: No';
-    // FIXED: Remove leading single quote from numbered display in view
+    // FIXED: Remove leading single quote AND ending single quote from numbered display in view
     const numberedRaw = card.numbered && card.numbered !== 'N' ? card.numbered : 'N';
-    const numberedClean = numberedRaw !== 'N' && numberedRaw.startsWith("'") ? numberedRaw.substring(1) : numberedRaw;
+    let numberedClean = numberedRaw !== 'N' ? numberedRaw : 'N';
+    if (numberedClean !== 'N') {
+        // Remove leading quote
+        if (numberedClean.startsWith("'")) {
+            numberedClean = numberedClean.substring(1);
+        }
+        // Remove ending quote
+        if (numberedClean.endsWith("'")) {
+            numberedClean = numberedClean.slice(0, -1);
+        }
+    }
     const numberedText = numberedClean !== 'N' ? `Numbered: ${numberedClean}` : 'Numbered: No';
     const insertText = card.insert && card.insert !== 'N' ? `Insert: ${card.insert}` : 'Insert: No';
     const imageVariationText = card.imageVariation && card.imageVariation !== 'N' ? `Image Variation: ${card.imageVariation}` : 'Image Variation: No';
@@ -2263,7 +2281,7 @@ function formatDateForDisplay(dateValue) {
                 date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
                 } else {
                 // For other string formats, add time to force local interpretation
-                date = new Date(dateValue + 'T00:00:00');
+                date = new Date(dateValue + 'T12:00:00'); // FIXED: Use noon to avoid timezone shifts
             }
         } else if (dateValue instanceof Date) {
             date = dateValue;
@@ -2334,7 +2352,7 @@ function showCombinedDeleteConfirmModal(card, year, product, player, team, cardN
     deleteModal.className = 'modal';
     deleteModal.id = 'combinedDeleteModal';
     deleteModal.innerHTML = `
-        <div class="modal-content password-modal-content">
+        <div class="modal-content delete-confirm-modal-content">
             <h3>Confirm Permanent Delete</h3>
             <p><strong>This action cannot be undone!</strong></p>
             <p>Are you sure you want to permanently delete this card from your collection?</p>
@@ -2393,13 +2411,13 @@ function showCombinedDeleteConfirmModal(card, year, product, player, team, cardN
     });
 }
 
-// Updated function to show delete success confirmation (unchanged)
+// FIXED: Updated function to show delete success confirmation with shorter timeout and smaller modal
 function showDeleteSuccessModal() {
     const successModal = document.createElement('div');
     successModal.className = 'modal';
     successModal.id = 'deleteSuccessModal';
     successModal.innerHTML = `
-        <div class="modal-content password-modal-content">
+        <div class="modal-content delete-success-modal-content">
             <h3>Card Deleted Successfully!</h3>
             <p>The card has been permanently removed from your collection.</p>
             <div class="password-buttons">
@@ -2418,12 +2436,7 @@ function showDeleteSuccessModal() {
         successModal.remove();
     });
     
-    // Auto-close after 3 seconds
-    setTimeout(() => {
-        if (document.getElementById('deleteSuccessModal')) {
-            successModal.remove();
-        }
-    }, 3000);
+    // FIXED: Removed auto-close timeout that was causing premature closure
     
     // Close on outside click
     successModal.addEventListener('click', function(event) {

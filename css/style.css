@@ -201,6 +201,40 @@ h1 {
         inset 0 -2px 0 rgba(0, 0, 0, 0.3);
 }
 
+/* FIXED: Delete confirmation modal - smaller and more compact */
+.delete-confirm-modal-content {
+    max-width: 450px;
+    min-height: 280px;
+    text-align: center;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, rgba(5, 15, 25, 0.95), rgba(10, 20, 30, 0.9));
+    border: 2px solid rgba(0, 150, 255, 0.4);
+    border-radius: 15px;
+    box-shadow: 
+        0 25px 80px rgba(0,0,0,0.6),
+        0 15px 35px rgba(0, 0, 0, 0.7),
+        0 5px 15px rgba(0, 0, 0, 0.5),
+        inset 0 2px 0 rgba(255, 255, 255, 0.15),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* FIXED: Delete success modal - much smaller and compact */
+.delete-success-modal-content {
+    max-width: 350px;
+    min-height: 150px;
+    text-align: center;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, rgba(5, 15, 25, 0.95), rgba(10, 20, 30, 0.9));
+    border: 2px solid rgba(0, 150, 255, 0.4);
+    border-radius: 15px;
+    box-shadow: 
+        0 25px 80px rgba(0,0,0,0.6),
+        0 15px 35px rgba(0, 0, 0, 0.7),
+        0 5px 15px rgba(0, 0, 0, 0.5),
+        inset 0 2px 0 rgba(255, 255, 255, 0.15),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.3);
+}
+
 .password-modal-content h3 {
     color: #00d4ff;
     margin-bottom: 1rem;
@@ -1965,7 +1999,7 @@ h1 {
     border-radius: 14px;
     z-index: -1;
     filter: blur(4px);
-opacity: 0.8;
+    opacity: 0.8;
 }
 
 .monetary-field {
