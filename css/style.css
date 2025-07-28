@@ -389,6 +389,9 @@ h1 {
     gap: 1.2rem;
     margin-bottom: 3rem;
     max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    justify-items: center;
 }
 
 .stat-card {
@@ -567,6 +570,12 @@ h1 {
     text-shadow: 
         0 0 2px #00ff88,
         0 0 4px rgba(0, 255, 136, 0.3);
+}
+
+.product-emv::before {
+    content: '$';
+    font-size: 0.9rem;
+    opacity: 0.8;
 }
 
 .product-count {
@@ -1125,6 +1134,12 @@ h1 {
     text-shadow: 
         0 0 2px #00ff88,
         0 0 4px rgba(0, 255, 136, 0.3);
+}
+
+.mini-card-price-green::before {
+    content: '$';
+    font-size: 0.9rem;
+    opacity: 0.8;
 }
 
 /* New styling for team under player name */

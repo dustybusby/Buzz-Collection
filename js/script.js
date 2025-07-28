@@ -455,7 +455,20 @@ async function loadCollectionFromFirebase() {
 // Helper functions to determine current page
 function isCollectionPage() {
     return window.location.pathname.includes('collection.html') || 
-           document.getElementById('listContainer') !== null;
+           document.getElementById('listContainer') !== null ||
+           document.querySelector('.cards-list') !== null;
+}
+
+// Enhanced initialization order
+if (success) {
+    // Initialize collection page before loading data
+    if (isCollectionPage()) {
+        console.log('Collection page detected, initializing...');
+        initializeCollectionPage();
+    }
+    
+    console.log('Loading collection from Firebase...');
+    await loadCollectionFromFirebase();
 }
 
 function isDashboardPage() {
