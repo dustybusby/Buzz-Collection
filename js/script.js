@@ -316,6 +316,7 @@ function checkEditPermission() {
     });
 }
 
+// FIXED: Combined delete permission function to show single warning dialog
 function checkDeletePermission() {
     return new Promise(async (resolve) => {
         if (sessionStorage.getItem('adminVerified') === 'true') {
@@ -601,7 +602,7 @@ function cancelEdit() {
     window.location.href = 'collection.html';
 }
 
-// Fixed: populateForm function to handle date formatting properly
+// FIXED: populateForm function with normalized date handling to prevent timezone issues
 function populateForm(card) {
     const setFieldValue = (id, value) => {
         const element = document.getElementById(id);
@@ -681,13 +682,13 @@ function populateForm(card) {
         if (estimatedValue) estimatedValue.disabled = true;
     }
     
-    // Fixed: Handle estimated value date with proper date formatting
+    // FIXED: Handle estimated value date with proper date formatting and timezone normalization
     const estimatedValueDate = document.getElementById('estimatedValueDate');
     if (estimatedValueDate && card.estimatedValueDate) {
-        // Convert date to YYYY-MM-DD format for input field
-        const date = new Date(card.estimatedValueDate);
-        if (!isNaN(date.getTime())) {
-            estimatedValueDate.value = date.toISOString().split('T')[0];
+        // Normalize date by treating as local date to prevent timezone issues
+        const normalizedDate = normalizeDate(card.estimatedValueDate);
+        if (normalizedDate) {
+            estimatedValueDate.value = normalizedDate;
         }
     }
     
@@ -704,14 +705,14 @@ function populateForm(card) {
 
     setFieldValue('description', card.description);
     
-    // Fixed: Handle purchase date with proper date formatting
+    // FIXED: Handle purchase date with proper date formatting and timezone normalization
     const purchaseDate = document.getElementById('purchaseDate');
     const unknownDate = document.getElementById('unknownDate');
     if (card.purchaseDate && card.purchaseDate !== 'Unknown') {
-        // Convert date to YYYY-MM-DD format for input field
-        const date = new Date(card.purchaseDate);
-        if (!isNaN(date.getTime())) {
-            if (purchaseDate) purchaseDate.value = date.toISOString().split('T')[0];
+        // Normalize date by treating as local date to prevent timezone issues
+        const normalizedDate = normalizeDate(card.purchaseDate);
+        if (normalizedDate) {
+            if (purchaseDate) purchaseDate.value = normalizedDate;
         }
     } else {
         if (unknownDate) unknownDate.checked = true;
@@ -726,6 +727,43 @@ function populateForm(card) {
     } else {
         if (unknownCost) unknownCost.checked = true;
         if (purchaseCost) purchaseCost.disabled = true;
+    }
+}
+
+// NEW: Helper function to normalize dates and prevent timezone issues
+function normalizeDate(dateValue) {
+    if (!dateValue) return null;
+    
+    try {
+        let date;
+        
+        // If it's already a string in YYYY-MM-DD format, use it directly
+        if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+            return dateValue;
+        }
+        
+        // If it's a date object or timestamp, convert it
+        if (dateValue instanceof Date) {
+            date = dateValue;
+        } else if (typeof dateValue === 'string') {
+            date = new Date(dateValue + 'T00:00:00'); // Force local time interpretation
+        } else {
+            date = new Date(dateValue);
+        }
+        
+        if (isNaN(date.getTime())) {
+            return null;
+        }
+        
+        // Get local date components to avoid timezone shift
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        
+        return `${year}-${month}-${day}`;
+    } catch (error) {
+        console.error('Error normalizing date:', error);
+        return null;
     }
 }
 
@@ -772,16 +810,15 @@ function toggleEstimatedValueInput() {
         dateInput.style.opacity = checkbox.checked ? '0.5' : '1';
         if (checkbox.checked) dateInput.value = '';
     }
-}
 
-function toggleImageVariationInput() {
+    function toggleImageVariationInput() {
     const select = document.getElementById('imageVariationSelect');
     const text = document.getElementById('imageVariationText');
     if (select && text) {
         text.style.display = select.value === 'Y' ? 'block' : 'none';
         if (select.value === 'N') text.value = '';
     }
-}
+}}
 
 function toggleDateInput() {
     const checkbox = document.getElementById('unknownDate');
@@ -1535,8 +1572,10 @@ function displayExpensiveCards() {
                 specialInfo.push(card.parallel);
             }
             
-if (card.numbered && card.numbered !== 'N') {
-                specialInfo.push(card.numbered);
+            if (card.numbered && card.numbered !== 'N') {
+                // FIXED: Remove leading single quote from numbered display
+                const numberedValue = card.numbered.startsWith("'") ? card.numbered.substring(1) : card.numbered;
+                specialInfo.push(numberedValue);
             }
             
             // Only show the special info line if there's at least one item
@@ -1547,7 +1586,7 @@ if (card.numbered && card.numbered !== 'N') {
                 <div class="mini-card clickable-card" data-card-id="${card.id}" style="cursor: pointer;">
                     <div class="mini-card-header">
                         <div class="mini-card-player">${card.player || 'Unknown Player'}</div>
-                        <div class="mini-card-price-green">$${parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                        <div class="mini-card-price-green">${parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                     </div>
                     <div class="mini-card-team">${card.team || 'Unknown'}</div>
                     <div class="mini-card-details">
@@ -1994,7 +2033,7 @@ function changePage(newPage) {
     }
 }
 
-// Fixed: displayListView function - remove duplicate event listeners to prevent double-click issue
+// FIXED: displayListView function with leading quote removal for numbered field
 function displayListView(cards) {
     const container = document.getElementById('listContainer');
     if (!container) return;
@@ -2009,7 +2048,9 @@ function displayListView(cards) {
         const rookieCheck = card.rookieCard === 'Y' ? '✓' : '';
         const autographCheck = card.autograph === 'Y' ? '✓' : ''; // New autograph column
         const parallel = card.parallel !== 'N' ? (card.parallel || '') : '';
-        const numbered = card.numbered !== 'N' ? (card.numbered || '') : '';
+        // FIXED: Remove leading single quote from numbered display
+        const numberedRaw = card.numbered !== 'N' ? (card.numbered || '') : '';
+        const numbered = numberedRaw.startsWith("'") ? numberedRaw.substring(1) : numberedRaw;
         const insert = card.insert !== 'N' ? (card.insert || '') : '';
         const cardId = card.id;
         
@@ -2087,7 +2128,7 @@ function filterCollection() {
     displayCollection();
 }
 
-// Fixed: viewCard function with proper date formatting
+// FIXED: viewCard function with proper date formatting and timezone normalization
 function viewCard(cardId) {
     const card = cardCollection.find(c => c.id === cardId);
     if (!card) return;
@@ -2102,30 +2143,33 @@ function viewCard(cardId) {
     const autographText = card.autograph === 'Y' ? 'Autograph: Yes' : 'Autograph: No'; // New autograph display
     const baseSetText = card.baseSet === 'Y' ? 'Base Set: Yes' : 'Base Set: No';
     const parallelText = card.parallel && card.parallel !== 'N' ? `Parallel: ${card.parallel}` : 'Parallel: No';
-    const numberedText = card.numbered && card.numbered !== 'N' ? `Numbered: ${card.numbered}` : 'Numbered: No';
+    // FIXED: Remove leading single quote from numbered display in view
+    const numberedRaw = card.numbered && card.numbered !== 'N' ? card.numbered : 'N';
+    const numberedClean = numberedRaw !== 'N' && numberedRaw.startsWith("'") ? numberedRaw.substring(1) : numberedRaw;
+    const numberedText = numberedClean !== 'N' ? `Numbered: ${numberedClean}` : 'Numbered: No';
     const insertText = card.insert && card.insert !== 'N' ? `Insert: ${card.insert}` : 'Insert: No';
     const imageVariationText = card.imageVariation && card.imageVariation !== 'N' ? `Image Variation: ${card.imageVariation}` : 'Image Variation: No';
     const description = card.description || 'None';
     const quantity = card.quantity || 1;
     
-    // Fixed: Monetary data formatting with proper date handling
+    // FIXED: Monetary data formatting with proper date handling and timezone normalization
     let purchaseDate = 'Unknown';
     if (card.purchaseDate && card.purchaseDate !== 'Unknown') {
-        const date = new Date(card.purchaseDate);
-        if (!isNaN(date.getTime())) {
-            purchaseDate = date.toLocaleDateString('en-US');
+        const normalizedDate = formatDateForDisplay(card.purchaseDate);
+        if (normalizedDate) {
+            purchaseDate = normalizedDate;
         }
     }
     
     const purchaseCost = card.purchaseCost === 'Unknown' || !card.purchaseCost ? 'Unknown' : '$' + parseFloat(card.purchaseCost).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const estimatedValue = card.estimatedValue === 'Unknown' || !card.estimatedValue ? 'Unknown' : '$' + parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     
-    // Fixed: Format estimated value date properly
+    // FIXED: Format estimated value date properly with timezone normalization
     let estimatedValueDate = 'Not specified';
     if (card.estimatedValueDate) {
-        const date = new Date(card.estimatedValueDate);
-        if (!isNaN(date.getTime())) {
-            estimatedValueDate = date.toLocaleDateString('en-US');
+        const normalizedDate = formatDateForDisplay(card.estimatedValueDate);
+        if (normalizedDate) {
+            estimatedValueDate = normalizedDate;
         }
     }
     
@@ -2175,6 +2219,45 @@ function viewCard(cardId) {
     document.getElementById('cardModal').style.display = 'flex';
 }
 
+// NEW: Helper function to format dates for display and normalize timezone issues
+function formatDateForDisplay(dateValue) {
+    if (!dateValue) return null;
+    
+    try {
+        let date;
+        
+        // If it's already a string in a readable format, parse it carefully
+        if (typeof dateValue === 'string') {
+            // If it's in YYYY-MM-DD format, treat as local date
+            if (/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+                const parts = dateValue.split('-');
+                date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+                } else {
+                // For other string formats, add time to force local interpretation
+                date = new Date(dateValue + 'T00:00:00');
+            }
+        } else if (dateValue instanceof Date) {
+            date = dateValue;
+        } else {
+            date = new Date(dateValue);
+        }
+        
+        if (isNaN(date.getTime())) {
+            return null;
+        }
+        
+        // Format as MM/DD/YYYY using local date components to avoid timezone shift
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const year = date.getFullYear();
+        
+        return `${month}/${day}/${year}`;
+    } catch (error) {
+        console.error('Error formatting date for display:', error);
+        return null;
+    }
+}
+
 function closeCardModal() {
     const modal = document.getElementById('cardModal');
     if (modal) {
@@ -2196,7 +2279,7 @@ async function editCard(cardId) {
     window.location.href = 'add.html?edit=true';
 }
 
-// Fixed: Custom delete modal instead of browser popup
+// FIXED: Combined delete function with single warning dialog (combining first two prompts)
 async function deleteCard(cardId) {
     // Check password first
     const hasPermission = await checkDeletePermission();
@@ -2211,28 +2294,29 @@ async function deleteCard(cardId) {
     const team = card.team || '';
     const cardNumber = card.cardNumber || '';
     
-    // Create custom delete confirmation modal
-    showDeleteConfirmModal(card, year, product, player, team, cardNumber, cardId);
+    // FIXED: Show single combined delete confirmation modal with permanent warning
+    showCombinedDeleteConfirmModal(card, year, product, player, team, cardNumber, cardId);
 }
 
-// New function to show custom delete confirmation modal
-function showDeleteConfirmModal(card, year, product, player, team, cardNumber, cardId) {
-    // Create delete confirmation modal
+// FIXED: New combined delete confirmation modal (replaces the first two separate dialogs)
+function showCombinedDeleteConfirmModal(card, year, product, player, team, cardNumber, cardId) {
+    // Create combined delete confirmation modal
     const deleteModal = document.createElement('div');
     deleteModal.className = 'modal';
-    deleteModal.id = 'deleteConfirmModal';
+    deleteModal.id = 'combinedDeleteModal';
     deleteModal.innerHTML = `
         <div class="modal-content password-modal-content">
-            <h3>Confirm Delete</h3>
-            <p>Are you sure you want to delete this card?</p>
+            <h3>Confirm Permanent Delete</h3>
+            <p><strong>This action cannot be undone!</strong></p>
+            <p>Are you sure you want to permanently delete this card from your collection?</p>
             <div class="card-info-preview">
                 <div><strong>${year} ${product}</strong></div>
                 <div>${player} - ${team}</div>
                 <div>Card #${cardNumber}</div>
             </div>
             <div class="password-buttons">
-                <button class="btn" id="confirmDeleteBtn">Yes, Delete</button>
-                <button class="btn btn-primary" id="cancelDeleteBtn">Cancel</button>
+                <button class="btn" id="permanentDeleteBtn" style="background: linear-gradient(135deg, rgba(231, 76, 60, 0.8), rgba(192, 57, 43, 0.6)); border-color: #c0392b; color: #ffffff;">Permanently Delete</button>
+                <button class="btn btn-primary" id="cancelCombinedDeleteBtn">Cancel</button>
             </div>
         </div>
     `;
@@ -2240,56 +2324,13 @@ function showDeleteConfirmModal(card, year, product, player, team, cardNumber, c
     document.body.appendChild(deleteModal);
     deleteModal.style.display = 'flex';
     
-    const confirmBtn = document.getElementById('confirmDeleteBtn');
-    const cancelBtn = document.getElementById('cancelDeleteBtn');
+    const permanentBtn = document.getElementById('permanentDeleteBtn');
+    const cancelBtn = document.getElementById('cancelCombinedDeleteBtn');
     
     cancelBtn.focus(); // Focus on cancel for safety
     
     cancelBtn.addEventListener('click', function() {
         deleteModal.remove();
-    });
-    
-confirmBtn.addEventListener('click', function() {
-        deleteModal.remove();
-        // Show final confirmation
-        showFinalDeleteConfirm(cardId);
-    });
-    
-    // Close on outside click
-    deleteModal.addEventListener('click', function(event) {
-        if (event.target === deleteModal) {
-            deleteModal.remove();
-        }
-    });
-}
-
-// New function for final delete confirmation
-function showFinalDeleteConfirm(cardId) {
-    const finalModal = document.createElement('div');
-    finalModal.className = 'modal';
-    finalModal.id = 'finalDeleteModal';
-    finalModal.innerHTML = `
-        <div class="modal-content password-modal-content">
-            <h3>Final Confirmation</h3>
-            <p><strong>This action cannot be undone!</strong></p>
-            <p>Click "Permanently Delete" to remove this card from your collection forever.</p>
-            <div class="password-buttons">
-                <button class="btn" id="permanentDeleteBtn" style="background: #e74c3c; border-color: #c0392b;">Permanently Delete</button>
-                <button class="btn btn-primary" id="cancelFinalBtn">Cancel</button>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(finalModal);
-    finalModal.style.display = 'flex';
-    
-    const permanentBtn = document.getElementById('permanentDeleteBtn');
-    const cancelFinalBtn = document.getElementById('cancelFinalBtn');
-    
-    cancelFinalBtn.focus(); // Focus on cancel for safety
-    
-    cancelFinalBtn.addEventListener('click', function() {
-        finalModal.remove();
     });
     
     permanentBtn.addEventListener('click', async function() {
@@ -2303,27 +2344,27 @@ function showFinalDeleteConfirm(cardId) {
             cardCollection = cardCollection.filter(c => c.id !== cardId);
             displayCollection();
             
-            finalModal.remove();
+            deleteModal.remove();
             
             // Show success confirmation
             showDeleteSuccessModal();
             
         } catch (error) {
             console.error('Error deleting card:', error);
-            finalModal.remove();
+            deleteModal.remove();
             alert('Error deleting card: ' + error.message);
         }
     });
     
     // Close on outside click
-    finalModal.addEventListener('click', function(event) {
-        if (event.target === finalModal) {
-            finalModal.remove();
+    deleteModal.addEventListener('click', function(event) {
+        if (event.target === deleteModal) {
+            deleteModal.remove();
         }
     });
 }
 
-// New function to show delete success confirmation
+// Updated function to show delete success confirmation (unchanged)
 function showDeleteSuccessModal() {
     const successModal = document.createElement('div');
     successModal.className = 'modal';
@@ -2519,6 +2560,12 @@ window.addEventListener('click', function(event) {
     const editPasswordModal = document.getElementById('editPasswordModal');
     if (event.target === editPasswordModal) {
         editPasswordModal.remove();
+    }
+    
+    // FIXED: Close combined delete modal when clicking outside
+    const combinedDeleteModal = document.getElementById('combinedDeleteModal');
+    if (event.target === combinedDeleteModal) {
+        combinedDeleteModal.remove();
     }
 });
 
