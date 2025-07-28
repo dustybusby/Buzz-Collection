@@ -455,20 +455,7 @@ async function loadCollectionFromFirebase() {
 // Helper functions to determine current page
 function isCollectionPage() {
     return window.location.pathname.includes('collection.html') || 
-           document.getElementById('listContainer') !== null ||
-           document.querySelector('.cards-list') !== null;
-}
-
-// Enhanced initialization order
-if (success) {
-    // Initialize collection page before loading data
-    if (isCollectionPage()) {
-        console.log('Collection page detected, initializing...');
-        initializeCollectionPage();
-    }
-    
-    console.log('Loading collection from Firebase...');
-    await loadCollectionFromFirebase();
+           document.getElementById('listContainer') !== null;
 }
 
 function isDashboardPage() {
@@ -1616,8 +1603,7 @@ function displayTopProducts() {
                     <div class="product-emv">EMV: ${stats.emv.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                 </div>
                 <div class="product-count">${stats.count}</div>
-            </div>
-        `).join('');
+            </div`).join('');
     }
 }
 
@@ -2110,6 +2096,249 @@ function changePage(newPage) {
     const cardsList = document.querySelector('.cards-list');
     if (cardsList) {
         cardsList.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+// FIXED: displayListView function with leading quote removal for numbered field
+function displayListView(cards) {
+    const container = document.getElementById('listContainer');
+    if (!container) return;
+    
+    const listHTML = cards.map(card => {
+        const year = card.year || '';
+        const product = card.product || '';
+        const cardNumber = card.cardNumber || '';
+        const baseSet = card.baseSet === 'Y' ? '✓' : '';
+        const player = card.player || '';
+        const team = card.team || '';
+        const rookieCheck = card.rookieCard === 'Y' ? '✓' : '';
+        const autographCheck = card.autograph === 'Y' ? '✓' : ''; // New autograph column
+        const parallel = card.parallel !== 'N' ? (card.parallel || '') : '';
+        // FIXED: Remove leading single quote from numbered display AND ending single quote
+        const numberedRaw = card.numbered !== 'N' ? (card.numbered || '') : '';
+        let numbered = numberedRaw;
+        // Remove leading quote
+        if (numbered.startsWith("'")) {
+            numbered = numbered.substring(1);
+        }
+        // Remove ending quote
+        if (numbered.endsWith("'")) {
+            numbered = numbered.slice(0, -1);
+        }
+        const insert = card.insert !== 'N' ? (card.insert || '') : '';
+        const cardId = card.id;
+        
+        return `<div class="list-item">
+            <div>${year}</div>
+            <div>${product}</div>
+            <div>${cardNumber}</div>
+            <div style="text-align: center;">${baseSet}</div>
+            <div class="list-item-player">${player}</div>
+            <div>${team}</div>
+            <div style="text-align: center;">${autographCheck}</div>
+            <div style="text-align: center;">${rookieCheck}</div>
+            <div>${parallel}</div>
+            <div>${numbered}</div>
+            <div>${insert}</div>
+            <div class="action-buttons">
+                <button class="view-btn" data-card-id="${cardId}">View</button>
+                <button class="edit-btn" data-card-id="${cardId}">Edit</button>
+                <button class="delete-btn" data-card-id="${cardId}">Del</button>
+            </div>
+        </div>`;
+    }).join('');
+    
+    container.innerHTML = listHTML;
+    
+    // Fixed: Remove any existing listeners first, then add new ones to prevent double-click issue
+    container.removeEventListener('click', handleActionButtonClick);
+    container.addEventListener('click', handleActionButtonClick);
+}
+
+// Fixed: Single event handler for action buttons to prevent double-click issue
+function handleActionButtonClick(event) {
+    const target = event.target;
+    
+    // Prevent multiple rapid clicks
+    if (target.disabled) return;
+    
+    if (target.classList.contains('view-btn')) {
+        event.preventDefault();
+        event.stopPropagation();
+        const cardId = target.getAttribute('data-card-id');
+        viewCard(cardId);
+    } else if (target.classList.contains('edit-btn')) {
+        event.preventDefault();
+        event.stopPropagation();
+        const cardId = target.getAttribute('data-card-id');
+        editCard(cardId);
+    } else if (target.classList.contains('delete-btn')) {
+        event.preventDefault();
+        event.stopPropagation();
+        const cardId = target.getAttribute('data-card-id');
+        deleteCard(cardId);
+    }
+}
+
+// Updated clearAllFilters function - added autograph filter and reset pagination
+function clearAllFilters() {
+    const filters = [
+        'filter-year', 'filter-product', 'filter-cardNumber', 'filter-baseSet', 'filter-player', 
+        'filter-team', 'filter-rookieCard', 'filter-autograph', 'filter-parallel',
+        'filter-numbered', 'filter-insert', 'categoryFilter'
+    ];
+    
+    filters.forEach(filterId => {
+        const element = document.getElementById(filterId);
+        if (element) element.value = '';
+    });
+    
+    currentPage = 1; // Reset to first page
+    filterCollection();
+}
+
+function filterCollection() {
+    currentPage = 1; // Reset to first page when filtering
+    displayCollection();
+}
+
+// FIXED: viewCard function with proper date formatting and timezone normalization
+function viewCard(cardId) {
+    const card = cardCollection.find(c => c.id === cardId);
+    if (!card) return;
+    
+    const player = card.player || 'Unknown Player';
+    const team = card.team || 'Unknown Team';
+    const year = card.year || '';
+    const product = card.product || '';
+    const category = card.category || 'Unknown';
+    const cardNumber = card.cardNumber || 'N/A';
+    const rookieText = card.rookieCard === 'Y' ? 'Rookie Card: Yes' : 'Rookie Card: No';
+    const autographText = card.autograph === 'Y' ? 'Autograph: Yes' : 'Autograph: No'; // New autograph display
+    const baseSetText = card.baseSet === 'Y' ? 'Base Set: Yes' : 'Base Set: No';
+    const parallelText = card.parallel && card.parallel !== 'N' ? `Parallel: ${card.parallel}` : 'Parallel: No';
+    // FIXED: Remove leading single quote AND ending single quote from numbered display in view
+    const numberedRaw = card.numbered && card.numbered !== 'N' ? card.numbered : 'N';
+    let numberedClean = numberedRaw !== 'N' ? numberedRaw : 'N';
+    if (numberedClean !== 'N') {
+        // Remove leading quote
+        if (numberedClean.startsWith("'")) {
+            numberedClean = numberedClean.substring(1);
+        }
+        // Remove ending quote
+        if (numberedClean.endsWith("'")) {
+            numberedClean = numberedClean.slice(0, -1);
+        }
+    }
+    const numberedText = numberedClean !== 'N' ? `Numbered: ${numberedClean}` : 'Numbered: No';
+    const insertText = card.insert && card.insert !== 'N' ? `Insert: ${card.insert}` : 'Insert: No';
+    const imageVariationText = card.imageVariation && card.imageVariation !== 'N' ? `Image Variation: ${card.imageVariation}` : 'Image Variation: No';
+    const description = card.description || 'None';
+    const quantity = card.quantity || 1;
+    
+    // FIXED: Monetary data formatting with proper date handling and timezone normalization
+    let purchaseDate = 'Unknown';
+    if (card.purchaseDate && card.purchaseDate !== 'Unknown') {
+        const normalizedDate = formatDateForDisplay(card.purchaseDate);
+        if (normalizedDate) {
+            purchaseDate = normalizedDate;
+        }
+    }
+    
+    const purchaseCost = card.purchaseCost === 'Unknown' || !card.purchaseCost ? 'Unknown' : '$' + parseFloat(card.purchaseCost).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const estimatedValue = card.estimatedValue === 'Unknown' || !card.estimatedValue ? 'Unknown' : '$' + parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    
+    // FIXED: Format estimated value date properly with timezone normalization
+    let estimatedValueDate = 'Not specified';
+    if (card.estimatedValueDate) {
+        const normalizedDate = formatDateForDisplay(card.estimatedValueDate);
+        if (normalizedDate) {
+            estimatedValueDate = normalizedDate;
+        }
+    }
+    
+    // Format estimated value text
+    let estimatedValueText = '';
+    if (estimatedValue !== 'Unknown' && estimatedValueDate !== 'Not specified') {
+        estimatedValueText = `Estimated market value on ${estimatedValueDate}: ${estimatedValue}`;
+    } else if (estimatedValue !== 'Unknown') {
+        estimatedValueText = `Estimated market value: ${estimatedValue}`;
+    } else {
+        estimatedValueText = 'Estimated market value: Unknown';
+    }
+    
+    const modalHTML = `
+        <div class="card-header">
+            <div class="card-title-section">
+                <div class="card-title">${player}</div>
+                <div class="card-subtitle">${team}</div>
+                <div class="card-product">Card #${cardNumber} | ${year} ${product}</div>
+            </div>
+            <div class="card-category">${category}</div>
+        </div>
+        
+        <div class="card-body">
+            <div class="card-details">
+                <div class="card-detail-line">${baseSetText}</div>
+                <div class="card-detail-line">${insertText}</div>
+                <div class="card-detail-line">${parallelText}</div>
+                <div class="card-detail-line">${numberedText}</div>
+                <div class="card-detail-line">${rookieText}</div>
+                <div class="card-detail-line">${autographText}</div>
+                <div class="card-detail-line">${imageVariationText}</div>
+                <div class="card-detail-line">Quantity: ${quantity}</div>
+                <div class="card-detail-line">Add'l Notes: ${description}</div>
+            </div>
+            
+            <div class="card-monetary">
+                <div class="monetary-field">Grade: ${card.grade || 'Ungraded'}</div>
+                <div class="monetary-field">Purchase Date: ${purchaseDate}</div>
+                <div class="monetary-field">Purchase Price: ${purchaseCost}</div>
+                <div class="monetary-field estimated-value">${estimatedValueText}</div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('modalCardContent').innerHTML = modalHTML;
+    document.getElementById('cardModal').style.display = 'flex';
+}
+
+// NEW: Helper function to format dates for display and normalize timezone issues
+function formatDateForDisplay(dateValue) {
+    if (!dateValue) return null;
+    
+    try {
+        let date;
+        
+        // If it's already a string in a readable format, parse it carefully
+        if (typeof dateValue === 'string') {
+            // If it's in YYYY-MM-DD format, treat as local date
+            if (/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+                const parts = dateValue.split('-');
+                date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+                } else {
+                // For other string formats, add time to force local interpretation
+                date = new Date(dateValue + 'T12:00:00'); // FIXED: Use noon to avoid timezone shifts
+            }
+        } else if (dateValue instanceof Date) {
+            date = dateValue;
+        } else {
+            date = new Date(dateValue);
+        }
+        
+        if (isNaN(date.getTime())) {
+            return null;
+        }
+        
+        // Format as MM/DD/YYYY using local date components to avoid timezone shift
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const year = date.getFullYear();
+        
+        return `${month}/${day}/${year}`;
+    } catch (error) {
+        console.error('Error formatting date for display:', error);
+        return null;
     }
 }
 
