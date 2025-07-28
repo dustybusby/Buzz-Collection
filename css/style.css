@@ -201,12 +201,12 @@ h1 {
         inset 0 -2px 0 rgba(0, 0, 0, 0.3);
 }
 
-/* FIXED: Delete confirmation modal - MUCH smaller and proportional to text */
+/* FIXED: Delete confirmation modal - Much smaller and proportional to text */
 .delete-confirm-modal-content {
-    max-width: 320px;
+    max-width: 280px;
     min-height: auto;
     text-align: center;
-    padding: 1rem 1.25rem;
+    padding: 0.75rem 1rem;
     background: linear-gradient(135deg, rgba(5, 15, 25, 0.95), rgba(10, 20, 30, 0.9));
     border: 2px solid rgba(0, 150, 255, 0.4);
     border-radius: 15px;
@@ -219,22 +219,22 @@ h1 {
 }
 
 .delete-confirm-modal-content h3 {
-    margin-bottom: 0.75rem;
-    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
 }
 
 .delete-confirm-modal-content p {
-    margin-bottom: 0.75rem;
-    font-size: 0.9rem;
-    line-height: 1.3;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    line-height: 1.2;
 }
 
-/* FIXED: Delete success modal - MUCH smaller and proportional */
+/* FIXED: Delete success modal - Much smaller and proportional */
 .delete-success-modal-content {
-    max-width: 260px;
+    max-width: 240px;
     min-height: auto;
     text-align: center;
-    padding: 1rem 1.25rem;
+    padding: 0.75rem 1rem;
     background: linear-gradient(135deg, rgba(5, 15, 25, 0.95), rgba(10, 20, 30, 0.9));
     border: 2px solid rgba(0, 150, 255, 0.4);
     border-radius: 15px;
@@ -247,14 +247,14 @@ h1 {
 }
 
 .delete-success-modal-content h3 {
-    margin-bottom: 0.75rem;
-    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
 }
 
 .delete-success-modal-content p {
-    margin-bottom: 1rem;
-    font-size: 0.9rem;
-    line-height: 1.3;
+    margin-bottom: 0.75rem;
+    font-size: 0.85rem;
+    line-height: 1.2;
 }
 
 .password-modal-content h3 {
@@ -313,8 +313,8 @@ h1 {
     background: linear-gradient(135deg, rgba(10, 20, 30, 0.9), rgba(15, 25, 35, 0.8));
     border: 1px solid rgba(0, 150, 255, 0.4);
     border-radius: 8px;
-    padding: 0.6rem;
-    margin: 0.6rem 0;
+    padding: 0.4rem;
+    margin: 0.4rem 0;
     text-align: left;
     box-shadow: 
         0 4px 8px rgba(0, 0, 0, 0.3),
@@ -322,10 +322,10 @@ h1 {
 }
 
 .card-info-preview div {
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.15rem;
     color: #e0f4ff;
-    font-size: 0.8rem;
-    line-height: 1.2;
+    font-size: 0.75rem;
+    line-height: 1.1;
 }
 
 .card-info-preview div:last-child {
@@ -382,12 +382,13 @@ h1 {
         0 0 4px rgba(255, 107, 107, 0.3);
 }
 
-/* Dashboard specific styles */
+/* FIXED: Dashboard specific styles - Smaller stat boxes that fit in one row */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1.2rem;
     margin-bottom: 3rem;
+    max-width: 1200px;
 }
 
 .stat-card {
@@ -395,7 +396,7 @@ h1 {
     backdrop-filter: blur(15px);
     border: 1px solid rgba(0, 150, 255, 0.3);
     border-radius: 15px;
-    padding: 2rem;
+    padding: 1.2rem 1rem;
     text-align: center;
     position: relative;
     overflow: hidden;
@@ -443,10 +444,10 @@ h1 {
 
 .stat-number {
     font-family: 'Playfair Display', serif;
-    font-size: 2.5rem;
+    font-size: 1.8rem;
     font-weight: 700;
     color: #ffffff;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
     text-shadow: 
         0 0 2px #00d4ff,
         0 0 4px #00c8ff,
@@ -456,10 +457,11 @@ h1 {
 
 .stat-label {
     color: #b8e6ff;
-    font-size: 0.9rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: 500;
+    line-height: 1.2;
 }
 
 .inventory-section {
@@ -508,7 +510,7 @@ h1 {
     padding-bottom: 0.5rem;
 }
 
-/* Enhanced Top Brands section styling */
+/* FIXED: Enhanced Top Brands section styling - All boxes styled consistently */
 .product-list {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -525,7 +527,7 @@ h1 {
     align-items: center;
     transition: all 0.3s ease;
     box-shadow: 
-0 4px 8px rgba(0, 0, 0, 0.3),
+        0 4px 8px rgba(0, 0, 0, 0.3),
         0 2px 4px rgba(0, 0, 0, 0.2),
         inset 0 1px 0 rgba(255, 255, 255, 0.1),
         inset 0 -1px 0 rgba(0, 0, 0, 0.2);
@@ -1750,7 +1752,7 @@ h1 {
     background: rgba(0, 150, 255, 0.1);
 }
 
-/* Updated action buttons - all same width and moved right */
+/* FIXED: Updated action buttons - all same width and moved right, single event listener */
 .action-buttons {
     display: flex;
     gap: 0.3rem;
@@ -1776,6 +1778,7 @@ h1 {
     justify-content: center;
     text-align: center;
     line-height: 1;
+    pointer-events: auto;
 }
 
 .view-btn {
@@ -2423,6 +2426,7 @@ body:has(#listView) .container {
         width: 100%;
     }
 
+    /* FIXED: Mobile responsive for dashboard stats - 2 columns instead of 5 */
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
