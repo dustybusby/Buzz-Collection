@@ -814,11 +814,12 @@ function toggleEstimatedValueInput() {
     function toggleImageVariationInput() {
     const select = document.getElementById('imageVariationSelect');
     const text = document.getElementById('imageVariationText');
-    if (select && text) {
-        text.style.display = select.value === 'Y' ? 'block' : 'none';
-        if (select.value === 'N') text.value = '';
+        if (select && text) {
+            text.style.display = select.value === 'Y' ? 'block' : 'none';
+            if (select.value === 'N') text.value = '';
+        }
     }
-}}
+}
 
 function toggleDateInput() {
     const checkbox = document.getElementById('unknownDate');
