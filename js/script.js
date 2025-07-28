@@ -1137,7 +1137,7 @@ function updateImportProgress(current, total, successCount, errorCount) {
 // Store import results for continue button
 let importResults = null;
 
-// FIXED: CSV import with proper comma handling and correct column order
+// FIXED: CSV import with proper date handling for import issues
 async function handleCSVUpload(event) {
     const file = event.target.files[0];
     if (!file) {
@@ -1199,6 +1199,43 @@ async function handleCSVUpload(event) {
                     continue;
                 }
                 
+                // FIXED: Parse dates properly for import to prevent "Unknown" issues
+                const parsePurchaseDate = (dateStr) => {
+                    if (!dateStr || dateStr.toLowerCase() === 'unknown' || dateStr.trim() === '') {
+                        return 'Unknown';
+                    }
+                    // Try to parse common date formats
+                    try {
+                        const date = new Date(dateStr);
+                        if (isNaN(date.getTime())) {
+                            return 'Unknown';
+                        }
+                        // Return in YYYY-MM-DD format to ensure consistency
+                        return date.toISOString().split('T')[0];
+                    } catch (error) {
+                        console.warn('Failed to parse purchase date:', dateStr);
+                        return 'Unknown';
+                    }
+                };
+                
+                const parseEstimatedValueDate = (dateStr) => {
+                    if (!dateStr || dateStr.trim() === '') {
+                        return '';
+                    }
+                    // Try to parse common date formats
+                    try {
+                        const date = new Date(dateStr);
+                        if (isNaN(date.getTime())) {
+                            return '';
+                        }
+                        // Return in YYYY-MM-DD format to ensure consistency
+                        return date.toISOString().split('T')[0];
+                    } catch (error) {
+                        console.warn('Failed to parse estimated value date:', dateStr);
+                        return '';
+                    }
+                };
+                
                 // Fixed: Match exact export column order
                 const card = {
                     category: values[0] || '',
@@ -1216,10 +1253,10 @@ async function handleCSVUpload(event) {
                     imageVariation: values[12] || 'N',
                     quantity: parseInt(values[13]) || 1,
                     grade: values[14] || 'Ungraded',
-                    purchaseDate: values[15] || 'Unknown',
+                    purchaseDate: parsePurchaseDate(values[15]), // FIXED: Parse date properly
                     purchaseCost: values[16] ? (values[16].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[16]) || 0) : 0,
                     estimatedValue: values[17] ? (values[17].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[17]) || 0) : 0,
-                    estimatedValueDate: values[18] || '',
+                    estimatedValueDate: parseEstimatedValueDate(values[18]), // FIXED: Parse date properly
                     description: values[19] || '',
                     dateAdded: new Date()
                 };
@@ -2345,7 +2382,7 @@ async function deleteCard(cardId) {
     showCombinedDeleteConfirmModal(card, year, product, player, team, cardNumber, cardId);
 }
 
-// FIXED: New combined delete confirmation modal (replaces the first two separate dialogs)
+// FIXED: New combined delete confirmation modal - SMALLER size proportional to text
 function showCombinedDeleteConfirmModal(card, year, product, player, team, cardNumber, cardId) {
     // Create combined delete confirmation modal
     const deleteModal = document.createElement('div');
@@ -2411,7 +2448,7 @@ function showCombinedDeleteConfirmModal(card, year, product, player, team, cardN
     });
 }
 
-// FIXED: Updated function to show delete success confirmation with shorter timeout and smaller modal
+// FIXED: Updated function to show delete success confirmation - SMALLER size proportional to text
 function showDeleteSuccessModal() {
     const successModal = document.createElement('div');
     successModal.className = 'modal';
