@@ -575,7 +575,6 @@ h1 {
 }
 
 .product-emv::before {
-    content: '$';
     font-size: 0.9rem;
     opacity: 0.8;
 }
@@ -1057,6 +1056,7 @@ h1 {
 }
 
 .category-value-green::before {
+    content: '$';
     font-size: 0.9rem;
     opacity: 0.8;
 }
@@ -1138,6 +1138,7 @@ h1 {
 }
 
 .mini-card-price-green::before {
+    content: '$';
     font-size: 0.9rem;
     opacity: 0.8;
 }
