@@ -1600,7 +1600,7 @@ function displayTopProducts() {
             <div class="product-item">
                 <div class="product-info">
                     <div class="product-name">${product}</div>
-                    <div class="product-emv">EMV: ${stats.emv.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                    <div class="product-emv">EMV: $${stats.emv.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                 </div>
                 <div class="product-count">${stats.count}</div>
             </div>
