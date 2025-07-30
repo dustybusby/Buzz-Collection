@@ -1987,7 +1987,7 @@ h1 {
     flex-direction: column;
     gap: 0.5rem; /* Reduced from 0.75rem to reduce space between lines */
     /* margin-top: 1.5rem; */
-    margin-right: 240px; /* Increased from 220px to accommodate wider green box */
+    margin-right: 240px;
 }
 
 .card-details strong {
@@ -2020,7 +2020,7 @@ h1 {
 
 .card-monetary {
     position: absolute;
-    top: 50%; /* Center the green box vertically */
+    top: 40%; /* Center the green box vertically */
     right: 1.5rem;
     background: linear-gradient(135deg, rgba(0, 200, 100, 0.25), rgba(0, 150, 80, 0.2));
     border: 1px solid rgba(0, 200, 100, 0.5);
