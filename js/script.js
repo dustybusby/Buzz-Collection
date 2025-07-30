@@ -620,6 +620,7 @@ function populateForm(card) {
     setFieldValue('player', card.player);
     setFieldValue('team', card.team);
     setFieldValue('autograph', card.autograph || 'N');
+    setFieldValue('relic', card.relic || 'N');
     setFieldValue('quantity', card.quantity || 1);
     setFieldValue('rookieCard', card.rookieCard || 'N');
     
@@ -869,6 +870,7 @@ async function addCard(event) {
         player: getFieldValue('player'),
         team: getFieldValue('team'),
         autograph: getFieldValue('autograph') || 'N', // New autograph field
+        relic: getFieldValue('relic') || 'N', // New relic field
         quantity: parseInt(getFieldValue('quantity')) || 1,
         rookieCard: getFieldValue('rookieCard'),
         parallel: document.getElementById('parallelSelect')?.value === 'Y' ? getFieldValue('parallelText') : 'N',
@@ -1246,18 +1248,19 @@ async function handleCSVUpload(event) {
                     player: values[5] || '',
                     team: values[6] || '',
                     autograph: values[7] || 'N',
-                    insert: values[8] || 'N',
-                    parallel: values[9] || 'N',
-                    numbered: values[10] ? values[10].replace(/^'/, '') : 'N',
-                    rookieCard: values[11] || 'N',
-                    imageVariation: values[12] || 'N',
-                    quantity: parseInt(values[13]) || 1,
-                    grade: values[14] || 'Ungraded',
-                    purchaseDate: parsePurchaseDate(values[15]), // FIXED: Parse date properly
-                    purchaseCost: values[16] ? (values[16].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[16]) || 0) : 0,
-                    estimatedValue: values[17] ? (values[17].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[17]) || 0) : 0,
-                    estimatedValueDate: parseEstimatedValueDate(values[18]), // FIXED: Parse date properly
-                    description: values[19] || '',
+                    relic: values[8] || 'N',
+                    insert: values[9] || 'N',
+                    parallel: values[10] || 'N',
+                    numbered: values[11] ? values[11].replace(/^'/, '') : 'N',
+                    rookieCard: values[12] || 'N',
+                    imageVariation: values[13] || 'N',
+                    quantity: parseInt(values[14]) || 1,
+                    grade: values[15] || 'Ungraded',
+                    purchaseDate: parsePurchaseDate(values[16]), // FIXED: Parse date properly
+                    purchaseCost: values[17] ? (values[17].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[17]) || 0) : 0,
+                    estimatedValue: values[18] ? (values[18].toLowerCase() === 'unknown' ? 'Unknown' : parseFloat(values[18]) || 0) : 0,
+                    estimatedValueDate: parseEstimatedValueDate(values[19]), // FIXED: Parse date properly
+                    description: values[20] || '',
                     dateAdded: new Date()
                 };
                 
@@ -1497,18 +1500,21 @@ function updateSummaryStats() {
     const rookieCards = cardCollection.filter(card => card.rookieCard === 'Y').length;
     const numberedCards = cardCollection.filter(card => card.numbered !== 'N').length;
     const autographCards = cardCollection.filter(card => card.autograph === 'Y').length; // New autograph count
+    const relicCards = cardCollection.filter(card => card.relic === 'Y').length; // New relic count
 
     const totalCardsEl = document.getElementById('totalCards');
     const totalValueEl = document.getElementById('totalValue');
     const rookieCardsEl = document.getElementById('rookieCards');
     const numberedCardsEl = document.getElementById('numberedCards');
     const autographCardsEl = document.getElementById('autographCards'); // New element
+    const relicCardsEl = document.getElementById('relicCards'); // New element
 
     if (totalCardsEl) totalCardsEl.textContent = totalCards.toLocaleString();
     if (totalValueEl) totalValueEl.textContent = `$${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     if (rookieCardsEl) rookieCardsEl.textContent = rookieCards.toLocaleString();
     if (numberedCardsEl) numberedCardsEl.textContent = numberedCards.toLocaleString();
     if (autographCardsEl) autographCardsEl.textContent = autographCards.toLocaleString(); // New stat
+    if (relicCardsEl) relicCardsEl.textContent = relicCards.toLocaleString(); // New stat
 }
 
 function displayCategoryBreakdown() {
@@ -1633,6 +1639,10 @@ function displayExpensiveCards() {
             
             if (card.autograph === 'Y') {
                 specialInfo.push('Auto');
+            }
+            
+            if (card.relic === 'Y') {
+                specialInfo.push('Relic');
             }
             
             if (card.parallel && card.parallel !== 'N') {
@@ -1850,6 +1860,7 @@ function displayCollection() {
     const numberedFilter = document.getElementById('filter-numbered')?.value || '';
     const insertFilter = document.getElementById('filter-insert')?.value || '';
     const autographFilter = document.getElementById('filter-autograph')?.value || ''; // New autograph filter
+    const relicFilter = document.getElementById('filter-relic')?.value || ''; // New relic filter
     
     if (categoryFilter) {
         filteredCards = filteredCards.filter(card => card.category && card.category.toString() === categoryFilter);
@@ -1883,6 +1894,9 @@ function displayCollection() {
     if (autographFilter) {
         filteredCards = smartSort(filteredCards, autographFilter, 'autograph');
     }
+    if (relicFilter) {
+        filteredCards = smartSort(filteredCards, relicFilter, 'relic');
+    }
     
     // Handle other filters normally
     if (baseSetFilter) {
@@ -1905,7 +1919,7 @@ function displayCollection() {
     }
 
     // Apply sorting if no smart filter was applied
-    if (!yearFilter && !productFilter && !cardNumberFilter && !playerFilter && !teamFilter && !parallelFilter && !numberedFilter && !insertFilter && !autographFilter) {
+    if (!yearFilter && !productFilter && !cardNumberFilter && !playerFilter && !teamFilter && !parallelFilter && !numberedFilter && !insertFilter && !autographFilter && !relicFilter) {
         if (currentSort.field) {
             filteredCards.sort((a, b) => {
                 let aVal = a[currentSort.field];
@@ -2114,6 +2128,7 @@ function displayListView(cards) {
         const team = card.team || '';
         const rookieCheck = card.rookieCard === 'Y' ? '✓' : '';
         const autographCheck = card.autograph === 'Y' ? '✓' : ''; // New autograph column
+        const relicCheck = card.relic === 'Y' ? '✓' : ''; // New relic column
         const parallel = card.parallel !== 'N' ? (card.parallel || '') : '';
         // FIXED: Remove leading single quote from numbered display AND ending single quote
         const numberedRaw = card.numbered !== 'N' ? (card.numbered || '') : '';
@@ -2137,6 +2152,7 @@ function displayListView(cards) {
             <div class="list-item-player">${player}</div>
             <div>${team}</div>
             <div style="text-align: center;">${autographCheck}</div>
+            <div style="text-align: center;">${relicCheck}</div>
             <div style="text-align: center;">${rookieCheck}</div>
             <div>${parallel}</div>
             <div>${numbered}</div>
@@ -2185,7 +2201,7 @@ function handleActionButtonClick(event) {
 function clearAllFilters() {
     const filters = [
         'filter-year', 'filter-product', 'filter-cardNumber', 'filter-baseSet', 'filter-player', 
-        'filter-team', 'filter-rookieCard', 'filter-autograph', 'filter-parallel',
+        'filter-team', 'filter-rookieCard', 'filter-autograph', 'filter-relic', 'filter-parallel',
         'filter-numbered', 'filter-insert', 'categoryFilter'
     ];
     
@@ -2216,6 +2232,7 @@ function viewCard(cardId) {
     const cardNumber = card.cardNumber || 'N/A';
     const rookieText = card.rookieCard === 'Y' ? 'Rookie Card: Yes' : 'Rookie Card: No';
     const autographText = card.autograph === 'Y' ? 'Autograph: Yes' : 'Autograph: No'; // New autograph display
+    const relicText = card.relic === 'Y' ? 'Relic: Yes' : 'Relic: No'; // New relic display
     const baseSetText = card.baseSet === 'Y' ? 'Base Set: Yes' : 'Base Set: No';
     const parallelText = card.parallel && card.parallel !== 'N' ? `Parallel: ${card.parallel}` : 'Parallel: No';
     // FIXED: Remove leading single quote AND ending single quote from numbered display in view
@@ -2286,6 +2303,7 @@ function viewCard(cardId) {
                 <div class="card-detail-line">${numberedText}</div>
                 <div class="card-detail-line">${rookieText}</div>
                 <div class="card-detail-line">${autographText}</div>
+                <div class="card-detail-line">${relicText}</div>
                 <div class="card-detail-line">${imageVariationText}</div>
                 <div class="card-detail-line">Quantity: ${quantity}</div>
                 <div class="card-detail-line">Add'l Notes: ${description}</div>
@@ -2492,7 +2510,7 @@ function exportToCSV() {
     }
     
     // Fixed: Updated headers to match exact import column order
-    const headers = ['Category', 'Year', 'Brand', 'Card #', 'Base Set', 'Player', 'Team', 'Autograph', 'Insert', 'Parallel', 'Numbered', 'Rookie Card', 'Image Variation', 'Quantity', 'Grade', 'Purchase Date', 'Purchase Price', 'Estimated Market Value', 'Estimated Market Value On', "Add'l Notes"];
+    const headers = ['Category', 'Year', 'Brand', 'Card #', 'Base Set', 'Player', 'Team', 'Autograph', 'Relic', 'Insert', 'Parallel', 'Numbered', 'Rookie Card', 'Image Variation', 'Quantity', 'Grade', 'Purchase Date', 'Purchase Price', 'Estimated Market Value', 'Estimated Market Value On', "Add'l Notes"];
     const csvRows = [headers.join(',')];
     
     cardCollection.forEach(card => {
@@ -2517,6 +2535,7 @@ function exportToCSV() {
             card.player || '',
             card.team || '',
             card.autograph || 'N', // New autograph field
+            card.relic || 'N', // New relic field
             card.insert || 'N',
             card.parallel || 'N',
             numberedValue,

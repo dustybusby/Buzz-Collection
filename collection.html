@@ -56,7 +56,7 @@
                         <div class="sortable-header" data-sort="year">
                             Year <span class="sort-indicator" id="sort-year"></span>
                         </div>
-                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-year">
+                        <input type="text" class="filter-input" placeholder="Filter..." id="filter-year" maxlength="4">
                     </div>
                     <div class="column-header">
                         <div class="sortable-header" data-sort="product">
@@ -93,6 +93,16 @@
                             Auto <span class="sort-indicator" id="sort-autograph"></span>
                         </div>
                         <select class="filter-input" id="filter-autograph">
+                            <option value="">All</option>
+                            <option value="Y">Yes</option>
+                            <option value="N">No</option>
+                        </select>
+                    </div>
+                    <div class="column-header">
+                        <div class="sortable-header" data-sort="relic">
+                            Relic <span class="sort-indicator" id="sort-relic"></span>
+                        </div>
+                        <select class="filter-input" id="filter-relic">
                             <option value="">All</option>
                             <option value="Y">Yes</option>
                             <option value="N">No</option>
