@@ -203,62 +203,58 @@ h1 {
 
 /* FIXED: Delete confirmation modal - Much smaller and proportional to text */
 .delete-confirm-modal-content {
-    max-width: 260px;
+    max-width: 280px;
     min-height: auto;
     text-align: center;
-    padding: 0.5rem 0.75rem;
+    padding: 0.75rem 1rem;
     background: linear-gradient(135deg, rgba(5, 15, 25, 0.95), rgba(10, 20, 30, 0.9));
     border: 2px solid rgba(0, 150, 255, 0.4);
-    border-radius: 12px;
+    border-radius: 15px;
     box-shadow: 
-        0 15px 40px rgba(0,0,0,0.6),
-        0 8px 20px rgba(0, 0, 0, 0.7),
-        0 3px 10px rgba(0, 0, 0, 0.5),
-        inset 0 1px 0 rgba(255, 255, 255, 0.15),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+        0 25px 80px rgba(0,0,0,0.6),
+        0 15px 35px rgba(0, 0, 0, 0.7),
+        0 5px 15px rgba(0, 0, 0, 0.5),
+        inset 0 2px 0 rgba(255, 255, 255, 0.15),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.3);
 }
 
 .delete-confirm-modal-content h3 {
-    margin-bottom: 0.4rem;
-    font-size: 0.95rem;
-    color: #ffffff;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
 }
 
 .delete-confirm-modal-content p {
-    margin-bottom: 0.4rem;
-    font-size: 0.8rem;
-    line-height: 1.1;
-    color: #e0f4ff;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    line-height: 1.2;
 }
 
 /* FIXED: Delete success modal - Much smaller and proportional */
 .delete-success-modal-content {
-    max-width: 220px;
+    max-width: 240px;
     min-height: auto;
     text-align: center;
-    padding: 0.5rem 0.75rem;
+    padding: 0.75rem 1rem;
     background: linear-gradient(135deg, rgba(5, 15, 25, 0.95), rgba(10, 20, 30, 0.9));
     border: 2px solid rgba(0, 150, 255, 0.4);
-    border-radius: 12px;
+    border-radius: 15px;
     box-shadow: 
-        0 15px 40px rgba(0,0,0,0.6),
-        0 8px 20px rgba(0, 0, 0, 0.7),
-        0 3px 10px rgba(0, 0, 0, 0.5),
-        inset 0 1px 0 rgba(255, 255, 255, 0.15),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+        0 25px 80px rgba(0,0,0,0.6),
+        0 15px 35px rgba(0, 0, 0, 0.7),
+        0 5px 15px rgba(0, 0, 0, 0.5),
+        inset 0 2px 0 rgba(255, 255, 255, 0.15),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.3);
 }
 
 .delete-success-modal-content h3 {
-    margin-bottom: 0.4rem;
-    font-size: 0.95rem;
-    color: #00ff88;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
 }
 
 .delete-success-modal-content p {
-    margin-bottom: 0.6rem;
-    font-size: 0.8rem;
-    line-height: 1.1;
-    color: #e0f4ff;
+    margin-bottom: 0.75rem;
+    font-size: 0.85rem;
+    line-height: 1.2;
 }
 
 .password-modal-content h3 {
@@ -304,34 +300,32 @@ h1 {
 
 .password-buttons {
     display: flex;
-    gap: 0.75rem;
+    gap: 1rem;
     justify-content: center;
 }
 
 .password-buttons .btn {
-    min-width: 90px;
-    padding: 0.6rem 1.2rem;
-    font-size: 0.85rem;
+    min-width: 100px;
 }
 
 /* FIXED: Card info preview in delete modal - smaller and tighter spacing */
 .card-info-preview {
     background: linear-gradient(135deg, rgba(10, 20, 30, 0.9), rgba(15, 25, 35, 0.8));
     border: 1px solid rgba(0, 150, 255, 0.4);
-    border-radius: 6px;
-    padding: 0.3rem 0.4rem;
-    margin: 0.3rem 0;
+    border-radius: 8px;
+    padding: 0.4rem;
+    margin: 0.4rem 0;
     text-align: left;
     box-shadow: 
-        0 3px 6px rgba(0, 0, 0, 0.3),
+        0 4px 8px rgba(0, 0, 0, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .card-info-preview div {
-    margin-bottom: 0.1rem;
+    margin-bottom: 0.15rem;
     color: #e0f4ff;
-    font-size: 0.7rem;
-    line-height: 1.05;
+    font-size: 0.75rem;
+    line-height: 1.1;
 }
 
 .card-info-preview div:last-child {
@@ -350,16 +344,14 @@ h1 {
     background: linear-gradient(135deg, rgba(231, 76, 60, 0.8), rgba(192, 57, 43, 0.6)) !important;
     border-color: #c0392b !important;
     color: #ffffff !important;
-    padding: 0.5rem 1rem !important;
-    font-size: 0.8rem !important;
 }
 
 #permanentDeleteBtn:hover {
     background: linear-gradient(135deg, rgba(231, 76, 60, 1), rgba(192, 57, 43, 0.8)) !important;
     border-color: #a93226 !important;
     box-shadow: 
-        0 4px 12px rgba(231, 76, 60, 0.4),
-        inset 0 0 10px rgba(231, 76, 60, 0.2);
+        0 6px 20px rgba(231, 76, 60, 0.4),
+        inset 0 0 15px rgba(231, 76, 60, 0.2);
 }
 
 #permanentDeleteBtn:disabled {
