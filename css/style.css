@@ -1987,7 +1987,7 @@ h1 {
     flex-direction: column;
     gap: 0.5rem; /* Reduced from 0.75rem to reduce space between lines */
     /* margin-top: 1.5rem; */
-    margin-right: 240px;
+    /* margin-right: 240px; */
 }
 
 .card-details strong {
