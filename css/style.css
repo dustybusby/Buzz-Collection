@@ -2020,21 +2020,21 @@ h1 {
 
 .card-monetary {
     position: absolute;
-    top: 0.75rem; /* Keep green box position perfect as requested */
+    top: 50%; /* Center the green box vertically */
     right: 1.5rem;
     background: linear-gradient(135deg, rgba(0, 200, 100, 0.25), rgba(0, 150, 80, 0.2));
     border: 1px solid rgba(0, 200, 100, 0.5);
     border-radius: 12px;
     padding: 1.2rem;
-    min-width: 220px; /* Increased from 200px to make it wider */
-    /* max-width: 220px; Increased from 200px */
+    min-width: 280px; /* Increased width to allow more space for Add'l Notes */
+    max-width: 320px; /* Set max-width to prevent it from getting too wide */
     box-shadow: 
         0 12px 24px rgba(0, 0, 0, 0.5),
         0 6px 12px rgba(0, 0, 0, 0.4),
         inset 0 2px 0 rgba(255, 255, 255, 0.15),
         inset 0 -1px 0 rgba(0, 0, 0, 0.2),
         0 0 12px rgba(0, 200, 100, 0.3);
-    transform: translateY(-3px) translateZ(10px); /* Enhanced 3D effect */
+    transform: translateY(-50%) translateZ(10px); /* Center vertically and keep 3D effect */
     backdrop-filter: blur(15px);
 }
 
