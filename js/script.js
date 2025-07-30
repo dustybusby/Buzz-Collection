@@ -2391,16 +2391,16 @@ function showCombinedDeleteConfirmModal(card, year, product, player, team, cardN
     deleteModal.id = 'combinedDeleteModal';
     deleteModal.innerHTML = `
         <div class="modal-content delete-confirm-modal-content">
-            <h3>Confirm Permanent Delete</h3>
+            <h3>Confirm Permanent Deletion</h3>
             <p><strong>This action cannot be undone!</strong></p>
             <p>Are you sure you want to permanently delete this card from your collection?</p>
             <div class="card-info-preview">
-                <div><strong>${year} ${product}</strong></div>
                 <div>${player} - ${team}</div>
                 <div>Card #${cardNumber}</div>
+                <div>${year} ${product}</div>
             </div>
             <div class="password-buttons">
-                <button class="btn" id="permanentDeleteBtn" style="background: linear-gradient(135deg, rgba(231, 76, 60, 0.8), rgba(192, 57, 43, 0.6)); border-color: #c0392b; color: #ffffff;">Permanently Delete</button>
+                <button class="btn" id="permanentDeleteBtn" style="background: linear-gradient(135deg, rgba(231, 76, 60, 0.8), rgba(192, 57, 43, 0.6)); border-color: #c0392b; color: #ffffff;">Yes, Permanently Delete</button>
                 <button class="btn btn-primary" id="cancelCombinedDeleteBtn">Cancel</button>
             </div>
         </div>
