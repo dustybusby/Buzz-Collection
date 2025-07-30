@@ -1969,7 +1969,7 @@ h1 {
     box-shadow: 
         0 4px 8px rgba(0, 0, 0, 0.3),
         0 0 4px rgba(0, 150, 255, 0.4);
-    margin-top: 0.25rem; /* Move category down slightly */
+    margin-top: 0.5rem; /* Move category down slightly */
 }
 
 /* Update existing card details for better virtual card layout */
@@ -1986,7 +1986,7 @@ h1 {
     display: flex;
     flex-direction: column;
     gap: 0.5rem; /* Reduced from 0.75rem to reduce space between lines */
-    margin-top: 1.5rem;
+    /* margin-top: 1.5rem; */
     margin-right: 240px; /* Increased from 220px to accommodate wider green box */
 }
 
@@ -2027,7 +2027,7 @@ h1 {
     border-radius: 12px;
     padding: 1.2rem;
     min-width: 220px; /* Increased from 200px to make it wider */
-    max-width: 220px; /* Increased from 200px */
+    /* max-width: 220px; Increased from 200px */
     box-shadow: 
         0 12px 24px rgba(0, 0, 0, 0.5),
         0 6px 12px rgba(0, 0, 0, 0.4),
