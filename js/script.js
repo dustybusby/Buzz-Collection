@@ -221,16 +221,28 @@ async function initializeAddPageAfterAuth() {
         const unknownDate = document.getElementById('unknownDate');
         if (unknownDate) {
             unknownDate.addEventListener('change', toggleDateInput);
+            // Initialize the date input state since it's checked by default
+            if (unknownDate.checked) {
+                toggleDateInput();
+            }
         }
         
         const unknownCost = document.getElementById('unknownCost');
         if (unknownCost) {
             unknownCost.addEventListener('change', toggleCostInput);
+            // Initialize the cost input state since it's checked by default
+            if (unknownCost.checked) {
+                toggleCostInput();
+            }
         }
         
         const ungradedGrade = document.getElementById('ungradedGrade');
         if (ungradedGrade) {
             ungradedGrade.addEventListener('change', toggleGradeInput);
+            // Initialize the grade input state since it's checked by default
+            if (ungradedGrade.checked) {
+                toggleGradeInput();
+            }
         }
         
         // FIXED: Add CSV file upload listener
