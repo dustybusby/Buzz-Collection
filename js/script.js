@@ -2267,7 +2267,7 @@ function viewCard(cardId) {
     const estimatedValue = card.estimatedValue === 'Unknown' || !card.estimatedValue ? 'Unknown' : '$' + parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     
     // FIXED: Format estimated value date properly with timezone normalization
-    let estimatedValueDate = 'Not specified';
+    let estimatedValueDate = null;
     if (card.estimatedValueDate) {
         const normalizedDate = formatDateForDisplay(card.estimatedValueDate);
         if (normalizedDate) {
@@ -2277,7 +2277,7 @@ function viewCard(cardId) {
     
     // Format estimated value text
     let estimatedValueText = '';
-    if (estimatedValue !== 'Unknown' && estimatedValueDate !== 'Not specified') {
+    if (estimatedValue !== 'Unknown' && estimatedValueDate) {
         estimatedValueText = `Estimated market value on ${estimatedValueDate}: ${estimatedValue}`;
     } else if (estimatedValue !== 'Unknown') {
         estimatedValueText = `Estimated market value: ${estimatedValue}`;
