@@ -1016,15 +1016,21 @@ function showSuccessModal(message, isEdit) {
                 descriptionEl.style.display = 'block';
             }
             
-            // Keep original buttons for add mode
+            // Updated buttons for add mode with new functionality
             buttonContainer.innerHTML = `
-                <button class="btn btn-primary" id="addAnotherBtn">Add Another Card</button>
+                <button class="btn btn-primary" id="addAnotherSameSetBtn">Add Another Card (Same Product Set)</button>
+                <button class="btn btn-primary" id="addAnotherBtn">Add Another Card (New Product Set)</button>
                 <button class="btn" id="viewCollectionBtn">View Collection</button>
             `;
             
-            // Add event listeners for original buttons
+            // Add event listeners for buttons
+            const addAnotherSameSetBtn = document.getElementById('addAnotherSameSetBtn');
             const addAnotherBtn = document.getElementById('addAnotherBtn');
             const viewCollectionBtn = document.getElementById('viewCollectionBtn');
+            
+            if (addAnotherSameSetBtn) {
+                addAnotherSameSetBtn.addEventListener('click', addAnotherCardSameSet);
+            }
             
             if (addAnotherBtn) {
                 addAnotherBtn.addEventListener('click', addAnotherCard);
@@ -1085,6 +1091,61 @@ function addAnotherCard() {
         if (purchaseDate) purchaseDate.disabled = false;
         if (purchaseCost) purchaseCost.disabled = false;
         if (gradeInput) gradeInput.disabled = false;
+    }
+}
+
+// New function to add another card with the same product set (Category, Year, Brand)
+function addAnotherCardSameSet() {
+    const modal = document.getElementById('successModal');
+    modal.style.display = 'none';
+    
+    // Get the form data from the just-added card
+    const category = document.getElementById('category')?.value || '';
+    const year = document.getElementById('year')?.value || '';
+    const product = document.getElementById('product')?.value || '';
+    
+    // Reset form
+    const form = document.getElementById('cardForm');
+    if (form) {
+        form.reset();
+        
+        // Reset conditional fields
+        const parallelText = document.getElementById('parallelText');
+        const numberedText = document.getElementById('numberedText');
+        const insertText = document.getElementById('insertText');
+        const imageVariationText = document.getElementById('imageVariationText');
+        const quantity = document.getElementById('quantity');
+        
+        if (parallelText) parallelText.style.display = 'none';
+        if (numberedText) numberedText.style.display = 'none';
+        if (insertText) insertText.style.display = 'none';
+        if (imageVariationText) imageVariationText.style.display = 'none';
+        if (quantity) quantity.value = 1;
+        
+        // Reset disabled states and opacity
+        const estimatedValue = document.getElementById('estimatedValue');
+        const estimatedValueDate = document.getElementById('estimatedValueDate');
+        const purchaseDate = document.getElementById('purchaseDate');
+        const purchaseCost = document.getElementById('purchaseCost');
+        const gradeInput = document.getElementById('grade');
+        
+        if (estimatedValue) estimatedValue.disabled = false;
+        if (estimatedValueDate) {
+            estimatedValueDate.disabled = false;
+            estimatedValueDate.style.opacity = '1';
+        }
+        if (purchaseDate) purchaseDate.disabled = false;
+        if (purchaseCost) purchaseCost.disabled = false;
+        if (gradeInput) gradeInput.disabled = false;
+        
+        // Populate the form with the same Category, Year, and Brand
+        const categoryField = document.getElementById('category');
+        const yearField = document.getElementById('year');
+        const productField = document.getElementById('product');
+        
+        if (categoryField && category) categoryField.value = category;
+        if (yearField && year) yearField.value = year;
+        if (productField && product) productField.value = product;
     }
 }
 

@@ -1349,6 +1349,21 @@ h1 {
 
 #successModal .btn {
     min-width: 120px;
+    flex: 1;
+    max-width: 200px;
+}
+
+/* Specific styling for the new button layout */
+#successModal .btn:first-child {
+    order: 1;
+}
+
+#successModal .btn:nth-child(2) {
+    order: 2;
+}
+
+#successModal .btn:last-child {
+    order: 3;
 }
 
 /* Checkbox label styling */
