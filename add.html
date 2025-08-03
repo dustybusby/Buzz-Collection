@@ -56,16 +56,16 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="cardNumber">Card #</label>
-                            <input type="text" id="cardNumber" required>
-                        </div>
-
-                        <div class="form-group">
                             <label for="baseSet">Base Set</label>
                             <select id="baseSet">
                                 <option value="N">No</option>
                                 <option value="Y">Yes</option>
                             </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cardNumber">Card #</label>
+                            <input type="text" id="cardNumber" required>
                         </div>
 
                         <div class="form-group">
@@ -156,7 +156,7 @@
                                 <label for="grade">Grade</label>
                                 <input type="text" id="grade" placeholder="e.g., PSA 10, BGS 9.5, etc.">
                                 <label class="checkbox-label">
-                                    <input type="checkbox" id="ungradedGrade"> Ungraded
+                                    <input type="checkbox" id="ungradedGrade" checked> Ungraded
                                 </label>
                             </div>
 
@@ -164,7 +164,7 @@
                                 <label for="purchaseDate">Purchase Date</label>
                                 <input type="date" id="purchaseDate">
                                 <label class="checkbox-label">
-                                    <input type="checkbox" id="unknownDate"> Unknown
+                                    <input type="checkbox" id="unknownDate" checked> Unknown
                                 </label>
                             </div>
 
@@ -172,7 +172,7 @@
                                 <label for="purchaseCost">Purchase Price ($)</label>
                                 <input type="number" id="purchaseCost" step="0.01" min="0">
                                 <label class="checkbox-label">
-                                    <input type="checkbox" id="unknownCost"> Unknown
+                                    <input type="checkbox" id="unknownCost" checked> Unknown
                                 </label>
                             </div>
 
