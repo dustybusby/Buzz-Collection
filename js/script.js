@@ -831,6 +831,7 @@ function toggleDateInput() {
     const dateInput = document.getElementById('purchaseDate');
     if (checkbox && dateInput) {
         dateInput.disabled = checkbox.checked;
+        dateInput.style.opacity = checkbox.checked ? '0.5' : '1';
         if (checkbox.checked) dateInput.value = '';
     }
 }
