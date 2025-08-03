@@ -1092,6 +1092,9 @@ function addAnotherCard() {
         if (purchaseCost) purchaseCost.disabled = false;
         if (gradeInput) gradeInput.disabled = false;
     }
+    
+    // Scroll to top of page
+    window.scrollTo(0, 0);
 }
 
 // New function to add another card with the same product set (Category, Year, Brand)
@@ -1147,6 +1150,9 @@ function addAnotherCardSameSet() {
         if (yearField && year) yearField.value = year;
         if (productField && product) productField.value = product;
     }
+    
+    // Scroll to top of page
+    window.scrollTo(0, 0);
 }
 
 function viewCollection() {
