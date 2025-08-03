@@ -904,26 +904,24 @@ async function addCard(event) {
         const year = card.year || '';
         const product = card.product || '';
         
-        const confirmMessage = `You have set an estimated market value of $${card.estimatedValue} for ${playerName} (${teamName}) - ${year} ${product}, but no date is specified for this estimate.\n\n` +
-                             `This will cause the card to display as "Estimated market value: $${card.estimatedValue}" instead of "Estimated market value on [date]: $${card.estimatedValue}".\n\n` +
-                             `Would you like to add a date for the estimate? (Recommended)`;
+        const validationMessage = `You have set an estimated market value of $${card.estimatedValue} for ${playerName} (${teamName}) - ${year} ${product}, but no date is specified for this estimate.\n\n` +
+                                 `This will cause the card to display as "Estimated market value: $${card.estimatedValue}" instead of "Estimated market value on [date]: $${card.estimatedValue}".\n\n` +
+                                 `Would you like to add a date for the estimate? (Recommended)`;
         
-        const userWantsToAddDate = confirm(confirmMessage);
-        
-        if (userWantsToAddDate) {
+        // Show custom validation dialog
+        showValidationDialog(validationMessage, () => {
             // User wants to add a date - focus on the date field
             const dateField = document.getElementById('estimatedValueDate');
             if (dateField) {
                 dateField.focus();
                 dateField.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
-            alert('Please add a date for the estimated market value, then try adding the card again.');
-            return;
-        } else {
+            hideValidationDialog();
+        }, () => {
             // User clicked "Cancel" - stop the submission and return to form
-            alert('Card submission cancelled. Please add a date for the estimated market value or remove the estimated value before adding the card.');
-            return;
-        }
+            hideValidationDialog();
+        });
+        return;
     }
 
     try {
@@ -2819,7 +2817,49 @@ window.addEventListener('click', function(event) {
     if (event.target === combinedDeleteModal) {
         combinedDeleteModal.remove();
     }
+    
+    // Close validation dialog when clicking outside
+    const validationDialog = document.getElementById('validationDialog');
+    if (event.target === validationDialog) {
+        hideValidationDialog();
+    }
 });
+
+// Validation dialog functions
+function showValidationDialog(message, onAddDate, onCancel) {
+    const dialog = document.getElementById('validationDialog');
+    const messageEl = document.getElementById('validationMessage');
+    const addDateBtn = document.getElementById('addDateBtn');
+    const cancelBtn = document.getElementById('cancelValidationBtn');
+    
+    if (dialog && messageEl && addDateBtn && cancelBtn) {
+        messageEl.textContent = message;
+        dialog.style.display = 'flex';
+        
+        // Set up event listeners
+        addDateBtn.onclick = () => {
+            onAddDate();
+        };
+        
+        cancelBtn.onclick = () => {
+            onCancel();
+        };
+        
+        // Close dialog when clicking outside
+        dialog.onclick = (event) => {
+            if (event.target === dialog) {
+                onCancel();
+            }
+        };
+    }
+}
+
+function hideValidationDialog() {
+    const dialog = document.getElementById('validationDialog');
+    if (dialog) {
+        dialog.style.display = 'none';
+    }
+}
 
 // Make changePage function globally accessible
 window.changePage = changePage;
