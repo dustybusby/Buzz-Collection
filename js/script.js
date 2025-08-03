@@ -2179,21 +2179,88 @@ function handleActionButtonClick(event) {
     // Prevent multiple rapid clicks
     if (target.disabled) return;
     
+    // Add debouncing to prevent double-clicks
+    if (target.dataset.processing === 'true') return;
+    
     if (target.classList.contains('view-btn')) {
         event.preventDefault();
         event.stopPropagation();
+        
+        // Mark as processing and add visual feedback
+        target.dataset.processing = 'true';
+        const originalText = target.textContent;
+        target.textContent = 'Loading...';
+        target.style.opacity = '0.7';
+        
         const cardId = target.getAttribute('data-card-id');
-        viewCard(cardId);
+        
+        // Use setTimeout to ensure the visual feedback is shown
+        setTimeout(() => {
+            viewCard(cardId);
+            
+            // Reset button state after a short delay
+            setTimeout(() => {
+                target.dataset.processing = 'false';
+                target.textContent = originalText;
+                target.style.opacity = '1';
+            }, 500);
+        }, 50);
+        
     } else if (target.classList.contains('edit-btn')) {
         event.preventDefault();
         event.stopPropagation();
+        
+        // Mark as processing and add visual feedback
+        target.dataset.processing = 'true';
+        const originalText = target.textContent;
+        target.textContent = 'Loading...';
+        target.style.opacity = '0.7';
+        
         const cardId = target.getAttribute('data-card-id');
-        editCard(cardId);
+        
+        // Use setTimeout to ensure the visual feedback is shown
+        setTimeout(async () => {
+            try {
+                await editCard(cardId);
+            } catch (error) {
+                console.error('Error in edit operation:', error);
+            } finally {
+                // Reset button state after operation completes
+                setTimeout(() => {
+                    target.dataset.processing = 'false';
+                    target.textContent = originalText;
+                    target.style.opacity = '1';
+                }, 500);
+            }
+        }, 50);
+        
     } else if (target.classList.contains('delete-btn')) {
         event.preventDefault();
         event.stopPropagation();
+        
+        // Mark as processing and add visual feedback
+        target.dataset.processing = 'true';
+        const originalText = target.textContent;
+        target.textContent = 'Loading...';
+        target.style.opacity = '0.7';
+        
         const cardId = target.getAttribute('data-card-id');
-        deleteCard(cardId);
+        
+        // Use setTimeout to ensure the visual feedback is shown
+        setTimeout(async () => {
+            try {
+                await deleteCard(cardId);
+            } catch (error) {
+                console.error('Error in delete operation:', error);
+            } finally {
+                // Reset button state after operation completes
+                setTimeout(() => {
+                    target.dataset.processing = 'false';
+                    target.textContent = originalText;
+                    target.style.opacity = '1';
+                }, 500);
+            }
+        }, 50);
     }
 }
 
@@ -2221,8 +2288,12 @@ function filterCollection() {
 
 // FIXED: viewCard function with proper date formatting and timezone normalization
 function viewCard(cardId) {
-    const card = cardCollection.find(c => c.id === cardId);
-    if (!card) return;
+    try {
+        const card = cardCollection.find(c => c.id === cardId);
+        if (!card) {
+            console.error('Card not found:', cardId);
+            return;
+        }
     
     const player = card.player || 'Unknown Player';
     const team = card.team || 'Unknown Team';
@@ -2320,6 +2391,12 @@ function viewCard(cardId) {
     
     document.getElementById('modalCardContent').innerHTML = modalHTML;
     document.getElementById('cardModal').style.display = 'flex';
+    
+    } catch (error) {
+        console.error('Error in viewCard function:', error);
+        // Don't throw the error to prevent unhandled promise rejection
+        // The button state will be reset by the finally block in handleActionButtonClick
+    }
 }
 
 // NEW: Helper function to format dates for display and normalize timezone issues
@@ -2368,18 +2445,34 @@ function closeCardModal() {
     }
 }
 
-// Updated edit function with password protection
+// Updated edit function with password protection and better error handling
 async function editCard(cardId) {
-    // Check password first
-    const hasPermission = await checkEditPermission();
-    if (!hasPermission) return;
-    
-    const card = cardCollection.find(c => c.id === cardId);
-    if (!card) return;
-    
-    localStorage.setItem('editCardId', cardId);
-    localStorage.setItem('editCardData', JSON.stringify(card));
-    window.location.href = 'add.html?edit=true';
+    try {
+        // Check password first
+        const hasPermission = await checkEditPermission();
+        if (!hasPermission) {
+            console.log('Edit permission denied');
+            return;
+        }
+        
+        const card = cardCollection.find(c => c.id === cardId);
+        if (!card) {
+            console.error('Card not found:', cardId);
+            return;
+        }
+        
+        // Store card data for edit mode
+        localStorage.setItem('editCardId', cardId);
+        localStorage.setItem('editCardData', JSON.stringify(card));
+        
+        // Navigate to edit page
+        window.location.href = 'add.html?edit=true';
+        
+    } catch (error) {
+        console.error('Error in editCard function:', error);
+        // Don't throw the error to prevent unhandled promise rejection
+        // The button state will be reset by the finally block in handleActionButtonClick
+    }
 }
 
 // FIXED: Combined delete function with single warning dialog (combining first two prompts)
