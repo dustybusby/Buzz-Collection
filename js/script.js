@@ -919,8 +919,11 @@ async function addCard(event) {
             }
             alert('Please add a date for the estimated market value, then try adding the card again.');
             return;
+        } else {
+            // User clicked "Cancel" - stop the submission and return to form
+            alert('Card submission cancelled. Please add a date for the estimated market value or remove the estimated value before adding the card.');
+            return;
         }
-        // If user clicks "No", they can continue without a date
     }
 
     try {
