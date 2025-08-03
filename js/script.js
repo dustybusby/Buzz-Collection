@@ -904,21 +904,14 @@ async function addCard(event) {
         const year = card.year || '';
         const product = card.product || '';
         
-        const validationMessage = `You have set an estimated market value of $${card.estimatedValue} for ${playerName} (${teamName}) - ${year} ${product}, but no date is specified for this estimate.\n\n` +
-                                 `This will cause the card to display as "Estimated market value: $${card.estimatedValue}" instead of "Estimated market value on [date]: $${card.estimatedValue}".\n\n` +
-                                 `Would you like to add a date for the estimate? (Recommended)`;
-        
         // Show custom validation dialog
-        showValidationDialog(validationMessage, () => {
+        showValidationDialog(() => {
             // User wants to add a date - focus on the date field
             const dateField = document.getElementById('estimatedValueDate');
             if (dateField) {
                 dateField.focus();
                 dateField.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
-            hideValidationDialog();
-        }, () => {
-            // User clicked "Cancel" - stop the submission and return to form
             hideValidationDialog();
         });
         return;
@@ -2818,37 +2811,30 @@ window.addEventListener('click', function(event) {
         combinedDeleteModal.remove();
     }
     
-    // Close validation dialog when clicking outside
+    // Validation dialog - no longer allow clicking outside to close since there's no cancel option
     const validationDialog = document.getElementById('validationDialog');
     if (event.target === validationDialog) {
-        hideValidationDialog();
+        // Do nothing - user must click "Add Date"
     }
 });
 
 // Validation dialog functions
-function showValidationDialog(message, onAddDate, onCancel) {
+function showValidationDialog(onAddDate) {
     const dialog = document.getElementById('validationDialog');
-    const messageEl = document.getElementById('validationMessage');
     const addDateBtn = document.getElementById('addDateBtn');
-    const cancelBtn = document.getElementById('cancelValidationBtn');
     
-    if (dialog && messageEl && addDateBtn && cancelBtn) {
-        messageEl.textContent = message;
+    if (dialog && addDateBtn) {
         dialog.style.display = 'flex';
         
-        // Set up event listeners
+        // Set up event listener
         addDateBtn.onclick = () => {
             onAddDate();
         };
         
-        cancelBtn.onclick = () => {
-            onCancel();
-        };
-        
-        // Close dialog when clicking outside
+        // Remove the ability to click outside to cancel since there's no cancel option
         dialog.onclick = (event) => {
             if (event.target === dialog) {
-                onCancel();
+                // Do nothing - user must click "Add Date"
             }
         };
     }
