@@ -885,6 +885,44 @@ async function addCard(event) {
         purchaseCost: document.getElementById('unknownCost')?.checked ? 'Unknown' : (parseFloat(getFieldValue('purchaseCost')) || 0)
     };
 
+    // Validation: Check if estimated value is set but no valid date is provided
+    const hasEstimatedValue = card.estimatedValue && 
+                             card.estimatedValue !== 'Unknown' && 
+                             card.estimatedValue !== 0;
+    
+    let hasValidDate = false;
+    if (card.estimatedValueDate) {
+        const normalizedDate = formatDateForDisplay(card.estimatedValueDate);
+        if (normalizedDate) {
+            hasValidDate = true;
+        }
+    }
+    
+    if (hasEstimatedValue && !hasValidDate) {
+        const playerName = card.player || 'Unknown Player';
+        const teamName = card.team || 'Unknown Team';
+        const year = card.year || '';
+        const product = card.product || '';
+        
+        const confirmMessage = `You have set an estimated market value of $${card.estimatedValue} for ${playerName} (${teamName}) - ${year} ${product}, but no date is specified for this estimate.\n\n` +
+                             `This will cause the card to display as "Estimated market value: $${card.estimatedValue}" instead of "Estimated market value on [date]: $${card.estimatedValue}".\n\n` +
+                             `Would you like to add a date for the estimate? (Recommended)`;
+        
+        const userWantsToAddDate = confirm(confirmMessage);
+        
+        if (userWantsToAddDate) {
+            // User wants to add a date - focus on the date field
+            const dateField = document.getElementById('estimatedValueDate');
+            if (dateField) {
+                dateField.focus();
+                dateField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            alert('Please add a date for the estimated market value, then try adding the card again.');
+            return;
+        }
+        // If user clicks "No", they can continue without a date
+    }
+
     try {
         if (isEditMode && editCardId) {
             const { updateDoc, doc } = window.firebaseRefs;
