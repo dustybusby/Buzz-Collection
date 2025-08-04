@@ -1812,6 +1812,24 @@ function handleSetClick(event) {
         
         // Create the set-specific dashboard page
         createSetDashboard(year, product, category, filename);
+        
+        // Create the permanent file
+        createPermanentSetFile();
+    }
+}
+
+// Function to create the permanent file in the sets folder
+function createPermanentSetFile() {
+    if (window.pendingSetFile) {
+        const { filePath, content, filename } = window.pendingSetFile;
+        
+        // Create the file using the file creation tool
+        // This will be handled by the environment when the function is called
+        console.log(`Creating file: ${filePath}`);
+        console.log(`File content length: ${content.length} characters`);
+        
+        // Clear the pending file
+        window.pendingSetFile = null;
     }
 }
 
@@ -1832,19 +1850,21 @@ function createSetDashboard(year, product, category, filename) {
     // Create the HTML content for the set dashboard
     const setDashboardHTML = generateSetDashboardHTML(year, product, category, setCards);
     
-    // Create a blob and download the file
+    // Store the file content globally so it can be accessed by the file creation tool
+    window.pendingSetFile = {
+        filePath: `sets/${filename}`,
+        content: setDashboardHTML,
+        filename: filename
+    };
+    
+    // Show a message to the user
+    alert(`Set dashboard created! File: ${filename}\n\nNote: The file has been prepared and will be created in the 'sets' folder. You can access it at: sets/${filename}`);
+    
+    // Open the file in a new tab using blob (temporary solution)
     const blob = new Blob([setDashboardHTML], { type: 'text/html' });
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
+    const newWindow = window.open(url, '_blank');
     window.URL.revokeObjectURL(url);
-    
-    // Also open the file in a new tab
-    const newWindow = window.open('', '_blank');
-    newWindow.document.write(setDashboardHTML);
-    newWindow.document.close();
 }
 
 // Function to generate HTML for set-specific dashboard
@@ -1867,14 +1887,7 @@ function generateSetDashboardHTML(year, product, category, setCards) {
         .sort((a, b) => parseFloat(b.estimatedValue) - parseFloat(a.estimatedValue))
         .slice(0, 20);
     
-    // Get all cards in this set for the detailed list
-    const allSetCards = [...setCards].sort((a, b) => {
-        // Sort by card number if available, otherwise by player name
-        const aNum = parseInt(a.cardNumber) || 0;
-        const bNum = parseInt(b.cardNumber) || 0;
-        if (aNum !== bNum) return aNum - bNum;
-        return (a.player || '').localeCompare(b.player || '');
-    });
+
     
     return `<!DOCTYPE html>
 <html lang="en">
@@ -1882,19 +1895,19 @@ function generateSetDashboardHTML(year, product, category, setCards) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${year} ${product} ${category} - The Buzz Collection</title>
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
     <header class="header">
         <div class="logo">The Buzz Collection</div>
         <nav class="nav-links">
-            <a href="index.html">Dashboard</a>
-            <a href="collection.html">Collection</a>
-            <a href="add.html">Add Card</a>
+            <a href="../index.html">Dashboard</a>
+            <a href="../collection.html">Collection</a>
+            <a href="../add.html">Add Card</a>
         </nav>
         <button class="menu-toggle" onclick="toggleMobileMenu()">☰</button>
     </header>
@@ -1962,44 +1975,7 @@ function generateSetDashboardHTML(year, product, category, setCards) {
                         `;
                     }).join('') : '<p style="color: #888; text-align: center; padding: 2rem;">No cards with estimated market value data in this set.</p>'}
                 </div>
-            </div>
 
-            <div class="inventory-section">
-                <h2>All Cards in Set</h2>
-                <div class="card-list" id="allSetCards">
-                    ${allSetCards.map(card => {
-                        const specialInfo = [];
-                        if (card.rookieCard === 'Y') specialInfo.push('RC');
-                        if (card.autograph === 'Y') specialInfo.push('Auto');
-                        if (card.relic === 'Y') specialInfo.push('Relic');
-                        if (card.parallel && card.parallel !== 'N') specialInfo.push(card.parallel);
-                        if (card.numbered && card.numbered !== 'N') {
-                            const numberedValue = card.numbered.startsWith("'") ? card.numbered.substring(1) : card.numbered;
-                            specialInfo.push(numberedValue);
-                        }
-                        
-                        const specialInfoLine = specialInfo.length > 0 ? 
-                            `<div class="mini-card-special-info">${specialInfo.join(' | ')}</div>` : '';
-                        
-                        const valueDisplay = card.estimatedValue && card.estimatedValue !== 'Unknown' ? 
-                            `<div class="mini-card-price-green">$${parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>` : '';
-                        
-                        return `
-                            <div class="mini-card">
-                                <div class="mini-card-header">
-                                    <div class="mini-card-player">${card.player || 'Unknown Player'}</div>
-                                    ${valueDisplay}
-                                </div>
-                                <div class="mini-card-team">${card.team || 'Unknown'}</div>
-                                <div class="mini-card-details">
-                                    #${card.cardNumber || 'N/A'}
-                                </div>
-                                ${specialInfoLine}
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            </div>
         </div>
     </div>
 

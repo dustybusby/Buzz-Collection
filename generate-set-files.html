@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Set Files</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .file-content { background: #f5f5f5; padding: 15px; margin: 10px 0; border-radius: 5px; white-space: pre-wrap; font-family: monospace; }
+        .file-info { background: #e3f2fd; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        button { background: #2196F3; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background: #1976D2; }
+    </style>
+</head>
+<body>
+    <h1>Generate Set Dashboard Files</h1>
+    <p>This page will generate the HTML content for set dashboard files. Click the button below to generate sample files.</p>
+    
+    <button onclick="generateSampleFiles()">Generate Sample Set Files</button>
+    
+    <div id="output"></div>
+
+    <script>
+        // Mock card collection data for testing
+        const mockCardCollection = [
+            {
+                id: '1',
+                year: '2023',
+                product: 'Topps Chrome',
+                category: 'Baseball',
+                player: 'Mike Trout',
+                team: 'Los Angeles Angels',
+                cardNumber: '150',
+                estimatedValue: '250.00',
+                rookieCard: 'N',
+                autograph: 'Y',
+                relic: 'N',
+                parallel: 'N',
+                numbered: '/50'
+            },
+            {
+                id: '2',
+                year: '2023',
+                product: 'Topps Chrome',
+                category: 'Baseball',
+                player: 'Shohei Ohtani',
+                team: 'Los Angeles Angels',
+                cardNumber: '200',
+                estimatedValue: '180.00',
+                rookieCard: 'Y',
+                autograph: 'N',
+                relic: 'Y',
+                parallel: 'N',
+                numbered: 'N'
+            },
+            {
+                id: '3',
+                year: '2022',
+                product: 'Panini Prizm',
+                category: 'Football',
+                player: 'Tom Brady',
+                team: 'Tampa Bay Buccaneers',
+                cardNumber: '100',
+                estimatedValue: '120.00',
+                rookieCard: 'N',
+                autograph: 'Y',
+                relic: 'N',
+                parallel: 'N',
+                numbered: '/25'
+            }
+        ];
+
+        function generateSetDashboardHTML(year, product, category, setCards) {
+            // Calculate set-specific stats
+            const totalCards = setCards.length;
+            const totalValue = setCards.reduce((sum, card) => {
+                const value = card.estimatedValue;
+                if (value === 'Unknown' || !value) return sum;
+                return sum + parseFloat(value);
+            }, 0);
+            const rookieCards = setCards.filter(card => card.rookieCard === 'Y').length;
+            const numberedCards = setCards.filter(card => card.numbered !== 'N').length;
+            const autographCards = setCards.filter(card => card.autograph === 'Y').length;
+            const relicCards = setCards.filter(card => card.relic === 'Y').length;
+            
+            // Get most valuable cards for this set
+            const expensiveCards = [...setCards]
+                .filter(card => card.estimatedValue !== 'Unknown' && card.estimatedValue > 0)
+                .sort((a, b) => parseFloat(b.estimatedValue) - parseFloat(a.estimatedValue))
+                .slice(0, 20);
+            
+            return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${year} ${product} ${category} - The Buzz Collection</title>
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="logo">The Buzz Collection</div>
+        <nav class="nav-links">
+            <a href="../index.html">Dashboard</a>
+            <a href="../collection.html">Collection</a>
+            <a href="../add.html">Add Card</a>
+        </nav>
+        <button class="menu-toggle" onclick="toggleMobileMenu()">☰</button>
+    </header>
+
+    <div class="container">
+        <h1>${year} ${product} ${category} Set Dashboard</h1>
+        
+        <div id="mainContent">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">${totalCards.toLocaleString()}</div>
+                    <div class="stat-label">Total Cards in Set</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">$${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                    <div class="stat-label">Estimated Market Value</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${rookieCards.toLocaleString()}</div>
+                    <div class="stat-label">Rookie Cards</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${numberedCards.toLocaleString()}</div>
+                    <div class="stat-label">Numbered Cards</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${autographCards.toLocaleString()}</div>
+                    <div class="stat-label">Autographed Cards</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${relicCards.toLocaleString()}</div>
+                    <div class="stat-label">Relic Cards</div>
+                </div>
+            </div>
+
+            <div class="inventory-section">
+                <h2>Most Valuable Cards in Set</h2>
+                <div class="card-list" id="expensiveCards">
+                    ${expensiveCards.length > 0 ? expensiveCards.map(card => {
+                        const specialInfo = [];
+                        if (card.rookieCard === 'Y') specialInfo.push('RC');
+                        if (card.autograph === 'Y') specialInfo.push('Auto');
+                        if (card.relic === 'Y') specialInfo.push('Relic');
+                        if (card.parallel && card.parallel !== 'N') specialInfo.push(card.parallel);
+                        if (card.numbered && card.numbered !== 'N') {
+                            const numberedValue = card.numbered.startsWith("'") ? card.numbered.substring(1) : card.numbered;
+                            specialInfo.push(numberedValue);
+                        }
+                        
+                        const specialInfoLine = specialInfo.length > 0 ? 
+                            `<div class="mini-card-special-info">${specialInfo.join(' | ')}</div>` : '';
+                        
+                        return `
+                            <div class="mini-card">
+                                <div class="mini-card-header">
+                                    <div class="mini-card-player">${card.player || 'Unknown Player'}</div>
+                                    <div class="mini-card-price-green">${parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                                </div>
+                                <div class="mini-card-team">${card.team || 'Unknown'}</div>
+                                <div class="mini-card-details">
+                                    #${card.cardNumber || 'N/A'}
+                                </div>
+                                ${specialInfoLine}
+                            </div>
+                        `;
+                    }).join('') : '<p style="color: #888; text-align: center; padding: 2rem;">No cards with estimated market value data in this set.</p>'}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleMobileMenu() {
+            const navLinks = document.querySelector('.nav-links');
+            navLinks.classList.toggle('active');
+        }
+    </script>
+</body>
+</html>`;
+        }
+
+        function generateSampleFiles() {
+            const output = document.getElementById('output');
+            output.innerHTML = '<h2>Generated Set Files:</h2>';
+            
+            // Group cards by set
+            const sets = {};
+            mockCardCollection.forEach(card => {
+                const key = `${card.year}-${card.product}-${card.category}`;
+                if (!sets[key]) {
+                    sets[key] = {
+                        year: card.year,
+                        product: card.product,
+                        category: card.category,
+                        cards: []
+                    };
+                }
+                sets[key].cards.push(card);
+            });
+            
+            // Generate files for each set
+            Object.values(sets).forEach(set => {
+                const filename = `${set.year}-${set.product.replace(/[^a-zA-Z0-9]/g, '-')}-${set.category.replace(/[^a-zA-Z0-9]/g, '-')}.html`;
+                const content = generateSetDashboardHTML(set.year, set.product, set.category, set.cards);
+                
+                const fileInfo = document.createElement('div');
+                fileInfo.className = 'file-info';
+                fileInfo.innerHTML = `
+                    <strong>File: sets/${filename}</strong><br>
+                    <strong>Set:</strong> ${set.year} ${set.product} ${set.category}<br>
+                    <strong>Cards:</strong> ${set.cards.length}<br>
+                    <strong>Content Length:</strong> ${content.length} characters
+                `;
+                output.appendChild(fileInfo);
+                
+                const fileContent = document.createElement('div');
+                fileContent.className = 'file-content';
+                fileContent.textContent = content;
+                output.appendChild(fileContent);
+            });
+        }
+    </script>
+</body>
+</html> 
