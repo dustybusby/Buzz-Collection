@@ -1599,6 +1599,12 @@ function displayInventory() {
     displayYearDistribution();
     displayTopProducts();
     displayExpensiveCards();
+    
+    // Add event listener for the sets filter
+    const setsFilter = document.getElementById('setsFilter');
+    if (setsFilter) {
+        setsFilter.addEventListener('change', displayTopProducts);
+    }
 }
 
 function updateSummaryStats() {
@@ -1687,7 +1693,7 @@ function displayYearDistribution() {
     }
 }
 
-// Updated function to show Sets Collected count and top products
+// Updated function to show Sets Collected count and top products with filtering
 function displayTopProducts() {
     const productStats = {};
     cardCollection.forEach(card => {
@@ -1696,7 +1702,13 @@ function displayTopProducts() {
         const fullKey = `${productKey} ${category}`;
         
         if (!productStats[fullKey]) {
-            productStats[fullKey] = { count: 0, emv: 0 };
+            productStats[fullKey] = { 
+                count: 0, 
+                emv: 0, 
+                year: card.year || 'Unknown',
+                product: card.product || 'Unknown',
+                category: card.category || 'Unknown'
+            };
         }
         
         productStats[fullKey].count++;
@@ -1715,12 +1727,45 @@ function displayTopProducts() {
         headingElement.textContent = `Sets Collected: ${totalUniqueSets}`;
     }
 
-    const topProducts = Object.entries(productStats)
-        .sort((a, b) => b[1].count - a[1].count);
+    // Get the current filter selection
+    const filterSelect = document.getElementById('setsFilter');
+    const currentFilter = filterSelect ? filterSelect.value : 'emv-high';
+
+    // Sort products based on filter selection
+    let sortedProducts = Object.entries(productStats);
+    
+    switch (currentFilter) {
+        case 'emv-high':
+            sortedProducts = sortedProducts.sort((a, b) => b[1].emv - a[1].emv);
+            break;
+        case 'emv-low':
+            sortedProducts = sortedProducts.sort((a, b) => a[1].emv - b[1].emv);
+            break;
+        case 'cards-high':
+            sortedProducts = sortedProducts.sort((a, b) => b[1].count - a[1].count);
+            break;
+        case 'cards-low':
+            sortedProducts = sortedProducts.sort((a, b) => a[1].count - b[1].count);
+            break;
+        case 'year':
+            sortedProducts = sortedProducts.sort((a, b) => {
+                // First sort by year (numerically)
+                const yearA = parseInt(a[1].year) || 0;
+                const yearB = parseInt(b[1].year) || 0;
+                if (yearA !== yearB) {
+                    return yearB - yearA; // Newest years first
+                }
+                // Then sort by product alphabetically
+                return a[1].product.localeCompare(b[1].product);
+            });
+            break;
+        default:
+            sortedProducts = sortedProducts.sort((a, b) => b[1].emv - a[1].emv);
+    }
 
     const container = document.getElementById('productList');
     if (container) {
-        container.innerHTML = topProducts.map(([product, stats]) => `
+        container.innerHTML = sortedProducts.map(([product, stats]) => `
             <div class="product-item">
                 <div class="product-info">
                     <div class="product-name">${product}</div>

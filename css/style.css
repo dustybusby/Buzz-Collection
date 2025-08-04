@@ -516,6 +516,51 @@ h1 {
     padding-bottom: 0.5rem;
 }
 
+.filter-controls {
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.filter-select {
+    background: linear-gradient(135deg, rgba(0, 100, 150, 0.2), rgba(0, 50, 100, 0.1));
+    border: 1px solid rgba(0, 150, 255, 0.3);
+    border-radius: 8px;
+    color: #e0f4ff;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    box-shadow: 
+        0 2px 4px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.filter-select:hover {
+    border-color: rgba(0, 200, 255, 0.5);
+    box-shadow: 
+        0 4px 8px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(0, 200, 255, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #00d4ff;
+    box-shadow: 
+        0 0 0 2px rgba(0, 212, 255, 0.3),
+        0 4px 8px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.filter-select option {
+    background: #0a0a0f;
+    color: #e0f4ff;
+    padding: 0.5rem;
+}
+
 /* FIXED: Enhanced Top Brands section styling - All boxes styled consistently */
 .product-list {
     display: grid;
