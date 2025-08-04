@@ -1716,8 +1716,7 @@ function displayTopProducts() {
     }
 
     const topProducts = Object.entries(productStats)
-        .sort((a, b) => b[1].count - a[1].count)
-        .slice(0, 12);
+        .sort((a, b) => b[1].count - a[1].count);
 
     const container = document.getElementById('productList');
     if (container) {
