@@ -1747,13 +1747,25 @@ function displayTopProducts() {
         case 'cards-low':
             sortedProducts = sortedProducts.sort((a, b) => a[1].count - b[1].count);
             break;
-        case 'year':
+        case 'year-newest':
             sortedProducts = sortedProducts.sort((a, b) => {
                 // First sort by year (numerically)
                 const yearA = parseInt(a[1].year) || 0;
                 const yearB = parseInt(b[1].year) || 0;
                 if (yearA !== yearB) {
                     return yearB - yearA; // Newest years first
+                }
+                // Then sort by product alphabetically
+                return a[1].product.localeCompare(b[1].product);
+            });
+            break;
+        case 'year-oldest':
+            sortedProducts = sortedProducts.sort((a, b) => {
+                // First sort by year (numerically)
+                const yearA = parseInt(a[1].year) || 0;
+                const yearB = parseInt(b[1].year) || 0;
+                if (yearA !== yearB) {
+                    return yearA - yearB; // Oldest years first
                 }
                 // Then sort by product alphabetically
                 return a[1].product.localeCompare(b[1].product);
