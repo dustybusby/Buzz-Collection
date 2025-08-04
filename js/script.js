@@ -3057,26 +3057,18 @@ function displaySetStats(cards) {
         const value = parseFloat(card.estimatedValue) || 0;
         return sum + value;
     }, 0);
-    const avgValue = totalCards > 0 ? totalValue / totalCards : 0;
     
-    const rookieCards = cards.filter(card => 
-        card.parallel && card.parallel.toLowerCase().includes('rookie')
-    ).length;
-    
-    const numberedCards = cards.filter(card => 
-        card.numbered && card.numbered !== 'Unknown' && card.numbered !== ''
-    ).length;
-    
-    const autographCards = cards.filter(card => 
-        card.autograph && card.autograph !== 'Unknown' && card.autograph !== ''
-    ).length;
+    const rookieCards = cards.filter(card => card.rookieCard === 'Y').length;
+    const numberedCards = cards.filter(card => card.numbered !== 'N').length;
+    const autographCards = cards.filter(card => card.autograph === 'Y').length;
+    const relicCards = cards.filter(card => card.relic === 'Y').length;
 
-    document.getElementById('totalCards').textContent = totalCards;
+    document.getElementById('totalCards').textContent = totalCards.toLocaleString();
     document.getElementById('totalValue').textContent = `$${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    document.getElementById('avgValue').textContent = `$${avgValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    document.getElementById('rookieCards').textContent = rookieCards;
-    document.getElementById('numberedCards').textContent = numberedCards;
-    document.getElementById('autographCards').textContent = autographCards;
+    document.getElementById('rookieCards').textContent = rookieCards.toLocaleString();
+    document.getElementById('numberedCards').textContent = numberedCards.toLocaleString();
+    document.getElementById('autographCards').textContent = autographCards.toLocaleString();
+    document.getElementById('relicCards').textContent = relicCards.toLocaleString();
 }
 
 function displaySetValuableCards(cards) {
