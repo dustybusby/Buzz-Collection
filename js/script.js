@@ -430,6 +430,9 @@ async function loadCollectionFromFirebase() {
             });
         });
         
+        // Make cardCollection available globally for dynamic dashboard
+        window.cardCollection = cardCollection;
+        
         const loadingEl = document.getElementById('loading');
         const mainContentEl = document.getElementById('mainContent');
         
@@ -1777,15 +1780,18 @@ function displayTopProducts() {
 
     const container = document.getElementById('productList');
     if (container) {
-        container.innerHTML = sortedProducts.map(([product, stats]) => `
-            <div class="product-item">
-                <div class="product-info">
-                    <div class="product-name">${product}</div>
-                    <div class="product-emv">EMV: $${stats.emv.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+        container.innerHTML = sortedProducts.map(([product, stats]) => {
+            const encodedSetName = encodeURIComponent(product);
+            return `
+                <div class="product-item" onclick="window.location.href='sets/dashboard.html?set=${encodedSetName}'" style="cursor: pointer;">
+                    <div class="product-info">
+                        <div class="product-name">${product}</div>
+                        <div class="product-emv">EMV: $${stats.emv.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                    </div>
+                    <div class="product-count">${stats.count}</div>
                 </div>
-                <div class="product-count">${stats.count}</div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 }
 

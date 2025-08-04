@@ -606,6 +606,31 @@ h1 {
         inset 0 -1px 0 rgba(0, 0, 0, 0.3);
 }
 
+/* Enhanced clickable styling for product items */
+.product-item[onclick] {
+    cursor: pointer;
+    position: relative;
+}
+
+.product-item[onclick]::after {
+    content: '→';
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(0, 200, 255, 0.6);
+    font-size: 1.2rem;
+    font-weight: bold;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.product-item[onclick]:hover::after {
+    opacity: 1;
+    right: 0.5rem;
+    color: rgba(0, 200, 255, 0.9);
+}
+
 .product-info {
     flex: 1;
     display: flex;
