@@ -1687,7 +1687,7 @@ function displayYearDistribution() {
     }
 }
 
-// Updated function to include Estimated Market Value (EMV) for Top Brands - FIXED dollar sign placement and HTML structure
+// Updated function to show Sets Collected count and top products
 function displayTopProducts() {
     const productStats = {};
     cardCollection.forEach(card => {
@@ -1707,6 +1707,13 @@ function displayTopProducts() {
             productStats[fullKey].emv += parseFloat(value);
         }
     });
+
+    // Update the heading with total number of unique sets
+    const totalUniqueSets = Object.keys(productStats).length;
+    const headingElement = document.getElementById('setsCollectedHeading');
+    if (headingElement) {
+        headingElement.textContent = `Sets Collected: ${totalUniqueSets}`;
+    }
 
     const topProducts = Object.entries(productStats)
         .sort((a, b) => b[1].count - a[1].count)
