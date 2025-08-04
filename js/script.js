@@ -3083,7 +3083,7 @@ function displaySetValuableCards(cards) {
     const container = document.getElementById('expensiveCards');
     
     if (valuableCards.length === 0) {
-        container.innerHTML = '<div class="no-cards-message">No valuable cards found in this set.</div>';
+        container.innerHTML = '<p style="color: #888; text-align: center; padding: 2rem;">No valuable cards found in this set.</p>';
         return;
     }
 
@@ -3115,19 +3115,26 @@ function displaySetValuableCards(cards) {
         
         // Only show the special info line if there's at least one item
         const specialInfoLine = specialInfo.length > 0 ? 
-            `<div class="product-special-info">${specialInfo.join(' | ')}</div>` : '';
+            `<div class="mini-card-special-info">${specialInfo.join(' | ')}</div>` : '';
         
         return `
-            <div class="product-item" onclick="viewCard('${card.id}')" style="cursor: pointer;">
-                <div class="product-info">
-                    <div class="product-name">${card.player || 'Unknown Player'}</div>
-                    <div class="product-emv">EMV: $${parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                    ${specialInfoLine}
+            <div class="mini-card clickable-card" data-card-id="${card.id}" style="cursor: pointer;">
+                <div class="mini-card-header">
+                    <div class="mini-card-player">${card.player || 'Unknown Player'}</div>
+                    <div class="mini-card-price-green">${parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                 </div>
-                <div class="product-count">${card.year || 'Unknown'} ${card.product || 'Unknown'} ${card.category || 'Unknown'} #${card.cardNumber || 'N/A'}</div>
+                <div class="mini-card-team">${card.team || 'Unknown'}</div>
+                <div class="mini-card-details">
+                    ${card.year || 'Unknown'} ${card.product || 'Unknown'} ${card.category || 'Unknown'} #${card.cardNumber || 'N/A'}
+                </div>
+                ${specialInfoLine}
             </div>
         `;
     }).join('');
+
+    // Add click event listeners to mini cards using event delegation
+    container.removeEventListener('click', handleMiniCardClick); // Remove any existing listeners
+    container.addEventListener('click', handleMiniCardClick);
 }
 
 function showError(message) {
