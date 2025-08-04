@@ -1796,9 +1796,10 @@ function displayTopProducts() {
 }
 
 // Updated function to show top 20 cards with new layout structure and autograph info
-function displayExpensiveCards() {
+function displayExpensiveCards(cardsToFilter = null) {
     // Use estimatedValue instead of purchaseCost for expensive cards and increase to 20
-    const expensiveCards = [...cardCollection]
+    const sourceCards = cardsToFilter || cardCollection;
+    const expensiveCards = [...sourceCards]
         .filter(card => card.estimatedValue !== 'Unknown' && card.estimatedValue > 0)
         .sort((a, b) => parseFloat(b.estimatedValue) - parseFloat(a.estimatedValue))
         .slice(0, 20); // Changed from 8 to 20
@@ -3071,13 +3072,15 @@ function displaySetStats(cards) {
     document.getElementById('relicCards').textContent = relicCards.toLocaleString();
 }
 
+
+
 function displaySetValuableCards(cards) {
     const valuableCards = cards
         .filter(card => card.estimatedValue !== 'Unknown' && parseFloat(card.estimatedValue) > 0)
         .sort((a, b) => parseFloat(b.estimatedValue) - parseFloat(a.estimatedValue))
         .slice(0, 8); // Show top 8 most valuable cards
 
-    const container = document.getElementById('valuableCardsList');
+    const container = document.getElementById('expensiveCards');
     
     if (valuableCards.length === 0) {
         container.innerHTML = '<div class="no-cards-message">No valuable cards found in this set.</div>';
@@ -3112,26 +3115,19 @@ function displaySetValuableCards(cards) {
         
         // Only show the special info line if there's at least one item
         const specialInfoLine = specialInfo.length > 0 ? 
-            `<div class="mini-card-special-info">${specialInfo.join(' | ')}</div>` : '';
+            `<div class="product-special-info">${specialInfo.join(' | ')}</div>` : '';
         
         return `
-            <div class="mini-card clickable-card" data-card-id="${card.id}" style="cursor: pointer;">
-                <div class="mini-card-header">
-                    <div class="mini-card-player">${card.player || 'Unknown Player'}</div>
-                    <div class="mini-card-price-green">${parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            <div class="product-item" onclick="viewCard('${card.id}')" style="cursor: pointer;">
+                <div class="product-info">
+                    <div class="product-name">${card.player || 'Unknown Player'}</div>
+                    <div class="product-emv">EMV: $${parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                    ${specialInfoLine}
                 </div>
-                <div class="mini-card-team">${card.team || 'Unknown'}</div>
-                <div class="mini-card-details">
-                    ${card.year || 'Unknown'} ${card.product || 'Unknown'} ${card.category || 'Unknown'} #${card.cardNumber || 'N/A'}
-                </div>
-                ${specialInfoLine}
+                <div class="product-count">${card.year || 'Unknown'} ${card.product || 'Unknown'} ${card.category || 'Unknown'} #${card.cardNumber || 'N/A'}</div>
             </div>
         `;
     }).join('');
-
-    // Add click event listeners to mini cards using event delegation
-    container.removeEventListener('click', handleMiniCardClick); // Remove any existing listeners
-    container.addEventListener('click', handleMiniCardClick);
 }
 
 function showError(message) {

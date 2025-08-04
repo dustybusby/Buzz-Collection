@@ -679,6 +679,13 @@ h1 {
     margin-left: 1rem;
 }
 
+.product-special-info {
+    color: #b8e6ff;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+    font-weight: 400;
+}
+
 /* FIXED: Import Status Dialog Styles - Improved vertical alignment with Continue button */
 .modal-content.import-status-modal-content {
     min-width: 500px;
