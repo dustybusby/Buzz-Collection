@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Set Dashboard - The Buzz Collection</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="logo">The Buzz Collection</div>
+        <nav class="nav-links">
+            <a href="index.html">Dashboard</a>
+            <a href="collection.html">Collection</a>
+            <a href="add.html">Add Card</a>
+        </nav>
+        <button class="menu-toggle" onclick="toggleMobileMenu()">☰</button>
+    </header>
+
+    <div class="container">
+        <div id="loading" class="loading-container">
+            <div class="loading-spinner"></div>
+            <div>Loading set data...</div>
+        </div>
+
+        <div id="mainContent" style="display: none;">
+            <div class="set-header">
+                <h1 id="setTitle">Set Dashboard</h1>
+                <a href="index.html" class="back-link">← Back to Main Dashboard</a>
+            </div>
+
+            <div class="set-stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalCards">0</div>
+                    <div class="stat-label">Total Cards</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalValue">$0.00</div>
+                    <div class="stat-label">Total Value</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="avgValue">$0.00</div>
+                    <div class="stat-label">Average Value</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="rookieCards">0</div>
+                    <div class="stat-label">Rookie Cards</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="numberedCards">0</div>
+                    <div class="stat-label">Numbered Cards</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="autographCards">0</div>
+                    <div class="stat-label">Autographed Cards</div>
+                </div>
+            </div>
+
+            <div class="set-valuable-cards">
+                <h2>Most Valuable Cards</h2>
+                <div id="valuableCardsList">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <div id="errorContent" style="display: none;" class="error-container">
+            <h2>Error Loading Set Data</h2>
+            <p id="errorMessage">Unable to load the requested set data.</p>
+            <a href="index.html" class="back-link">← Back to Main Dashboard</a>
+        </div>
+    </div>
+
+    <script type="module" src="js/script.js"></script>
+</body>
+</html> 

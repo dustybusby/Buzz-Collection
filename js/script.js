@@ -1783,7 +1783,7 @@ function displayTopProducts() {
         container.innerHTML = sortedProducts.map(([product, stats]) => {
             const encodedSetName = encodeURIComponent(product);
             return `
-                <div class="product-item" onclick="window.location.href='sets/dashboard.html?set=${encodedSetName}'" style="cursor: pointer;">
+                                 <div class="product-item" onclick="window.location.href='dashboard.html?set=${encodedSetName}'" style="cursor: pointer;">
                     <div class="product-info">
                         <div class="product-name">${product}</div>
                         <div class="product-emv">EMV: $${stats.emv.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
@@ -3000,3 +3000,123 @@ function hideValidationDialog() {
 window.changePage = changePage;
 
 // End of script.js file
+
+// Dashboard-specific functions
+let currentSetData = null;
+let currentSetName = null;
+
+// Get set name from URL parameters
+function getSetFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('set');
+}
+
+// Load and display set data
+async function loadSetDashboard() {
+    const setKey = getSetFromURL();
+    
+    if (!setKey) {
+        showError('No set specified in URL');
+        return;
+    }
+
+    currentSetName = decodeURIComponent(setKey);
+    
+    // Wait for the main script to load collection data
+    while (!window.cardCollection) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+    // Filter cards for this specific set
+    const setCards = window.cardCollection.filter(card => {
+        const cardSetKey = `${card.year || 'Unknown'} ${card.product || 'Unknown'} ${card.category || 'Unknown'}`;
+        return cardSetKey === currentSetName;
+    });
+
+    if (setCards.length === 0) {
+        showError(`No cards found for set: ${currentSetName}`);
+        return;
+    }
+
+    currentSetData = setCards;
+    displaySetStats(setCards);
+    displaySetValuableCards(setCards);
+    
+    // Update page title
+    document.title = `${currentSetName} - The Buzz Collection`;
+    document.getElementById('setTitle').textContent = currentSetName;
+    
+    // Hide loading, show content
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('mainContent').style.display = 'block';
+}
+
+function displaySetStats(cards) {
+    const totalCards = cards.length;
+    const totalValue = cards.reduce((sum, card) => {
+        const value = parseFloat(card.estimatedValue) || 0;
+        return sum + value;
+    }, 0);
+    const avgValue = totalCards > 0 ? totalValue / totalCards : 0;
+    
+    const rookieCards = cards.filter(card => 
+        card.parallel && card.parallel.toLowerCase().includes('rookie')
+    ).length;
+    
+    const numberedCards = cards.filter(card => 
+        card.numbered && card.numbered !== 'Unknown' && card.numbered !== ''
+    ).length;
+    
+    const autographCards = cards.filter(card => 
+        card.autograph && card.autograph !== 'Unknown' && card.autograph !== ''
+    ).length;
+
+    document.getElementById('totalCards').textContent = totalCards;
+    document.getElementById('totalValue').textContent = `$${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    document.getElementById('avgValue').textContent = `$${avgValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    document.getElementById('rookieCards').textContent = rookieCards;
+    document.getElementById('numberedCards').textContent = numberedCards;
+    document.getElementById('autographCards').textContent = autographCards;
+}
+
+function displaySetValuableCards(cards) {
+    const valuableCards = cards
+        .filter(card => card.estimatedValue !== 'Unknown' && parseFloat(card.estimatedValue) > 0)
+        .sort((a, b) => parseFloat(b.estimatedValue) - parseFloat(a.estimatedValue))
+        .slice(0, 10); // Show top 10 most valuable cards
+
+    const container = document.getElementById('valuableCardsList');
+    
+    if (valuableCards.length === 0) {
+        container.innerHTML = '<div class="no-cards-message">No valuable cards found in this set.</div>';
+        return;
+    }
+
+    container.innerHTML = valuableCards.map(card => `
+        <div class="set-card-item">
+            <div class="set-card-header">
+                <div class="set-card-player">${card.player || 'Unknown Player'}</div>
+                <div class="set-card-value">$${parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            </div>
+            <div class="set-card-details">
+                <div><strong>Team:</strong> ${card.team || 'Unknown'}</div>
+                <div><strong>Card #:</strong> ${card.cardNumber || 'Unknown'}</div>
+                ${card.parallel ? `<div><strong>Parallel:</strong> ${card.parallel}</div>` : ''}
+                ${card.numbered ? `<div><strong>Numbered:</strong> ${card.numbered}</div>` : ''}
+                ${card.autograph ? `<div><strong>Autograph:</strong> ${card.autograph}</div>` : ''}
+                ${card.relic ? `<div><strong>Relic:</strong> ${card.relic}</div>` : ''}
+            </div>
+        </div>
+    `).join('');
+}
+
+function showError(message) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('errorContent').style.display = 'block';
+    document.getElementById('errorMessage').textContent = message;
+}
+
+// Initialize dashboard when page loads (only on dashboard page)
+if (window.location.pathname.includes('dashboard.html')) {
+    document.addEventListener('DOMContentLoaded', loadSetDashboard);
+}
