@@ -3042,9 +3042,9 @@ async function loadSetDashboard() {
     displaySetStats(setCards);
     displaySetValuableCards(setCards);
     
-    // Update page title
-    document.title = `${currentSetName} - The Buzz Collection`;
-    document.getElementById('setTitle').textContent = currentSetName;
+                // Update page title
+            document.title = `${currentSetName} Overview - The Buzz Collection`;
+            document.getElementById('setTitle').textContent = `${currentSetName} Overview`;
     
     // Hide loading, show content
     document.getElementById('loading').style.display = 'none';
@@ -3083,7 +3083,7 @@ function displaySetValuableCards(cards) {
     const valuableCards = cards
         .filter(card => card.estimatedValue !== 'Unknown' && parseFloat(card.estimatedValue) > 0)
         .sort((a, b) => parseFloat(b.estimatedValue) - parseFloat(a.estimatedValue))
-        .slice(0, 10); // Show top 10 most valuable cards
+        .slice(0, 8); // Show top 8 most valuable cards
 
     const container = document.getElementById('valuableCardsList');
     
@@ -3092,22 +3092,54 @@ function displaySetValuableCards(cards) {
         return;
     }
 
-    container.innerHTML = valuableCards.map(card => `
-        <div class="set-card-item">
-            <div class="set-card-header">
-                <div class="set-card-player">${card.player || 'Unknown Player'}</div>
-                <div class="set-card-value">$${parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+    container.innerHTML = valuableCards.map(card => {
+        // Build the special info line (RC | Autograph | Parallel | Numbered)
+        const specialInfo = [];
+        
+        if (card.rookieCard === 'Y') {
+            specialInfo.push('RC');
+        }
+        
+        if (card.autograph === 'Y') {
+            specialInfo.push('Auto');
+        }
+        
+        if (card.relic === 'Y') {
+            specialInfo.push('Relic');
+        }
+        
+        if (card.parallel && card.parallel !== 'N') {
+            specialInfo.push(card.parallel);
+        }
+        
+        if (card.numbered && card.numbered !== 'N') {
+            // FIXED: Remove leading single quote from numbered display
+            const numberedValue = card.numbered.startsWith("'") ? card.numbered.substring(1) : card.numbered;
+            specialInfo.push(numberedValue);
+        }
+        
+        // Only show the special info line if there's at least one item
+        const specialInfoLine = specialInfo.length > 0 ? 
+            `<div class="mini-card-special-info">${specialInfo.join(' | ')}</div>` : '';
+        
+        return `
+            <div class="mini-card clickable-card" data-card-id="${card.id}" style="cursor: pointer;">
+                <div class="mini-card-header">
+                    <div class="mini-card-player">${card.player || 'Unknown Player'}</div>
+                    <div class="mini-card-price-green">${parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                </div>
+                <div class="mini-card-team">${card.team || 'Unknown'}</div>
+                <div class="mini-card-details">
+                    ${card.year || 'Unknown'} ${card.product || 'Unknown'} ${card.category || 'Unknown'} #${card.cardNumber || 'N/A'}
+                </div>
+                ${specialInfoLine}
             </div>
-            <div class="set-card-details">
-                <div><strong>Team:</strong> ${card.team || 'Unknown'}</div>
-                <div><strong>Card #:</strong> ${card.cardNumber || 'Unknown'}</div>
-                ${card.parallel ? `<div><strong>Parallel:</strong> ${card.parallel}</div>` : ''}
-                ${card.numbered ? `<div><strong>Numbered:</strong> ${card.numbered}</div>` : ''}
-                ${card.autograph ? `<div><strong>Autograph:</strong> ${card.autograph}</div>` : ''}
-                ${card.relic ? `<div><strong>Relic:</strong> ${card.relic}</div>` : ''}
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
+
+    // Add click event listeners to mini cards using event delegation
+    container.removeEventListener('click', handleMiniCardClick); // Remove any existing listeners
+    container.addEventListener('click', handleMiniCardClick);
 }
 
 function showError(message) {
