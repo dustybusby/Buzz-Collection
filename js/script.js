@@ -1842,7 +1842,7 @@ function displayExpensiveCards(cardsToFilter = null) {
                 `<div class="mini-card-special-info">${specialInfo.join(' | ')}</div>` : '';
             
             return `
-                <div class="mini-card clickable-card" data-card-id="${card.id}" onclick="viewCardWithModal('${card.id}')" style="cursor: pointer;">
+                <div class="mini-card clickable-card" data-card-id="${card.id}" style="cursor: pointer;">
                     <div class="mini-card-header">
                         <div class="mini-card-player">${card.player || 'Unknown Player'}</div>
                         <div class="mini-card-price-green">${parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
@@ -1856,9 +1856,9 @@ function displayExpensiveCards(cardsToFilter = null) {
             `;
         }).join('');
 
-        // Remove event delegation since we're using onclick attribute
-        // container.removeEventListener('click', handleMiniCardClick);
-        // container.addEventListener('click', handleMiniCardClick);
+        // Fixed: Add click event listeners to mini cards using event delegation
+        container.removeEventListener('click', handleMiniCardClick); // Remove any existing listeners
+        container.addEventListener('click', handleMiniCardClick);
     }
 }
 
@@ -2471,111 +2471,109 @@ function filterCollection() {
 // FIXED: viewCard function with proper date formatting and timezone normalization
 function viewCard(cardId) {
     try {
-        // Use global cardCollection if available, otherwise use local cardCollection
-        const collection = window.cardCollection || cardCollection;
-        const card = collection.find(c => c.id === cardId);
+        const card = cardCollection.find(c => c.id === cardId);
         if (!card) {
             console.error('Card not found:', cardId);
             return;
         }
         
         const player = card.player || 'Unknown Player';
-    const team = card.team || 'Unknown Team';
-    const year = card.year || '';
-    const product = card.product || '';
-    const category = card.category || 'Unknown';
-    const cardNumber = card.cardNumber || 'N/A';
-    const rookieText = card.rookieCard === 'Y' ? 'Rookie Card: Yes' : 'Rookie Card: No';
-    const autographText = card.autograph === 'Y' ? 'Autograph: Yes' : 'Autograph: No'; // New autograph display
-    const relicText = card.relic === 'Y' ? 'Relic: Yes' : 'Relic: No'; // New relic display
-    const baseSetText = card.baseSet === 'Y' ? 'Base Set: Yes' : 'Base Set: No';
-    const parallelText = card.parallel && card.parallel !== 'N' ? `Parallel: ${card.parallel}` : 'Parallel: No';
-    // FIXED: Remove leading single quote AND ending single quote from numbered display in view
-    const numberedRaw = card.numbered && card.numbered !== 'N' ? card.numbered : 'N';
-    let numberedClean = numberedRaw !== 'N' ? numberedRaw : 'N';
-    if (numberedClean !== 'N') {
-        // Remove leading quote
-        if (numberedClean.startsWith("'")) {
-            numberedClean = numberedClean.substring(1);
+        const team = card.team || 'Unknown Team';
+        const year = card.year || '';
+        const product = card.product || '';
+        const category = card.category || 'Unknown';
+        const cardNumber = card.cardNumber || 'N/A';
+        const rookieText = card.rookieCard === 'Y' ? 'Rookie Card: Yes' : 'Rookie Card: No';
+        const autographText = card.autograph === 'Y' ? 'Autograph: Yes' : 'Autograph: No'; // New autograph display
+        const relicText = card.relic === 'Y' ? 'Relic: Yes' : 'Relic: No'; // New relic display
+        const baseSetText = card.baseSet === 'Y' ? 'Base Set: Yes' : 'Base Set: No';
+        const parallelText = card.parallel && card.parallel !== 'N' ? `Parallel: ${card.parallel}` : 'Parallel: No';
+        // FIXED: Remove leading single quote AND ending single quote from numbered display in view
+        const numberedRaw = card.numbered && card.numbered !== 'N' ? card.numbered : 'N';
+        let numberedClean = numberedRaw !== 'N' ? numberedRaw : 'N';
+        if (numberedClean !== 'N') {
+            // Remove leading quote
+            if (numberedClean.startsWith("'")) {
+                numberedClean = numberedClean.substring(1);
+            }
+            // Remove ending quote
+            if (numberedClean.endsWith("'")) {
+                numberedClean = numberedClean.slice(0, -1);
+            }
         }
-        // Remove ending quote
-        if (numberedClean.endsWith("'")) {
-            numberedClean = numberedClean.slice(0, -1);
-        }
-    }
-    const numberedText = numberedClean !== 'N' ? `Numbered: ${numberedClean}` : 'Numbered: No';
-    const insertText = card.insert && card.insert !== 'N' ? `Insert: ${card.insert}` : 'Insert: No';
-    const imageVariationText = card.imageVariation && card.imageVariation !== 'N' ? `Image Variation: ${card.imageVariation}` : 'Image Variation: No';
-    const description = card.description || 'None';
-    const quantity = card.quantity || 1;
-    
-    // FIXED: Monetary data formatting with proper date handling and timezone normalization
-    let purchaseDate = 'Unknown';
-    if (card.purchaseDate && card.purchaseDate !== 'Unknown') {
-        const normalizedDate = formatDateForDisplay(card.purchaseDate);
-        if (normalizedDate) {
-            purchaseDate = normalizedDate;
-        }
-    }
-    
-    const purchaseCost = card.purchaseCost === 'Unknown' || !card.purchaseCost ? 'Unknown' : '$' + parseFloat(card.purchaseCost).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const estimatedValue = card.estimatedValue === 'Unknown' || !card.estimatedValue ? 'Unknown' : '$' + parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    
-    // FIXED: Format estimated value date properly with timezone normalization
-    let estimatedValueDate = null;
-    if (card.estimatedValueDate) {
-        const normalizedDate = formatDateForDisplay(card.estimatedValueDate);
-        if (normalizedDate) {
-            estimatedValueDate = normalizedDate;
-        }
-    }
-    
-    // Format estimated value text
-    let estimatedValueText = '';
-    if (estimatedValue !== 'Unknown' && estimatedValueDate) {
-        estimatedValueText = `Estimated market value on ${estimatedValueDate}: ${estimatedValue}`;
-    } else if (estimatedValue !== 'Unknown') {
-        estimatedValueText = `Estimated market value: ${estimatedValue}`;
-    } else {
-        estimatedValueText = 'Estimated market value: Unknown';
-    }
-    
-    const modalHTML = `
-        <div class="card-header">
-            <div class="card-title-section">
-                <div class="card-title">${player}</div>
-                <div class="card-subtitle">${team}</div>
-                <div class="card-product">Card #${cardNumber} | ${year} ${product}</div>
-            </div>
-            <div class="card-category">${category}</div>
-        </div>
+        const numberedText = numberedClean !== 'N' ? `Numbered: ${numberedClean}` : 'Numbered: No';
+        const insertText = card.insert && card.insert !== 'N' ? `Insert: ${card.insert}` : 'Insert: No';
+        const imageVariationText = card.imageVariation && card.imageVariation !== 'N' ? `Image Variation: ${card.imageVariation}` : 'Image Variation: No';
+        const description = card.description || 'None';
+        const quantity = card.quantity || 1;
         
-        <div class="card-body">
-            <div class="card-details">
-                <div class="card-detail-line">${baseSetText}</div>
-                <div class="card-detail-line">${insertText}</div>
-                <div class="card-detail-line">${parallelText}</div>
-                <div class="card-detail-line">${numberedText}</div>
-                <div class="card-detail-line">${rookieText}</div>
-                <div class="card-detail-line">${autographText}</div>
-                <div class="card-detail-line">${relicText}</div>
-                <div class="card-detail-line">${imageVariationText}</div>
-                <div class="card-detail-line">Quantity: ${quantity}</div>
-                <div class="card-detail-line">Add'l Notes: ${description}</div>
+        // FIXED: Monetary data formatting with proper date handling and timezone normalization
+        let purchaseDate = 'Unknown';
+        if (card.purchaseDate && card.purchaseDate !== 'Unknown') {
+            const normalizedDate = formatDateForDisplay(card.purchaseDate);
+            if (normalizedDate) {
+                purchaseDate = normalizedDate;
+            }
+        }
+        
+        const purchaseCost = card.purchaseCost === 'Unknown' || !card.purchaseCost ? 'Unknown' : '$' + parseFloat(card.purchaseCost).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const estimatedValue = card.estimatedValue === 'Unknown' || !card.estimatedValue ? 'Unknown' : '$' + parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        
+        // FIXED: Format estimated value date properly with timezone normalization
+        let estimatedValueDate = null;
+        if (card.estimatedValueDate) {
+            const normalizedDate = formatDateForDisplay(card.estimatedValueDate);
+            if (normalizedDate) {
+                estimatedValueDate = normalizedDate;
+            }
+        }
+        
+        // Format estimated value text
+        let estimatedValueText = '';
+        if (estimatedValue !== 'Unknown' && estimatedValueDate) {
+            estimatedValueText = `Estimated market value on ${estimatedValueDate}: ${estimatedValue}`;
+        } else if (estimatedValue !== 'Unknown') {
+            estimatedValueText = `Estimated market value: ${estimatedValue}`;
+        } else {
+            estimatedValueText = 'Estimated market value: Unknown';
+        }
+        
+        const modalHTML = `
+            <div class="card-header">
+                <div class="card-title-section">
+                    <div class="card-title">${player}</div>
+                    <div class="card-subtitle">${team}</div>
+                    <div class="card-product">Card #${cardNumber} | ${year} ${product}</div>
+                </div>
+                <div class="card-category">${category}</div>
             </div>
             
-            <div class="card-monetary">
-                <div class="monetary-field">Grade: ${card.grade || 'Ungraded'}</div>
-                <div class="monetary-field">Purchase Date: ${purchaseDate}</div>
-                <div class="monetary-field">Purchase Price: ${purchaseCost}</div>
-                <div class="monetary-field estimated-value">${estimatedValueText}</div>
+            <div class="card-body">
+                <div class="card-details">
+                    <div class="card-detail-line">${baseSetText}</div>
+                    <div class="card-detail-line">${insertText}</div>
+                    <div class="card-detail-line">${parallelText}</div>
+                    <div class="card-detail-line">${numberedText}</div>
+                    <div class="card-detail-line">${rookieText}</div>
+                    <div class="card-detail-line">${autographText}</div>
+                    <div class="card-detail-line">${relicText}</div>
+                    <div class="card-detail-line">${imageVariationText}</div>
+                    <div class="card-detail-line">Quantity: ${quantity}</div>
+                    <div class="card-detail-line">Add'l Notes: ${description}</div>
+                </div>
+                
+                <div class="card-monetary">
+                    <div class="monetary-field">Grade: ${card.grade || 'Ungraded'}</div>
+                    <div class="monetary-field">Purchase Date: ${purchaseDate}</div>
+                    <div class="monetary-field">Purchase Price: ${purchaseCost}</div>
+                    <div class="monetary-field estimated-value">${estimatedValueText}</div>
+                </div>
             </div>
-        </div>
-    `;
-    
-    document.getElementById('modalCardContent').innerHTML = modalHTML;
-    document.getElementById('cardModal').style.display = 'flex';
-    
+        `;
+        
+        document.getElementById('modalCardContent').innerHTML = modalHTML;
+        document.getElementById('cardModal').style.display = 'flex';
+        
     } catch (error) {
         console.error('Error in viewCard function:', error);
         // Don't throw the error to prevent unhandled promise rejection
@@ -3120,7 +3118,7 @@ function displaySetValuableCards(cards) {
             `<div class="mini-card-special-info">${specialInfo.join(' | ')}</div>` : '';
         
         return `
-            <div class="mini-card clickable-card" data-card-id="${card.id}" onclick="viewCardWithModal('${card.id}')" style="cursor: pointer;">
+            <div class="mini-card clickable-card" data-card-id="${card.id}" style="cursor: pointer;">
                 <div class="mini-card-header">
                     <div class="mini-card-player">${card.player || 'Unknown Player'}</div>
                     <div class="mini-card-price-green">${parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
@@ -3134,9 +3132,9 @@ function displaySetValuableCards(cards) {
         `;
     }).join('');
 
-    // Remove event delegation since we're using onclick attribute
-    // container.removeEventListener('click', handleMiniCardClick);
-    // container.addEventListener('click', handleMiniCardClick);
+    // Fixed: Add click event listeners to mini cards using event delegation
+    container.removeEventListener('click', handleMiniCardClick); // Remove any existing listeners
+    container.addEventListener('click', handleMiniCardClick);
 }
 
 function showError(message) {
@@ -3150,11 +3148,3 @@ if (window.location.pathname.includes('dashboard.html')) {
     document.addEventListener('DOMContentLoaded', loadSetDashboard);
 }
 
-// Wrapper function to ensure modal exists before viewing card
-function viewCardWithModal(cardId) {
-    // Create temporary modal if it doesn't exist (for dashboard pages)
-    createTemporaryCardModal();
-    
-    // Now call the viewCard function
-    viewCard(cardId);
-}

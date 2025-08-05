@@ -1260,13 +1260,13 @@ h1 {
     font-size: 0.9rem;
 }
 
-/* Enhanced clickable styling for mini cards with onclick attribute */
-.mini-card[onclick] {
+/* Enhanced clickable styling for mini cards */
+.mini-card.clickable-card {
     cursor: pointer;
     position: relative;
 }
 
-.mini-card[onclick]::after {
+.mini-card.clickable-card::after {
     content: 'View';
     position: absolute;
     left: 50%;
@@ -1284,7 +1284,7 @@ h1 {
     backdrop-filter: blur(10px);
 }
 
-.mini-card[onclick]:hover::after {
+.mini-card.clickable-card:hover::after {
     opacity: 1;
     bottom: 0.25rem;
     color: rgba(0, 200, 255, 1);
