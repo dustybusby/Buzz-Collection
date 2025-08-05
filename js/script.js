@@ -1842,7 +1842,7 @@ function displayExpensiveCards(cardsToFilter = null) {
                 `<div class="mini-card-special-info">${specialInfo.join(' | ')}</div>` : '';
             
             return `
-                <div class="mini-card clickable-card" data-card-id="${card.id}" style="cursor: pointer;">
+                <div class="mini-card clickable-card" data-card-id="${card.id}" onclick="viewCard('${card.id}')" style="cursor: pointer;">
                     <div class="mini-card-header">
                         <div class="mini-card-player">${card.player || 'Unknown Player'}</div>
                         <div class="mini-card-price-green">${parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
@@ -1856,9 +1856,9 @@ function displayExpensiveCards(cardsToFilter = null) {
             `;
         }).join('');
 
-        // Fixed: Add click event listeners to mini cards using event delegation
-        container.removeEventListener('click', handleMiniCardClick); // Remove any existing listeners
-        container.addEventListener('click', handleMiniCardClick);
+        // Remove event delegation since we're using onclick attribute
+        // container.removeEventListener('click', handleMiniCardClick);
+        // container.addEventListener('click', handleMiniCardClick);
     }
 }
 
@@ -3118,7 +3118,7 @@ function displaySetValuableCards(cards) {
             `<div class="mini-card-special-info">${specialInfo.join(' | ')}</div>` : '';
         
         return `
-            <div class="mini-card clickable-card" data-card-id="${card.id}" style="cursor: pointer;">
+            <div class="mini-card clickable-card" data-card-id="${card.id}" onclick="viewCard('${card.id}')" style="cursor: pointer;">
                 <div class="mini-card-header">
                     <div class="mini-card-player">${card.player || 'Unknown Player'}</div>
                     <div class="mini-card-price-green">${parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
@@ -3132,9 +3132,9 @@ function displaySetValuableCards(cards) {
         `;
     }).join('');
 
-    // Add click event listeners to mini cards using event delegation
-    container.removeEventListener('click', handleMiniCardClick); // Remove any existing listeners
-    container.addEventListener('click', handleMiniCardClick);
+    // Remove event delegation since we're using onclick attribute
+    // container.removeEventListener('click', handleMiniCardClick);
+    // container.addEventListener('click', handleMiniCardClick);
 }
 
 function showError(message) {
