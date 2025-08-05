@@ -2471,13 +2471,15 @@ function filterCollection() {
 // FIXED: viewCard function with proper date formatting and timezone normalization
 function viewCard(cardId) {
     try {
-        const card = cardCollection.find(c => c.id === cardId);
+        // Use global cardCollection if available, otherwise use local cardCollection
+        const collection = window.cardCollection || cardCollection;
+        const card = collection.find(c => c.id === cardId);
         if (!card) {
             console.error('Card not found:', cardId);
             return;
         }
-    
-    const player = card.player || 'Unknown Player';
+        
+        const player = card.player || 'Unknown Player';
     const team = card.team || 'Unknown Team';
     const year = card.year || '';
     const product = card.product || '';
@@ -3152,6 +3154,7 @@ if (window.location.pathname.includes('dashboard.html')) {
 function viewCardWithModal(cardId) {
     // Create temporary modal if it doesn't exist (for dashboard pages)
     createTemporaryCardModal();
+    
     // Now call the viewCard function
     viewCard(cardId);
 }
