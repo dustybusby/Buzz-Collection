@@ -1842,7 +1842,7 @@ function displayExpensiveCards(cardsToFilter = null) {
                 `<div class="mini-card-special-info">${specialInfo.join(' | ')}</div>` : '';
             
             return `
-                <div class="mini-card clickable-card" data-card-id="${card.id}" onclick="viewCard('${card.id}')" style="cursor: pointer;">
+                <div class="mini-card clickable-card" data-card-id="${card.id}" onclick="viewCardWithModal('${card.id}')" style="cursor: pointer;">
                     <div class="mini-card-header">
                         <div class="mini-card-player">${card.player || 'Unknown Player'}</div>
                         <div class="mini-card-price-green">${parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
@@ -3118,7 +3118,7 @@ function displaySetValuableCards(cards) {
             `<div class="mini-card-special-info">${specialInfo.join(' | ')}</div>` : '';
         
         return `
-            <div class="mini-card clickable-card" data-card-id="${card.id}" onclick="viewCard('${card.id}')" style="cursor: pointer;">
+            <div class="mini-card clickable-card" data-card-id="${card.id}" onclick="viewCardWithModal('${card.id}')" style="cursor: pointer;">
                 <div class="mini-card-header">
                     <div class="mini-card-player">${card.player || 'Unknown Player'}</div>
                     <div class="mini-card-price-green">${parseFloat(card.estimatedValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
@@ -3146,4 +3146,12 @@ function showError(message) {
 // Initialize dashboard when page loads (only on dashboard page)
 if (window.location.pathname.includes('dashboard.html')) {
     document.addEventListener('DOMContentLoaded', loadSetDashboard);
+}
+
+// Wrapper function to ensure modal exists before viewing card
+function viewCardWithModal(cardId) {
+    // Create temporary modal if it doesn't exist (for dashboard pages)
+    createTemporaryCardModal();
+    // Now call the viewCard function
+    viewCard(cardId);
 }
