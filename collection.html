@@ -18,7 +18,7 @@
             <a href="collection.html" class="active">Collection</a>
             <a href="add.html">Add Card</a>
         </nav>
-        <button class="menu-toggle">☰</button>
+        <button class="menu-toggle" onclick="toggleMobileMenu()">☰</button>
     </header>
 
     <div class="container">
@@ -47,6 +47,9 @@
                     <button class="btn clear-filters-btn">Reset Category</button>
                     
                     <button class="btn btn-primary export-csv-btn">Export to CSV</button>
+                    <div class="last-export-info">
+                        <small id="lastExportInfo">Last exported: Never</small>
+                    </div>
                 </div>
             </div>
 

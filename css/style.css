@@ -1777,6 +1777,19 @@ h1 {
 .clear-filters-btn {
     background: linear-gradient(135deg, rgba(0, 100, 150, 0.8), rgba(0, 150, 200, 0.6));
     color: #ffffff;
+
+/* Last export info styling */
+.last-export-info {
+    margin-top: 0.5rem;
+    text-align: center;
+}
+
+.last-export-info small {
+    color: #b8e6ff;
+    font-size: 0.8rem;
+    opacity: 0.8;
+    font-style: italic;
+}
     border: 1px solid #00c8ff;
     padding: 0.8rem 1.8rem;
     border-radius: 10px;

@@ -538,6 +538,9 @@ function initializeCollectionPage() {
             }
         });
     }
+    
+    // Update the last export display
+    updateLastExportDisplay();
 }
 
 // ============================================================================
@@ -2835,6 +2838,66 @@ function exportToCSV() {
     a.download = 'buzz_collection_' + new Date().toISOString().split('T')[0] + '.csv';
     a.click();
     window.URL.revokeObjectURL(url);
+    
+    // Store the export timestamp
+    const exportTimestamp = new Date();
+    localStorage.setItem('lastExportTimestamp', exportTimestamp.toISOString());
+    
+    // Update the display immediately
+    updateLastExportDisplay();
+}
+
+// Function to update the last export timestamp display
+function updateLastExportDisplay() {
+    const lastExportInfo = document.getElementById('lastExportInfo');
+    if (!lastExportInfo) return;
+    
+    const lastExportTimestamp = localStorage.getItem('lastExportTimestamp');
+    
+    if (lastExportTimestamp) {
+        try {
+            const exportDate = new Date(lastExportTimestamp);
+            const now = new Date();
+            const timeDiff = now - exportDate;
+            
+            // Format the date and time
+            const dateOptions = { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            };
+            const timeOptions = { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: true
+            };
+            
+            const dateStr = exportDate.toLocaleDateString('en-US', dateOptions);
+            const timeStr = exportDate.toLocaleTimeString('en-US', timeOptions);
+            
+            // Add relative time if recent
+            let relativeTime = '';
+            if (timeDiff < 60000) { // Less than 1 minute
+                relativeTime = ' (just now)';
+            } else if (timeDiff < 3600000) { // Less than 1 hour
+                const minutes = Math.floor(timeDiff / 60000);
+                relativeTime = ` (${minutes} minute${minutes > 1 ? 's' : ''} ago)`;
+            } else if (timeDiff < 86400000) { // Less than 1 day
+                const hours = Math.floor(timeDiff / 3600000);
+                relativeTime = ` (${hours} hour${hours > 1 ? 's' : ''} ago)`;
+            } else if (timeDiff < 604800000) { // Less than 1 week
+                const days = Math.floor(timeDiff / 86400000);
+                relativeTime = ` (${days} day${days > 1 ? 's' : ''} ago)`;
+            }
+            
+            lastExportInfo.textContent = `Last exported: ${dateStr} at ${timeStr}${relativeTime}`;
+        } catch (error) {
+            console.error('Error formatting export timestamp:', error);
+            lastExportInfo.textContent = 'Last exported: Unknown';
+        }
+    } else {
+        lastExportInfo.textContent = 'Last exported: Never';
+    }
 }
 
 // ============================================================================
