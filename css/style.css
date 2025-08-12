@@ -1792,12 +1792,12 @@ h1 {
 
 /* Last export info styling */
 .last-export-info {
+    position: relative;
     margin-top: 0.5rem;
-    text-align: center;
-    width: 100%;
+    text-align: left;
+    width: auto;
     display: block;
-    flex-basis: 100%;
-    order: 999;
+    left: calc(100% - 120px); /* Position it to align with the button */
 }
 
 /* Target the small element within last-export-info with higher specificity */
@@ -3244,3 +3244,4 @@ body:has(#listView) .container {
         grid-template-columns: 1fr;
     }
 }
+
