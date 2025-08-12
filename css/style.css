@@ -1796,19 +1796,14 @@ h1 {
     text-align: center;
     width: 100%;
     display: block;
-    clear: both;
-    float: none;
-    position: relative;
-    left: 0;
-    right: 0;
-    margin-left: auto;
-    margin-right: auto;
+    flex-basis: 100%;
+    order: 999;
 }
 
 /* Target the small element within last-export-info with higher specificity */
 .collection-controls .last-export-info small {
     color: #b8e6ff;
-    font-size: 0.25rem;
+    font-size: 0.6rem;
     opacity: 0.6;
     font-style: italic;
     display: inline-block;
@@ -1818,7 +1813,7 @@ h1 {
 
 /* More specific rule to ensure font size is applied */
 .collection-controls #lastExportInfo {
-    font-size: 0.25rem;
+    font-size: 0.6rem;
     color: #b8e6ff;
     opacity: 0.6;
     font-style: italic;

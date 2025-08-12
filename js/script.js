@@ -2873,13 +2873,13 @@ function updateLastExportDisplay() {
             const dateStr = `${month}/${day}/${year}`;
             const timeStr = exportDate.toLocaleTimeString('en-US', timeOptions);
             
-            lastExportInfo.textContent = `Last exported: ${dateStr} at ${timeStr}`;
+            lastExportInfo.textContent = `Last export: ${dateStr} at ${timeStr}`;
         } catch (error) {
             console.error('Error formatting export timestamp:', error);
-            lastExportInfo.textContent = 'Last exported: Unknown';
+            lastExportInfo.textContent = 'Last export: Unknown';
         }
     } else {
-        lastExportInfo.textContent = 'Last exported: Never';
+        lastExportInfo.textContent = 'Last export: Never';
     }
 }
 
