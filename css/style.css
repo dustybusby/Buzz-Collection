@@ -1777,21 +1777,6 @@ h1 {
 .clear-filters-btn {
     background: linear-gradient(135deg, rgba(0, 100, 150, 0.8), rgba(0, 150, 200, 0.6));
     color: #ffffff;
-
-/* Last export info styling */
-.last-export-info {
-    margin-top: 0.5rem;
-    text-align: center;
-    width: 100%;
-    display: block;
-}
-
-.last-export-info small {
-    color: #b8e6ff;
-    font-size: 0.25rem;
-    opacity: 0.6;
-    font-style: italic;
-}
     border: 1px solid #00c8ff;
     padding: 0.8rem 1.8rem;
     border-radius: 10px;
@@ -1803,6 +1788,40 @@ h1 {
         0 4px 15px rgba(0, 150, 255, 0.3),
         0 2px 4px rgba(0, 0, 0, 0.2),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Last export info styling */
+.last-export-info {
+    margin-top: 0.5rem;
+    text-align: center;
+    width: 100%;
+    display: block;
+    clear: both;
+    float: none;
+    position: relative;
+    left: 0;
+    right: 0;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Target the small element within last-export-info with higher specificity */
+.collection-controls .last-export-info small {
+    color: #b8e6ff;
+    font-size: 0.25rem;
+    opacity: 0.6;
+    font-style: italic;
+    display: inline-block;
+    line-height: 1.2;
+    font-weight: normal;
+}
+
+/* More specific rule to ensure font size is applied */
+.collection-controls #lastExportInfo {
+    font-size: 0.25rem;
+    color: #b8e6ff;
+    opacity: 0.6;
+    font-style: italic;
 }
 
 .clear-filters-btn:hover {
