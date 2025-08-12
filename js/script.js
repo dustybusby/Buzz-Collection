@@ -2857,40 +2857,23 @@ function updateLastExportDisplay() {
     if (lastExportTimestamp) {
         try {
             const exportDate = new Date(lastExportTimestamp);
-            const now = new Date();
-            const timeDiff = now - exportDate;
             
-            // Format the date and time
-            const dateOptions = { 
-                year: 'numeric', 
-                month: 'short', 
-                day: 'numeric' 
-            };
+            // Format the date as MM/DD/YY
+            const month = (exportDate.getMonth() + 1).toString().padStart(2, '0');
+            const day = exportDate.getDate().toString().padStart(2, '0');
+            const year = exportDate.getFullYear().toString().slice(-2);
+            
+            // Format the time
             const timeOptions = { 
                 hour: '2-digit', 
                 minute: '2-digit',
                 hour12: true
             };
             
-            const dateStr = exportDate.toLocaleDateString('en-US', dateOptions);
+            const dateStr = `${month}/${day}/${year}`;
             const timeStr = exportDate.toLocaleTimeString('en-US', timeOptions);
             
-            // Add relative time if recent
-            let relativeTime = '';
-            if (timeDiff < 60000) { // Less than 1 minute
-                relativeTime = ' (just now)';
-            } else if (timeDiff < 3600000) { // Less than 1 hour
-                const minutes = Math.floor(timeDiff / 60000);
-                relativeTime = ` (${minutes} minute${minutes > 1 ? 's' : ''} ago)`;
-            } else if (timeDiff < 86400000) { // Less than 1 day
-                const hours = Math.floor(timeDiff / 3600000);
-                relativeTime = ` (${hours} hour${hours > 1 ? 's' : ''} ago)`;
-            } else if (timeDiff < 604800000) { // Less than 1 week
-                const days = Math.floor(timeDiff / 86400000);
-                relativeTime = ` (${days} day${days > 1 ? 's' : ''} ago)`;
-            }
-            
-            lastExportInfo.textContent = `Last exported: ${dateStr} at ${timeStr}${relativeTime}`;
+            lastExportInfo.textContent = `Last exported: ${dateStr} at ${timeStr}`;
         } catch (error) {
             console.error('Error formatting export timestamp:', error);
             lastExportInfo.textContent = 'Last exported: Unknown';
