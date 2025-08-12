@@ -1797,7 +1797,7 @@ h1 {
     text-align: left;
     width: auto;
     display: block;
-    left: calc(100% - 140px); /* Adjusted to keep it within the section border */
+    left: calc(100% - 152px); /* Adjusted to keep it within the section border */
 }
 
 /* Target the small element within last-export-info with higher specificity */
