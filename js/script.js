@@ -1036,18 +1036,18 @@ function showSuccessModal(message, isEdit) {
             
             // Updated buttons for add mode with new functionality
             buttonContainer.innerHTML = `
-                <div class="add-another-option">
-                    <button class="btn btn-primary" id="addAnotherSameSetBtn">Add Another Card (Same Product Set)</button>
+                <button class="btn btn-primary add-another-btn" id="addAnotherSameSetBtn">
+                    <span>Add Another Card (Same Product Set)</span>
                     <label class="checkbox-label">
                         <input type="checkbox" id="baseSetSameSet"> Base Set
                     </label>
-                </div>
-                <div class="add-another-option">
-                    <button class="btn btn-primary" id="addAnotherBtn">Add Another Card (New Product Set)</button>
+                </button>
+                <button class="btn btn-primary add-another-btn" id="addAnotherBtn">
+                    <span>Add Another Card (New Product Set)</span>
                     <label class="checkbox-label">
                         <input type="checkbox" id="baseSetNewSet"> Base Set
                     </label>
-                </div>
+                </button>
                 <button class="btn" id="viewCollectionBtn">View Collection</button>
             `;
             

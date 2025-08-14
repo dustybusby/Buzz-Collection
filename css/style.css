@@ -1485,12 +1485,12 @@ h1 {
     text-align: center;
 }
 
-#successModal .add-another-option .btn {
+#successModal .add-another-btn {
     flex: 1;
     max-width: 280px;
 }
 
-#successModal .btn:not(.add-another-option .btn) {
+#successModal .btn:not(.add-another-btn) {
     flex: 1;
     max-width: 280px;
 }
@@ -1500,8 +1500,8 @@ h1 {
     order: 3;
 }
 
-/* Add another option styling */
-.add-another-option {
+/* Add another button styling */
+.add-another-btn {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1509,18 +1509,25 @@ h1 {
     min-width: 140px;
     flex: 1;
     max-width: 280px;
+    padding: 1rem 0.75rem;
+    position: relative;
 }
 
-.add-another-option .btn {
+.add-another-btn span {
     order: 1;
-    width: 100%;
+    font-weight: 500;
 }
 
-.add-another-option .checkbox-label {
+.add-another-btn .checkbox-label {
     order: 2;
     margin-top: 0.5rem;
     font-size: 0.85rem;
     color: #b8e6ff;
+    cursor: pointer;
+}
+
+.add-another-btn .checkbox-label input[type="checkbox"] {
+    margin-right: 0.5rem;
 }
 
 /* Checkbox label styling */
