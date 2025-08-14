@@ -1036,8 +1036,18 @@ function showSuccessModal(message, isEdit) {
             
             // Updated buttons for add mode with new functionality
             buttonContainer.innerHTML = `
-                <button class="btn btn-primary" id="addAnotherSameSetBtn">Add Another Card (Same Product Set)</button>
-                <button class="btn btn-primary" id="addAnotherBtn">Add Another Card (New Product Set)</button>
+                <div class="add-another-option">
+                    <button class="btn btn-primary" id="addAnotherSameSetBtn">Add Another Card (Same Product Set)</button>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="baseSetSameSet"> Base Set
+                    </label>
+                </div>
+                <div class="add-another-option">
+                    <button class="btn btn-primary" id="addAnotherBtn">Add Another Card (New Product Set)</button>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="baseSetNewSet"> Base Set
+                    </label>
+                </div>
                 <button class="btn" id="viewCollectionBtn">View Collection</button>
             `;
             
@@ -1076,6 +1086,10 @@ function addAnotherCard() {
     const modal = document.getElementById('successModal');
     modal.style.display = 'none';
     
+    // Check if Base Set checkbox is checked
+    const baseSetCheckbox = document.getElementById('baseSetNewSet');
+    const shouldSetBaseSet = baseSetCheckbox && baseSetCheckbox.checked;
+    
     // Reset form
     const form = document.getElementById('cardForm');
     if (form) {
@@ -1109,6 +1123,12 @@ function addAnotherCard() {
         if (purchaseDate) purchaseDate.disabled = false;
         if (purchaseCost) purchaseCost.disabled = false;
         if (gradeInput) gradeInput.disabled = false;
+        
+        // Set Base Set to "Yes" if checkbox was checked
+        if (shouldSetBaseSet) {
+            const baseSetField = document.getElementById('baseSet');
+            if (baseSetField) baseSetField.value = 'Y';
+        }
     }
     
     // Scroll to top of page
@@ -1119,6 +1139,10 @@ function addAnotherCard() {
 function addAnotherCardSameSet() {
     const modal = document.getElementById('successModal');
     modal.style.display = 'none';
+    
+    // Check if Base Set checkbox is checked
+    const baseSetCheckbox = document.getElementById('baseSetSameSet');
+    const shouldSetBaseSet = baseSetCheckbox && baseSetCheckbox.checked;
     
     // Get the form data from the just-added card
     const category = document.getElementById('category')?.value || '';
@@ -1167,6 +1191,12 @@ function addAnotherCardSameSet() {
         if (categoryField && category) categoryField.value = category;
         if (yearField && year) yearField.value = year;
         if (productField && product) productField.value = product;
+        
+        // Set Base Set to "Yes" if checkbox was checked
+        if (shouldSetBaseSet) {
+            const baseSetField = document.getElementById('baseSet');
+            if (baseSetField) baseSetField.value = 'Y';
+        }
     }
     
     // Scroll to top of page

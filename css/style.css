@@ -1472,12 +1472,11 @@ h1 {
     gap: 1rem;
     justify-content: center;
     flex-wrap: wrap;
+    align-items: flex-start;
 }
 
 #successModal .btn {
     min-width: 140px;
-    flex: 1;
-    max-width: 280px;
     height: auto;
     min-height: 44px;
     padding: 8px 12px;
@@ -1486,17 +1485,42 @@ h1 {
     text-align: center;
 }
 
-/* Specific styling for the new button layout */
-#successModal .btn:first-child {
-    order: 1;
+#successModal .add-another-option .btn {
+    flex: 1;
+    max-width: 280px;
 }
 
-#successModal .btn:nth-child(2) {
-    order: 2;
+#successModal .btn:not(.add-another-option .btn) {
+    flex: 1;
+    max-width: 280px;
 }
 
-#successModal .btn:last-child {
+/* Button layout for success modal */
+#successModal .viewCollectionBtn {
     order: 3;
+}
+
+/* Add another option styling */
+.add-another-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 140px;
+    flex: 1;
+    max-width: 280px;
+}
+
+.add-another-option .btn {
+    order: 1;
+    width: 100%;
+}
+
+.add-another-option .checkbox-label {
+    order: 2;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: #b8e6ff;
 }
 
 /* Checkbox label styling */
