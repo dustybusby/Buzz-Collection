@@ -1058,10 +1058,26 @@ function showSuccessModal(message, isEdit) {
             
             if (addAnotherSameSetBtn) {
                 addAnotherSameSetBtn.addEventListener('click', addAnotherCardSameSet);
+                
+                // Add event listener for checkbox to prevent button click
+                const baseSetSameSetCheckbox = document.getElementById('baseSetSameSet');
+                if (baseSetSameSetCheckbox) {
+                    baseSetSameSetCheckbox.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                    });
+                }
             }
             
             if (addAnotherBtn) {
                 addAnotherBtn.addEventListener('click', addAnotherCard);
+                
+                // Add event listener for checkbox to prevent button click
+                const baseSetNewSetCheckbox = document.getElementById('baseSetNewSet');
+                if (baseSetNewSetCheckbox) {
+                    baseSetNewSetCheckbox.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                    });
+                }
             }
             
             if (viewCollectionBtn) {
