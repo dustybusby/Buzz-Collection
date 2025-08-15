@@ -542,33 +542,7 @@ function initializeCollectionPage() {
     // Update the last export display
     updateLastExportDisplay();
     
-    // Add event listener for action buttons at document level for better event delegation
-    document.addEventListener('click', function(event) {
-        const target = event.target;
-        
-        // Check if the clicked element is an action button
-        if (target.classList.contains('edit-btn') || 
-            target.classList.contains('view-btn') || 
-            target.classList.contains('delete-btn')) {
-            
-            // Prevent default and stop propagation
-            event.preventDefault();
-            event.stopPropagation();
-            
-            // Handle the button click
-            if (target.classList.contains('edit-btn')) {
-                const cardId = target.getAttribute('data-card-id');
-                console.log('Edit button clicked for card:', cardId);
-                editCard(cardId);
-            } else if (target.classList.contains('view-btn')) {
-                const cardId = target.getAttribute('data-card-id');
-                viewCard(cardId);
-            } else if (target.classList.contains('delete-btn')) {
-                const cardId = target.getAttribute('data-card-id');
-                deleteCard(cardId);
-            }
-        }
-    });
+    // Action button event handling will be done directly on the buttons when they're created
 }
 
 // ============================================================================
@@ -2426,7 +2400,38 @@ function displayListView(cards) {
     
     container.innerHTML = listHTML;
     
-    // No need to attach event listeners here - using document-level event delegation
+    // Add event listeners directly to the action buttons
+    const editButtons = container.querySelectorAll('.edit-btn');
+    const viewButtons = container.querySelectorAll('.view-btn');
+    const deleteButtons = container.querySelectorAll('.delete-btn');
+    
+    editButtons.forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            const cardId = this.getAttribute('data-card-id');
+            console.log('Edit button clicked for card:', cardId);
+            editCard(cardId);
+        });
+    });
+    
+    viewButtons.forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            const cardId = this.getAttribute('data-card-id');
+            viewCard(cardId);
+        });
+    });
+    
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            const cardId = this.getAttribute('data-card-id');
+            deleteCard(cardId);
+        });
+    });
 }
 
 // Event delegation for action buttons is now handled at document level in initializeCollectionPage
