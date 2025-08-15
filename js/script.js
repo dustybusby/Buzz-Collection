@@ -2,7 +2,6 @@
 let app, db, cardCollection = [];
 let currentView = 'list';
 let currentSort = { field: null, direction: 'asc' };
-let isProcessingEdit = false;
 
 // Add page specific variables
 let isEditMode = false;
@@ -409,25 +408,18 @@ function checkDeletePermission() {
 
 // Shared function to load collection from Firebase
 async function loadCollectionFromFirebase() {
-    console.log('loadCollectionFromFirebase started');
     try {
         if (!db) {
             throw new Error('Database reference is null or undefined');
         }
         
-        console.log('Database reference exists, getting Firebase functions...');
         const { collection, getDocs, query, orderBy } = window.firebaseRefs;
         
-        console.log('Creating collection reference...');
         const cardsCollection = collection(db, 'cards');
-        console.log('Creating query...');
         const cardsQuery = query(cardsCollection, orderBy('dateAdded', 'desc'));
-        console.log('Executing query...');
         const querySnapshot = await getDocs(cardsQuery);
-        console.log('Query completed, processing results...');
         
         cardCollection = [];
-        console.log('Processing query results...');
         querySnapshot.forEach((doc) => {
             const data = doc.data();
             cardCollection.push({
@@ -438,37 +430,25 @@ async function loadCollectionFromFirebase() {
             });
         });
         
-        console.log(`Processed ${cardCollection.length} cards`);
-        
         // Make cardCollection available globally for dynamic dashboard
         window.cardCollection = cardCollection;
         
         const loadingEl = document.getElementById('loading');
         const mainContentEl = document.getElementById('mainContent');
         
-        console.log('Hiding loading, showing main content...');
         if (loadingEl) loadingEl.style.display = 'none';
         if (mainContentEl) mainContentEl.style.display = 'block';
         
         // Call appropriate display function based on current page
         if (isCollectionPage()) {
-            console.log('Collection page detected, calling displayCollection...');
             updateCategoryFilter();
             displayCollection();
         } else if (isDashboardPage()) {
-            console.log('Dashboard page detected, calling displayInventory...');
             displayInventory();
         }
         
-        console.log('loadCollectionFromFirebase completed successfully');
-        
     } catch (error) {
         console.error('Error loading collection:', error);
-        console.error('Error details:', {
-            message: error.message,
-            code: error.code,
-            stack: error.stack
-        });
         
         const loadingEl = document.getElementById('loading');
         if (loadingEl) {
@@ -563,14 +543,6 @@ function initializeCollectionPage() {
     updateLastExportDisplay();
     
     // Action button event handling will be done directly on the buttons when they're created
-    
-    // Add global click listener to debug what's happening
-    document.addEventListener('click', function(event) {
-        console.log('Global click detected on:', event.target.tagName, event.target.className, event.target.id);
-        if (event.target.classList.contains('edit-btn')) {
-            console.log('Edit button clicked in global listener');
-        }
-    }, true); // Use capture phase to see events first
 }
 
 // ============================================================================
@@ -2098,26 +2070,13 @@ function smartSort(cards, filterValue, field) {
 
 // Updated display collection function with improved filtering and asterisk support
 function displayCollection() {
-    console.log('displayCollection started');
-    console.log('displayCollection called from:', new Error().stack);
-    
-    // Prevent displayCollection from running when edit is in progress
-    if (isProcessingEdit) {
-        console.log('Edit in progress, skipping displayCollection');
-        return;
-    }
-    
     const totalElement = document.getElementById('totalCards');
     const filteredElement = document.getElementById('filteredCount');
     const emptyState = document.getElementById('emptyState');
     const emptyStateMessage = document.getElementById('emptyStateMessage');
     const emptyStateButton = document.getElementById('emptyStateButton');
     
-    console.log('Elements found:', { totalElement: !!totalElement, filteredElement: !!filteredElement });
-    if (!totalElement || !filteredElement) {
-        console.log('Required elements not found, returning early');
-        return;
-    }
+    if (!totalElement || !filteredElement) return;
     
     filteredCards = [...cardCollection];
     
@@ -2278,19 +2237,15 @@ function displayCollection() {
 
 // New function to handle pagination
 function displayPaginatedList() {
-    console.log('displayPaginatedList started');
     const totalPages = Math.ceil(filteredCards.length / recordsPerPage);
     const startIndex = (currentPage - 1) * recordsPerPage;
     const endIndex = startIndex + recordsPerPage;
     const pageCards = filteredCards.slice(startIndex, endIndex);
     
-    console.log(`Pagination: page ${currentPage} of ${totalPages}, showing cards ${startIndex}-${endIndex} of ${filteredCards.length}`);
-    
     // Update pagination controls
     updatePaginationControls(totalPages);
     
     // Display the current page of cards
-    console.log('Calling displayListView with', pageCards.length, 'cards');
     displayListView(pageCards);
 }
 
@@ -2394,13 +2349,8 @@ function changePage(newPage) {
 
 // FIXED: displayListView function with leading quote removal for numbered field
 function displayListView(cards) {
-    console.log('displayListView started with', cards.length, 'cards');
     const container = document.getElementById('listContainer');
-    if (!container) {
-        console.log('listContainer not found, returning early');
-        return;
-    }
-    console.log('listContainer found, creating HTML...');
+    if (!container) return;
     
     const listHTML = cards.map(card => {
         const year = card.year || '';
@@ -2449,46 +2399,25 @@ function displayListView(cards) {
     }).join('');
     
     container.innerHTML = listHTML;
-    console.log('HTML set, finding action buttons...');
     
     // Add event listeners directly to the action buttons
     const editButtons = container.querySelectorAll('.edit-btn');
     const viewButtons = container.querySelectorAll('.view-btn');
     const deleteButtons = container.querySelectorAll('.delete-btn');
     
-    console.log(`Found ${editButtons.length} edit buttons, ${viewButtons.length} view buttons, ${deleteButtons.length} delete buttons`);
-    
     editButtons.forEach((button, index) => {
-        console.log(`Adding event listener to edit button ${index + 1} for card:`, button.getAttribute('data-card-id'));
-        
         // Use mousedown instead of click to prevent interference
         button.addEventListener('mousedown', function(event) {
-            console.log('Edit button mousedown event triggered');
-            
-            // Prevent multiple clicks and other interference
-            if (isProcessingEdit) {
-                console.log('Edit already in progress, ignoring mousedown');
-                return;
-            }
-            
-            isProcessingEdit = true;
-            console.log('Set isProcessingEdit to true');
-            
             event.preventDefault();
             event.stopPropagation();
             event.stopImmediatePropagation();
             
             const cardId = this.getAttribute('data-card-id');
-            console.log('Edit button mousedown for card:', cardId);
-            
-            // Call editCard immediately
-            console.log('Calling editCard function');
             editCard(cardId);
         });
         
         // Also prevent any click events
         button.addEventListener('click', function(event) {
-            console.log('Edit button click event triggered (blocked)');
             event.preventDefault();
             event.stopPropagation();
             event.stopImmediatePropagation();
@@ -2700,14 +2629,10 @@ function closeCardModal() {
 
 // Updated edit function with password protection and better error handling
 async function editCard(cardId) {
-    console.log('editCard function called with cardId:', cardId);
     try {
         // Temporarily skip password check to test if that's the issue
-        console.log('Skipping password check for testing...');
         const hasPermission = true; // await checkEditPermission();
-        console.log('Edit permission result:', hasPermission);
         if (!hasPermission) {
-            console.log('Edit permission denied');
             return;
         }
         
@@ -2717,13 +2642,11 @@ async function editCard(cardId) {
             return;
         }
         
-        console.log('Card found, storing data and navigating...');
         // Store card data for edit mode
         localStorage.setItem('editCardId', cardId);
         localStorage.setItem('editCardData', JSON.stringify(card));
         
         // Navigate to edit page
-        console.log('Navigating to add.html?edit=true');
         window.location.href = 'add.html?edit=true';
         
     } catch (error) {
