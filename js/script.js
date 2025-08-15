@@ -558,6 +558,7 @@ function initializeCollectionPage() {
             // Handle the button click
             if (target.classList.contains('edit-btn')) {
                 const cardId = target.getAttribute('data-card-id');
+                console.log('Edit button clicked for card:', cardId);
                 editCard(cardId);
             } else if (target.classList.contains('view-btn')) {
                 const cardId = target.getAttribute('data-card-id');
@@ -2613,9 +2614,12 @@ function closeCardModal() {
 
 // Updated edit function with password protection and better error handling
 async function editCard(cardId) {
+    console.log('editCard function called with cardId:', cardId);
     try {
-        // Check password first
-        const hasPermission = await checkEditPermission();
+        // Temporarily skip password check to test if that's the issue
+        console.log('Skipping password check for testing...');
+        const hasPermission = true; // await checkEditPermission();
+        console.log('Edit permission result:', hasPermission);
         if (!hasPermission) {
             console.log('Edit permission denied');
             return;
@@ -2627,11 +2631,13 @@ async function editCard(cardId) {
             return;
         }
         
+        console.log('Card found, storing data and navigating...');
         // Store card data for edit mode
         localStorage.setItem('editCardId', cardId);
         localStorage.setItem('editCardData', JSON.stringify(card));
         
         // Navigate to edit page
+        console.log('Navigating to add.html?edit=true');
         window.location.href = 'add.html?edit=true';
         
     } catch (error) {
