@@ -2089,13 +2089,18 @@ function smartSort(cards, filterValue, field) {
 
 // Updated display collection function with improved filtering and asterisk support
 function displayCollection() {
+    console.log('displayCollection started');
     const totalElement = document.getElementById('totalCards');
     const filteredElement = document.getElementById('filteredCount');
     const emptyState = document.getElementById('emptyState');
     const emptyStateMessage = document.getElementById('emptyStateMessage');
     const emptyStateButton = document.getElementById('emptyStateButton');
     
-    if (!totalElement || !filteredElement) return;
+    console.log('Elements found:', { totalElement: !!totalElement, filteredElement: !!filteredElement });
+    if (!totalElement || !filteredElement) {
+        console.log('Required elements not found, returning early');
+        return;
+    }
     
     filteredCards = [...cardCollection];
     
@@ -2256,15 +2261,19 @@ function displayCollection() {
 
 // New function to handle pagination
 function displayPaginatedList() {
+    console.log('displayPaginatedList started');
     const totalPages = Math.ceil(filteredCards.length / recordsPerPage);
     const startIndex = (currentPage - 1) * recordsPerPage;
     const endIndex = startIndex + recordsPerPage;
     const pageCards = filteredCards.slice(startIndex, endIndex);
     
+    console.log(`Pagination: page ${currentPage} of ${totalPages}, showing cards ${startIndex}-${endIndex} of ${filteredCards.length}`);
+    
     // Update pagination controls
     updatePaginationControls(totalPages);
     
     // Display the current page of cards
+    console.log('Calling displayListView with', pageCards.length, 'cards');
     displayListView(pageCards);
 }
 
@@ -2368,8 +2377,13 @@ function changePage(newPage) {
 
 // FIXED: displayListView function with leading quote removal for numbered field
 function displayListView(cards) {
+    console.log('displayListView started with', cards.length, 'cards');
     const container = document.getElementById('listContainer');
-    if (!container) return;
+    if (!container) {
+        console.log('listContainer not found, returning early');
+        return;
+    }
+    console.log('listContainer found, creating HTML...');
     
     const listHTML = cards.map(card => {
         const year = card.year || '';
@@ -2418,13 +2432,17 @@ function displayListView(cards) {
     }).join('');
     
     container.innerHTML = listHTML;
+    console.log('HTML set, finding action buttons...');
     
     // Add event listeners directly to the action buttons
     const editButtons = container.querySelectorAll('.edit-btn');
     const viewButtons = container.querySelectorAll('.view-btn');
     const deleteButtons = container.querySelectorAll('.delete-btn');
     
-    editButtons.forEach(button => {
+    console.log(`Found ${editButtons.length} edit buttons, ${viewButtons.length} view buttons, ${deleteButtons.length} delete buttons`);
+    
+    editButtons.forEach((button, index) => {
+        console.log(`Adding event listener to edit button ${index + 1} for card:`, button.getAttribute('data-card-id'));
         button.addEventListener('click', function(event) {
             event.preventDefault();
             event.stopPropagation();
