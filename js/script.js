@@ -541,6 +541,33 @@ function initializeCollectionPage() {
     
     // Update the last export display
     updateLastExportDisplay();
+    
+    // Add event listener for action buttons at document level for better event delegation
+    document.addEventListener('click', function(event) {
+        const target = event.target;
+        
+        // Check if the clicked element is an action button
+        if (target.classList.contains('edit-btn') || 
+            target.classList.contains('view-btn') || 
+            target.classList.contains('delete-btn')) {
+            
+            // Prevent default and stop propagation
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // Handle the button click
+            if (target.classList.contains('edit-btn')) {
+                const cardId = target.getAttribute('data-card-id');
+                editCard(cardId);
+            } else if (target.classList.contains('view-btn')) {
+                const cardId = target.getAttribute('data-card-id');
+                viewCard(cardId);
+            } else if (target.classList.contains('delete-btn')) {
+                const cardId = target.getAttribute('data-card-id');
+                deleteCard(cardId);
+            }
+        }
+    });
 }
 
 // ============================================================================
@@ -2398,84 +2425,10 @@ function displayListView(cards) {
     
     container.innerHTML = listHTML;
     
-    // Fixed: Remove any existing listeners first, then add new ones to prevent double-click issue
-    container.removeEventListener('click', handleActionButtonClick);
-    container.addEventListener('click', handleActionButtonClick);
+    // No need to attach event listeners here - using document-level event delegation
 }
 
-// Fixed: Single event handler for action buttons to prevent double-click issue
-function handleActionButtonClick(event) {
-    const target = event.target;
-    
-    // Prevent multiple rapid clicks
-    if (target.disabled) return;
-    
-    // Add debouncing to prevent double-clicks
-    if (target.dataset.processing === 'true') return;
-    
-    if (target.classList.contains('view-btn')) {
-        event.preventDefault();
-        event.stopPropagation();
-        
-        // Mark as processing and add visual feedback
-        target.dataset.processing = 'true';
-        const originalText = target.textContent;
-        target.textContent = 'Loading...';
-        target.style.opacity = '0.7';
-        
-        const cardId = target.getAttribute('data-card-id');
-        
-        // Use setTimeout to ensure the visual feedback is shown
-        setTimeout(() => {
-            viewCard(cardId);
-            
-            // Reset button state after a short delay
-            setTimeout(() => {
-                target.dataset.processing = 'false';
-                target.textContent = originalText;
-                target.style.opacity = '1';
-            }, 500);
-        }, 50);
-        
-    } else if (target.classList.contains('edit-btn')) {
-        event.preventDefault();
-        event.stopPropagation();
-        
-        const cardId = target.getAttribute('data-card-id');
-        
-        // For edit button, just call editCard directly since it navigates away
-        // No need for debouncing or state management
-        editCard(cardId);
-        
-    } else if (target.classList.contains('delete-btn')) {
-        event.preventDefault();
-        event.stopPropagation();
-        
-        // Mark as processing and add visual feedback
-        target.dataset.processing = 'true';
-        const originalText = target.textContent;
-        target.textContent = 'Loading...';
-        target.style.opacity = '0.7';
-        
-        const cardId = target.getAttribute('data-card-id');
-        
-        // Use setTimeout to ensure the visual feedback is shown
-        setTimeout(async () => {
-            try {
-                await deleteCard(cardId);
-            } catch (error) {
-                console.error('Error in delete operation:', error);
-            } finally {
-                // Reset button state after operation completes
-                setTimeout(() => {
-                    target.dataset.processing = 'false';
-                    target.textContent = originalText;
-                    target.style.opacity = '1';
-                }, 500);
-            }
-        }, 50);
-    }
-}
+// Event delegation for action buttons is now handled at document level in initializeCollectionPage
 
 // Updated clearAllFilters function - added autograph filter and reset pagination
 function clearAllFilters() {
