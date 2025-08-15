@@ -408,18 +408,25 @@ function checkDeletePermission() {
 
 // Shared function to load collection from Firebase
 async function loadCollectionFromFirebase() {
+    console.log('loadCollectionFromFirebase started');
     try {
         if (!db) {
             throw new Error('Database reference is null or undefined');
         }
         
+        console.log('Database reference exists, getting Firebase functions...');
         const { collection, getDocs, query, orderBy } = window.firebaseRefs;
         
+        console.log('Creating collection reference...');
         const cardsCollection = collection(db, 'cards');
+        console.log('Creating query...');
         const cardsQuery = query(cardsCollection, orderBy('dateAdded', 'desc'));
+        console.log('Executing query...');
         const querySnapshot = await getDocs(cardsQuery);
+        console.log('Query completed, processing results...');
         
         cardCollection = [];
+        console.log('Processing query results...');
         querySnapshot.forEach((doc) => {
             const data = doc.data();
             cardCollection.push({
@@ -430,25 +437,37 @@ async function loadCollectionFromFirebase() {
             });
         });
         
+        console.log(`Processed ${cardCollection.length} cards`);
+        
         // Make cardCollection available globally for dynamic dashboard
         window.cardCollection = cardCollection;
         
         const loadingEl = document.getElementById('loading');
         const mainContentEl = document.getElementById('mainContent');
         
+        console.log('Hiding loading, showing main content...');
         if (loadingEl) loadingEl.style.display = 'none';
         if (mainContentEl) mainContentEl.style.display = 'block';
         
         // Call appropriate display function based on current page
         if (isCollectionPage()) {
+            console.log('Collection page detected, calling displayCollection...');
             updateCategoryFilter();
             displayCollection();
         } else if (isDashboardPage()) {
+            console.log('Dashboard page detected, calling displayInventory...');
             displayInventory();
         }
         
+        console.log('loadCollectionFromFirebase completed successfully');
+        
     } catch (error) {
         console.error('Error loading collection:', error);
+        console.error('Error details:', {
+            message: error.message,
+            code: error.code,
+            stack: error.stack
+        });
         
         const loadingEl = document.getElementById('loading');
         if (loadingEl) {
