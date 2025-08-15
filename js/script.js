@@ -563,6 +563,14 @@ function initializeCollectionPage() {
     updateLastExportDisplay();
     
     // Action button event handling will be done directly on the buttons when they're created
+    
+    // Add global click listener to debug what's happening
+    document.addEventListener('click', function(event) {
+        console.log('Global click detected on:', event.target.tagName, event.target.className, event.target.id);
+        if (event.target.classList.contains('edit-btn')) {
+            console.log('Edit button clicked in global listener');
+        }
+    }, true); // Use capture phase to see events first
 }
 
 // ============================================================================
@@ -2091,6 +2099,7 @@ function smartSort(cards, filterValue, field) {
 // Updated display collection function with improved filtering and asterisk support
 function displayCollection() {
     console.log('displayCollection started');
+    console.log('displayCollection called from:', new Error().stack);
     
     // Prevent displayCollection from running when edit is in progress
     if (isProcessingEdit) {
