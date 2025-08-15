@@ -1538,10 +1538,6 @@ h1 {
     gap: 0.15rem;
 }
 
-.add-another-btn .checkbox-label input[type="checkbox"] {
-
-}
-
 /* Checkbox label styling */
 .checkbox-label {
     margin-top: 0.5rem;

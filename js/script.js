@@ -2441,29 +2441,11 @@ function handleActionButtonClick(event) {
         event.preventDefault();
         event.stopPropagation();
         
-        // Mark as processing and add visual feedback
-        target.dataset.processing = 'true';
-        const originalText = target.textContent;
-        target.textContent = 'Loading...';
-        target.style.opacity = '0.7';
-        
         const cardId = target.getAttribute('data-card-id');
         
-        // Use setTimeout to ensure the visual feedback is shown
-        setTimeout(async () => {
-            try {
-                await editCard(cardId);
-            } catch (error) {
-                console.error('Error in edit operation:', error);
-            } finally {
-                // Reset button state after operation completes
-                setTimeout(() => {
-                    target.dataset.processing = 'false';
-                    target.textContent = originalText;
-                    target.style.opacity = '1';
-                }, 500);
-            }
-        }, 50);
+        // For edit button, just call editCard directly since it navigates away
+        // No need for debouncing or state management
+        editCard(cardId);
         
     } else if (target.classList.contains('delete-btn')) {
         event.preventDefault();
@@ -2702,7 +2684,6 @@ async function editCard(cardId) {
     } catch (error) {
         console.error('Error in editCard function:', error);
         // Don't throw the error to prevent unhandled promise rejection
-        // The button state will be reset by the finally block in handleActionButtonClick
     }
 }
 
