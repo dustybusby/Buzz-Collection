@@ -2,6 +2,7 @@
 let app, db, cardCollection = [];
 let currentView = 'list';
 let currentSort = { field: null, direction: 'asc' };
+let isProcessingEdit = false;
 
 // Add page specific variables
 let isEditMode = false;
@@ -2090,6 +2091,13 @@ function smartSort(cards, filterValue, field) {
 // Updated display collection function with improved filtering and asterisk support
 function displayCollection() {
     console.log('displayCollection started');
+    
+    // Prevent displayCollection from running when edit is in progress
+    if (isProcessingEdit) {
+        console.log('Edit in progress, skipping displayCollection');
+        return;
+    }
+    
     const totalElement = document.getElementById('totalCards');
     const filteredElement = document.getElementById('filteredCount');
     const emptyState = document.getElementById('emptyState');
@@ -2444,10 +2452,26 @@ function displayListView(cards) {
     editButtons.forEach((button, index) => {
         console.log(`Adding event listener to edit button ${index + 1} for card:`, button.getAttribute('data-card-id'));
         button.addEventListener('click', function(event) {
+            console.log('Edit button click event triggered');
+            
+            // Prevent multiple clicks and other interference
+            if (isProcessingEdit) {
+                console.log('Edit already in progress, ignoring click');
+                return;
+            }
+            
+            isProcessingEdit = true;
+            console.log('Set isProcessingEdit to true');
+            
             event.preventDefault();
             event.stopPropagation();
+            event.stopImmediatePropagation();
+            
             const cardId = this.getAttribute('data-card-id');
             console.log('Edit button clicked for card:', cardId);
+            
+            // Call editCard immediately
+            console.log('Calling editCard function');
             editCard(cardId);
         });
     });
