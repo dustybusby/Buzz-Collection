@@ -2460,12 +2460,14 @@ function displayListView(cards) {
     
     editButtons.forEach((button, index) => {
         console.log(`Adding event listener to edit button ${index + 1} for card:`, button.getAttribute('data-card-id'));
-        button.addEventListener('click', function(event) {
-            console.log('Edit button click event triggered');
+        
+        // Use mousedown instead of click to prevent interference
+        button.addEventListener('mousedown', function(event) {
+            console.log('Edit button mousedown event triggered');
             
             // Prevent multiple clicks and other interference
             if (isProcessingEdit) {
-                console.log('Edit already in progress, ignoring click');
+                console.log('Edit already in progress, ignoring mousedown');
                 return;
             }
             
@@ -2477,11 +2479,20 @@ function displayListView(cards) {
             event.stopImmediatePropagation();
             
             const cardId = this.getAttribute('data-card-id');
-            console.log('Edit button clicked for card:', cardId);
+            console.log('Edit button mousedown for card:', cardId);
             
             // Call editCard immediately
             console.log('Calling editCard function');
             editCard(cardId);
+        });
+        
+        // Also prevent any click events
+        button.addEventListener('click', function(event) {
+            console.log('Edit button click event triggered (blocked)');
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            return false;
         });
     });
     
