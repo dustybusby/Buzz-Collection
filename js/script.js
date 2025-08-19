@@ -628,6 +628,9 @@ function cancelEdit() {
 
 // FIXED: populateForm function with normalized date handling to prevent timezone issues
 function populateForm(card) {
+    console.log('Populating form with card data:', card);
+    console.log('Purchase date:', card.purchaseDate, 'Purchase cost:', card.purchaseCost);
+    
     const setFieldValue = (id, value) => {
         const element = document.getElementById(id);
         if (element) element.value = value || '';
@@ -649,6 +652,10 @@ function populateForm(card) {
     const ungradedGrade = document.getElementById('ungradedGrade');
     if (card.grade && card.grade !== 'Ungraded') {
         if (gradeInput) gradeInput.value = card.grade;
+        if (ungradedGrade) {
+            ungradedGrade.checked = false;
+            gradeInput.disabled = false;
+        }
     } else {
         if (ungradedGrade) ungradedGrade.checked = true;
         if (gradeInput) gradeInput.disabled = true;
@@ -702,6 +709,10 @@ function populateForm(card) {
     const unknownEstimatedValue = document.getElementById('unknownEstimatedValue');
     if (card.estimatedValue && card.estimatedValue !== 'Unknown') {
         if (estimatedValue) estimatedValue.value = card.estimatedValue;
+        if (unknownEstimatedValue) {
+            unknownEstimatedValue.checked = false;
+            estimatedValue.disabled = false;
+        }
     } else {
         if (unknownEstimatedValue) unknownEstimatedValue.checked = true;
         if (estimatedValue) estimatedValue.disabled = true;
@@ -714,6 +725,9 @@ function populateForm(card) {
         const normalizedDate = normalizeDate(card.estimatedValueDate);
         if (normalizedDate) {
             estimatedValueDate.value = normalizedDate;
+            // Enable the date field if it has a value
+            estimatedValueDate.disabled = false;
+            estimatedValueDate.style.opacity = '1';
         }
     }
     
@@ -733,25 +747,42 @@ function populateForm(card) {
     // FIXED: Handle purchase date with proper date formatting and timezone normalization
     const purchaseDate = document.getElementById('purchaseDate');
     const unknownDate = document.getElementById('unknownDate');
+    console.log('Populating purchase date:', card.purchaseDate, 'type:', typeof card.purchaseDate);
     if (card.purchaseDate && card.purchaseDate !== 'Unknown') {
         // Normalize date by treating as local date to prevent timezone issues
         const normalizedDate = normalizeDate(card.purchaseDate);
+        console.log('Normalized purchase date:', normalizedDate);
         if (normalizedDate) {
             if (purchaseDate) purchaseDate.value = normalizedDate;
+            if (unknownDate) {
+                unknownDate.checked = false;
+                purchaseDate.disabled = false;
+                purchaseDate.style.opacity = '1';
+                console.log('Purchase date field enabled and populated');
+            }
         }
     } else {
         if (unknownDate) unknownDate.checked = true;
         if (purchaseDate) purchaseDate.disabled = true;
+        if (purchaseDate) purchaseDate.style.opacity = '0.5';
+        console.log('Purchase date field disabled (unknown)');
     }
     
     // Handle purchase cost
     const purchaseCost = document.getElementById('purchaseCost');
     const unknownCost = document.getElementById('unknownCost');
+    console.log('Populating purchase cost:', card.purchaseCost, 'type:', typeof card.purchaseCost);
     if (card.purchaseCost && card.purchaseCost !== 'Unknown') {
         if (purchaseCost) purchaseCost.value = card.purchaseCost;
+        if (unknownCost) {
+            unknownCost.checked = false;
+            purchaseCost.disabled = false;
+            console.log('Purchase cost field enabled and populated');
+        }
     } else {
         if (unknownCost) unknownCost.checked = true;
         if (purchaseCost) purchaseCost.disabled = true;
+        console.log('Purchase cost field disabled (unknown)');
     }
 }
 
