@@ -2806,6 +2806,16 @@ function showDeleteSuccessModal() {
     });
 }
 
+// Escape a single CSV field: wrap in quotes if it contains comma, quote, or newline
+function escapeCSVField(value) {
+    if (value == null) return '';
+    const str = String(value);
+    if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+        return '"' + str.replace(/"/g, '""') + '"';
+    }
+    return str;
+}
+
 // Fixed: exportToCSV function with correct column order matching import
 function exportToCSV() {
     if (cardCollection.length === 0) {
@@ -2815,19 +2825,13 @@ function exportToCSV() {
     
     // Fixed: Updated headers to match exact import column order
     const headers = ['Category', 'Year', 'Brand', 'Card #', 'Base Set', 'Player', 'Team', 'Autograph', 'Relic', 'Insert', 'Parallel', 'Numbered', 'Rookie Card', 'Image Variation', 'Quantity', 'Grade', 'Purchase Date', 'Purchase Price', 'Estimated Market Value', 'Estimated Market Value On', "Add'l Notes"];
-    const csvRows = [headers.join(',')];
+    const csvRows = [headers.map(escapeCSVField).join(',')];
     
     cardCollection.forEach(card => {
         // Format numbered field to prevent date conversion - prefix with apostrophe for Excel
         let numberedValue = card.numbered || 'N';
         if (numberedValue !== 'N' && numberedValue !== '') {
             numberedValue = "'" + numberedValue;
-        }
-        
-        // Fixed: Escape description field properly to handle commas
-        let description = card.description || '';
-        if (description.includes(',') || description.includes('"') || description.includes('\n')) {
-            description = '"' + description.replace(/"/g, '""') + '"';
         }
         
         const row = [
@@ -2851,9 +2855,9 @@ function exportToCSV() {
             card.purchaseCost || '',
             card.estimatedValue || '',
             card.estimatedValueDate || '',
-            description
+            card.description || ''
         ];
-        csvRows.push(row.join(','));
+        csvRows.push(row.map(escapeCSVField).join(','));
     });
     
     const csvContent = csvRows.join('\n');
