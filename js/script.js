@@ -183,7 +183,9 @@ async function initializeAddPageAfterAuth() {
     console.log('Firebase init success:', success);
     
     if (success) {
+        await loadCollectionFromFirebase();
         initializeYearDropdown();
+        updateAddPageCategoryDropdown();
         checkEditMode();
         
         // Add form event listener
@@ -559,6 +561,21 @@ function initializeYearDropdown() {
         option.textContent = year;
         yearSelect.appendChild(option);
     }
+}
+
+// Populate the Add New Card category list from categories currently in the collection
+function updateAddPageCategoryDropdown() {
+    const categoryList = document.getElementById('categoryList');
+    const categoryInput = document.getElementById('category');
+    if (!categoryList || !categoryInput) return;
+    
+    const categories = [...new Set(cardCollection.map(card => card.category).filter(cat => cat))].sort();
+    categoryList.innerHTML = '';
+    categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category;
+        categoryList.appendChild(option);
+    });
 }
 
 function checkEditMode() {
@@ -1509,6 +1526,7 @@ async function handleCSVUpload(event) {
         
         console.log(`Import completed: ${successCount} successful, ${errorCount} failed`);
         
+        if (isAddPage()) updateAddPageCategoryDropdown();
         event.target.value = '';
     };
     

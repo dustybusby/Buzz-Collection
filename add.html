@@ -35,12 +35,8 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="category">Category</label>
-                            <select id="category" required>
-                                <option value="">Select Category</option>
-                                <option value="Baseball">Baseball</option>
-                                <option value="Football (Pro)">Football (Pro)</option>
-                                <option value="Football (College)">Football (College)</option>
-                            </select>
+                            <input type="text" id="category" list="categoryList" required placeholder="Select or type category" autocomplete="off">
+                            <datalist id="categoryList"></datalist>
                         </div>
 
                         <div class="form-group">
